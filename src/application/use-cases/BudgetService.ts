@@ -35,7 +35,7 @@ export class BudgetService {
     private isSyncing = false;
     private pendingChanges = false;
     private onSyncStateChange: (isSyncing: boolean) => void = () => {};
-    private SYNC_INTERVAL = 5000;
+    private SYNC_INTERVAL = 8000;
     private userInfo: { name: string; picture: string } | null = null;
 
     constructor(repo: IBudgetRepository, drive: GoogleDriveAdapter) {
