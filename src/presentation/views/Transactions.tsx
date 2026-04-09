@@ -180,7 +180,15 @@ export default function Transactions() {
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Categoría</label>
              <select className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all" value={catId} onChange={e=>setCatId(e.target.value)} required>
                <option value="" disabled>Seleccionar...</option>
-               {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name} ({c.type === 'INCOME' ? 'Ingreso' : c.type === 'TRANSFER' ? 'Transferencia' : 'Gasto'})</option>)}
+               <optgroup label="Ingresos">
+                 {categories.filter((c: any) => c.type === 'INCOME').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+               </optgroup>
+               <optgroup label="Transferencias">
+                 {categories.filter((c: any) => c.type === 'TRANSFER').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+               </optgroup>
+               <optgroup label="Gastos">
+                 {categories.filter((c: any) => c.type === 'EXPENSE').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+               </optgroup>
              </select>
            </div>
            <button type="submit" className="md:col-span-6 bg-gray-900 text-white py-3 rounded-2xl hover:bg-gray-800 transition-all font-bold shadow-lg shadow-gray-200 active:scale-[0.98] mt-2">
@@ -211,7 +219,15 @@ export default function Transactions() {
                  <Tags className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-indigo-500 transition-colors" />
                  <select className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-100 bg-white text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-indigo-100 transition-all appearance-none cursor-pointer" value={filterCat} onChange={e=>setFilterCat(e.target.value)}>
                     <option value="">Categoría</option>
-                    {categories.map((c:any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    <optgroup label="Ingresos">
+                      {categories.filter((c: any) => c.type === 'INCOME').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </optgroup>
+                    <optgroup label="Transferencias">
+                      {categories.filter((c: any) => c.type === 'TRANSFER').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </optgroup>
+                    <optgroup label="Gastos">
+                      {categories.filter((c: any) => c.type === 'EXPENSE').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </optgroup>
                  </select>
                </div>
 
@@ -261,10 +277,7 @@ export default function Transactions() {
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                            <span className="text-gray-800 font-normal">{t.description}</span>
-                           <span className="text-[10px] text-gray-400 font-medium flex items-center gap-1 mt-0.5">
-                             <Calendar className="w-3 h-3" />
-                             {new Date(t.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                           </span>
+
                         </div>
                       </td>
                       <td className="px-6 py-4">

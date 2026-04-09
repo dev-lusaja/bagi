@@ -2,25 +2,25 @@ import { IBudgetRepository } from '../../domain/repositories/IBudgetRepository';
 import { GoogleDriveAdapter } from '../../infrastructure/adapters/GoogleDriveAdapter';
 
 const DEFAULT_CATEGORIES = [
-    { name: "Ahorros", type: "EXPENSE" },
-    { name: "Deudas", type: "EXPENSE" },
-    { name: "Efectivo", type: "EXPENSE" },
-    { name: "Gasolina", type: "EXPENSE" },
-    { name: "Gastos hormiga", type: "EXPENSE" },
-    { name: "Mascotas", type: "EXPENSE" },
-    { name: "Mercado", type: "EXPENSE" },
-    { name: "Otros", type: "EXPENSE" },
-    { name: "Pago tarjeta", type: "EXPENSE" },
-    { name: "Parqueadero", type: "EXPENSE" },
-    { name: "Restaurantes", type: "EXPENSE" },
-    { name: "Ropa", type: "EXPENSE" },
+    { name: "Salida de dinero al exterior", type: "EXPENSE" },
     { name: "Servicios", type: "EXPENSE" },
-    { name: "Taxis", type: "EXPENSE" },
-    { name: "Transferencias", type: "EXPENSE" },
+    { name: "Deudas", type: "EXPENSE" },
+    { name: "Ahorros", type: "EXPENSE" },
+    { name: "Otros gastos", type: "EXPENSE" },
+    { name: "Mercado", type: "EXPENSE" },
+    { name: "Restaurantes", type: "EXPENSE" },
     { name: "Transporte", type: "EXPENSE" },
-    { name: "Abono a tarjeta", type: "EXPENSE" },
-    { name: "Otros Ingresos", type: "INCOME" },
+    { name: "Gastos hormiga", type: "EXPENSE" },
+    { name: "Ropa", type: "EXPENSE" },
+    { name: "Efectivo", type: "EXPENSE" },
+    { name: "Mascotas", type: "EXPENSE" },
+    { name: "Gasolina", type: "EXPENSE" },
+    { name: "Parqueadero", type: "EXPENSE" },
+    { name: "Pago tarjeta de crédito", type: "TRANSFER" },
     { name: "Salario", type: "INCOME" },
+    { name: "Otros ingresos", type: "INCOME" },
+    { name: "Taxis", type: "EXPENSE" },
+    { name: "Abono a tarjeta", type: "TRANSFER" },
 ] as const;
 
 export class BudgetService {
@@ -59,6 +59,9 @@ export class BudgetService {
             await this.seedCategories();
             await this.syncToDrive();
         }
+
+        // Mantenimiento de categorías: asegurar categorías base
+        await this.seedCategories();
         if (!this.userInfo) {
             this.userInfo = await this.drive.getUserInfo();
         }
@@ -91,20 +94,17 @@ export class BudgetService {
     private scheduleSave() {
         this.pendingChanges = true;
         if (this.syncTimeout) clearTimeout(this.syncTimeout);
-        console.log(`[Service] %cSync scheduled (Debounce 10s)`, 'color: #f59e0b');
         this.syncTimeout = setTimeout(() => this.syncToDrive(), this.SYNC_INTERVAL);
     }
 
     async syncToDrive() {
         if (this.isSyncing) return;
         this.onSyncStateChange(true);
-        console.log('[Service] %cStarting Sync to Google Drive...', 'color: #8b5cf6');
         this.isSyncing = true;
         try {
             const data = await this.repo.exportDatabase();
             this.fileId = await this.drive.uploadFile(this.fileName, data, this.fileId, this.folderId);
             this.pendingChanges = false;
-            console.log('[Service] %cSync Complete!', 'color: #10b981');
         } catch (error: any) {
             console.error('[Service] %cSync Failed', 'color: #ef4444', error);
             if (error.message === 'AUTH_ERROR') throw error;
@@ -117,7 +117,6 @@ export class BudgetService {
     async performOperation<T>(op: () => Promise<T>): Promise<T> {
         try {
             const result = await op();
-            console.log('[Service] Operation performed');
             if (this.syncStrategy === 'immediate') {
                 await this.syncToDrive();
             } else {
@@ -223,9 +222,13 @@ export class BudgetService {
     }
 
     private async seedCategories() {
-        console.log('[Service] Seeding default categories...');
+        const existing = await this.repo.getCategories();
+        
         for (const cat of DEFAULT_CATEGORIES) {
-            await this.repo.saveCategory({ ...cat, user_id: 1 });
+            const alreadyExists = existing.some(e => e.name === cat.name && e.type === cat.type);
+            if (!alreadyExists) {
+                await this.repo.saveCategory({ ...cat, user_id: 1 });
+            }
         }
     }
 

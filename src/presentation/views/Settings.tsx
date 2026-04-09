@@ -70,6 +70,7 @@ export default function SettingsView() {
       service.getCategories(),
       service.getRecurringItems()
     ]);
+    
     setAccounts(accs as any);
     setCards(crds as any);
     setCategories(cats as any);

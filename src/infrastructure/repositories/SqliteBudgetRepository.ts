@@ -13,15 +13,15 @@ export class SqliteBudgetRepository implements IBudgetRepository {
 
     private query<T>(sql: string, params: any[] = []): T[] {
         const db = getDb();
+        const safeParams = params.map(p => p === undefined ? null : p);
         try {
             const stmt = db.prepare(sql);
-            stmt.bind(params);
+            stmt.bind(safeParams);
             const results: T[] = [];
             while (stmt.step()) {
                 results.push(stmt.getAsObject() as T);
             }
             stmt.free();
-            console.log(`[SQL Query] %c${sql}`, 'color: #3b82f6', params);
             return results;
         } catch (err) {
             console.error(`[SQL Error] %c${sql}`, 'color: #ef4444', err);
@@ -31,9 +31,9 @@ export class SqliteBudgetRepository implements IBudgetRepository {
 
     private execute(sql: string, params: any[] = []): void {
         const db = getDb();
+        const safeParams = params.map(p => p === undefined ? null : p);
         try {
-            db.run(sql, params);
-            console.log(`[SQL Execute] %c${sql}`, 'color: #10b981', params);
+            db.run(sql, safeParams);
         } catch (err) {
             console.error(`[SQL Error] %c${sql}`, 'color: #ef4444', err);
             throw err;
@@ -143,8 +143,8 @@ export class SqliteBudgetRepository implements IBudgetRepository {
             'INSERT INTO transactions (date, amount, description, account_id, card_id, category_id, recurring_item_id, budget_obligation_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 transaction.date, transaction.amount, transaction.description,
-                transaction.account_id, transaction.card_id, transaction.category_id,
-                transaction.recurring_item_id, transaction.budget_obligation_id, transaction.user_id
+                transaction.account_id ?? null, transaction.card_id ?? null, transaction.category_id ?? null,
+                transaction.recurring_item_id ?? null, transaction.budget_obligation_id ?? null, transaction.user_id
             ]
         );
         return { ...transaction, id: this.getLastInsertId() };
@@ -162,7 +162,7 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     async saveCard(card: Omit<Card, 'id'>): Promise<Card> {
         this.execute(
             'INSERT INTO cards (name, type, credit_limit, currency, user_id, payment_account_id, monthly_payment_budget) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [card.name, card.type, card.credit_limit, card.currency, card.user_id, card.payment_account_id, card.monthly_payment_budget]
+            [card.name, card.type, card.credit_limit ?? null, card.currency, card.user_id, card.payment_account_id ?? null, card.monthly_payment_budget ?? null]
         );
         return { ...card, id: this.getLastInsertId() };
     }
@@ -205,7 +205,7 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     async saveRecurringItem(item: Omit<RecurringItem, 'id'>): Promise<RecurringItem> {
         this.execute(
             'INSERT INTO recurring_items (name, amount, type, due_day, is_active, category_id, account_id, card_id, notes, start_year, start_month, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [item.name, item.amount, item.type, item.due_day, item.is_active ? 1 : 0, item.category_id, item.account_id, item.card_id, item.notes, item.start_year, item.start_month, item.user_id]
+            [item.name, item.amount, item.type, item.due_day, item.is_active ? 1 : 0, item.category_id ?? null, item.account_id ?? null, item.card_id ?? null, item.notes ?? null, item.start_year, item.start_month, item.user_id]
         );
         return { ...item, id: this.getLastInsertId() };
     }
@@ -231,7 +231,7 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     async saveBudgetObligation(item: Omit<BudgetObligation, 'id'>): Promise<BudgetObligation> {
         this.execute(
             'INSERT INTO budget_obligations (year, month, name, amount, due_day, notes, category_id, account_id, card_id, recurring_item_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [item.year, item.month, item.name, item.amount, item.due_day, item.notes, item.category_id, item.account_id, item.card_id, item.recurring_item_id, item.user_id]
+            [item.year, item.month, item.name, item.amount, item.due_day, item.notes ?? null, item.category_id ?? null, item.account_id ?? null, item.card_id ?? null, item.recurring_item_id ?? null, item.user_id]
         );
         return { ...item, id: this.getLastInsertId() };
     }
@@ -257,7 +257,7 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     async saveGlobalBudget(budget: Omit<GlobalBudget, 'id'>): Promise<GlobalBudget> {
         this.execute(
             'INSERT INTO global_budgets (year, month, total_amount, account_id, user_id) VALUES (?, ?, ?, ?, ?)',
-            [budget.year, budget.month, budget.total_amount, budget.account_id, budget.user_id]
+            [budget.year, budget.month, budget.total_amount, budget.account_id ?? null, budget.user_id]
         );
         return { ...budget, id: this.getLastInsertId() };
     }
@@ -278,7 +278,7 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     async saveCategoryBudget(budget: Omit<CategoryBudget, 'id'>): Promise<CategoryBudget> {
         this.execute(
             'INSERT INTO category_budgets (year, month, amount, category_id, account_id, user_id) VALUES (?, ?, ?, ?, ?, ?)',
-            [budget.year, budget.month, budget.amount, budget.category_id, budget.account_id, budget.user_id]
+            [budget.year, budget.month, budget.amount, budget.category_id ?? null, budget.account_id ?? null, budget.user_id]
         );
         return { ...budget, id: this.getLastInsertId() };
     }
@@ -294,7 +294,7 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     async saveCardBudget(budget: Omit<CardBudget, 'id'>): Promise<CardBudget> {
         this.execute(
             'INSERT INTO card_budgets (year, month, amount, card_id, account_id, user_id) VALUES (?, ?, ?, ?, ?, ?)',
-            [budget.year, budget.month, budget.amount, budget.card_id, budget.account_id, budget.user_id]
+            [budget.year, budget.month, budget.amount, budget.card_id ?? null, budget.account_id ?? null, budget.user_id]
         );
         return { ...budget, id: this.getLastInsertId() };
     }
