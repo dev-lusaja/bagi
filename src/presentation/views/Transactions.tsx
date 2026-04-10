@@ -75,13 +75,19 @@ export default function Transactions() {
     const isCard = sourceId.startsWith('c-');
     const actualId = parseInt(sourceId.replace('c-', ''));
     
+    let finalDate = new Date().toISOString();
+    if (date) {
+      const [year, month, day] = date.split('-');
+      finalDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0).toISOString();
+    }
+
     await service.addTransaction({
         description: desc, 
         amount: parseFloat(amt), 
         account_id: isCard ? null : actualId,
         card_id: isCard ? actualId : null,
         category_id: parseInt(catId),
-        date: date ? new Date(date).toISOString() : new Date().toISOString(),
+        date: finalDate,
         user_id: 1 // Default
     });
     setDesc(''); setAmt(''); 
