@@ -1,0 +1,13 @@
+[build]
+  # Carpeta que se genera al instalar y compilar el proyecto
+  publish = "dist"
+  # Comando necesario para construir la aplicación para producción.
+  command = "npm run build"
+
+[[redirects]]
+  # Redireccionar todo el tráfico al index.html de React.
+  # Aunque actualmente no uses React Router, esta regla es indispensable
+  # para que la aplicación no se rompa si agregas rutas en el futuro.
+  from = "/*"
+  to = "/index.html"
+  status = 200
