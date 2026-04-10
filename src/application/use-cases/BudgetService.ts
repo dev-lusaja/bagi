@@ -30,6 +30,7 @@ export class BudgetService {
     private folderName = 'Bagi_app';
     private fileId: string | null = null;
     private folderId: string | null = null;
+    private lastKnownRemoteTime: string | null = null;
     private syncStrategy: 'immediate' | 'deferred' = 'deferred';
     private syncTimeout: any = null;
     private isSyncing = false;
@@ -53,6 +54,7 @@ export class BudgetService {
         
         if (this.fileId) {
             const buffer = await this.drive.downloadFile(this.fileId);
+            this.lastKnownRemoteTime = await this.drive.getFileModifiedTime(this.fileId);
             await this.repo.initializeDatabase(buffer);
         } else {
             await this.repo.initializeDatabase();
@@ -102,8 +104,28 @@ export class BudgetService {
         this.onSyncStateChange(true);
         this.isSyncing = true;
         try {
+            if (this.fileId) {
+                const currentRemoteTime = await this.drive.getFileModifiedTime(this.fileId);
+                // Si el Drive tiene un archivo más nuevo, es porque alguien (o tú en otro dispositivo) lo guardó.
+                if (this.lastKnownRemoteTime && currentRemoteTime && currentRemoteTime !== this.lastKnownRemoteTime) {
+                    console.warn('[Sync] ⚠️ Choque detectado: El archivo en Drive es más nuevo. Sobreescribiendo local (MVP)...');
+                    const buffer = await this.drive.downloadFile(this.fileId);
+                    await this.repo.initializeDatabase(buffer);
+                    this.lastKnownRemoteTime = currentRemoteTime;
+                    this.pendingChanges = false;
+                    
+                    // Alerta nativa y recarga para limpiar el estado de React y forzar el re-render de todo
+                    alert("Se ha actualizado Bagi con cambios realizados desde otro dispositivo.\n\nPara evitar conflictos, tus cambios locales no sincronizados han sido descartados. La página se recargará.");
+                    window.location.reload();
+                    return;
+                }
+            }
+
             const data = await this.repo.exportDatabase();
             this.fileId = await this.drive.uploadFile(this.fileName, data, this.fileId, this.folderId);
+            if (this.fileId) {
+                this.lastKnownRemoteTime = await this.drive.getFileModifiedTime(this.fileId);
+            }
             this.pendingChanges = false;
         } catch (error: any) {
             console.error('[Service] %cSync Failed', 'color: #ef4444', error);

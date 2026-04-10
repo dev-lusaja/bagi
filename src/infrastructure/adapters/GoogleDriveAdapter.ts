@@ -132,6 +132,21 @@ export class GoogleDriveAdapter {
         }
     }
 
+    async getFileModifiedTime(fileId: string): Promise<string | null> {
+        const gapi = (window as any).gapi;
+        if (!gapi?.client?.drive) return null;
+        try {
+            const response = await gapi.client.drive.files.get({
+                fileId: fileId,
+                fields: 'modifiedTime'
+            });
+            return response.result.modifiedTime;
+        } catch (err: any) {
+            this.handleGapiError(err);
+            return null;
+        }
+    }
+
     async getOrCreateFolder(name: string): Promise<string> {
         const gapi = (window as any).gapi;
         try {
