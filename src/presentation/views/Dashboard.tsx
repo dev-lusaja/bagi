@@ -594,55 +594,67 @@ export default function Dashboard() {
                   }
 
                   return (
-                    <div key={cat.id} className={`bg-white p-5 rounded-2xl shadow-sm border relative group hover:shadow-md transition-shadow ${isOver ? 'border-rose-200 ring-2 ring-rose-100' : 'border-gray-100'}`}>
+                    <div key={cat.id} className={`bg-white p-5 rounded-3xl shadow-sm border relative group hover:shadow-md transition-all ${isOver ? 'border-rose-200 ring-2 ring-rose-100' : 'border-gray-100'}`}>
                       <div className="flex justify-between items-start mb-4">
-                        <span className="font-bold text-gray-800 text-lg leading-tight flex items-center gap-2">
-                           {cat?.name}
-                           {!b && actual > 0 && (
-                             <span className="text-amber-500" title="Categoría con consumo sin límite definido">
-                               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                             </span>
-                           )}
-                         </span>
-                        <div className="flex items-center gap-2">
-                          <div className="text-right">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Usado</p>
-                            <p className="text-sm font-bold text-gray-700">{formatCurrency(actual, selectedAcc?.currency || selectedCard?.currency)}</p>
-                          </div>
-                          {b && (
-                            <button
-                              onClick={() => deleteBudget((b as any).id)}
-                              className="p-1 rounded-lg text-gray-200 group-hover:text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-all border border-transparent hover:border-rose-100"
-                              title="Eliminar presupuesto"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            </button>
-                          )}
+                        <div className="flex flex-col gap-1">
+                           <span className="text-gray-800 text-lg leading-tight flex items-center gap-2">
+                              {cat?.name}
+                              {!b && actual > 0 && (
+                                <span className="text-amber-500" title="Categoría con consumo sin límite definido">
+                                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                                </span>
+                              )}
+                           </span>
+                           <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Usado</span>
+                              <span className="text-sm font-medium text-gray-700">{formatCurrency(actual, selectedAcc?.currency || selectedCard?.currency)}</span>
+                           </div>
                         </div>
+
+                        {b && (
+                          <button
+                            onClick={() => deleteBudget((b as any).id)}
+                            className="p-2 rounded-xl text-gray-200 group-hover:text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-all border border-transparent shadow-sm hover:shadow-none"
+                            title="Eliminar límite"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        )}
                       </div>
 
-                      <div className="w-full bg-gray-100 rounded-full h-2.5 mb-3 overflow-hidden">
-                        <div className={`${barColor} h-2.5 rounded-full transition-all duration-500`} style={{ width: `${Math.min(100, percent)}%` }}></div>
+                      <div className="w-full bg-gray-100/80 rounded-full h-2 mb-4 overflow-hidden shadow-inner">
+                        <div className={`${barColor} h-full rounded-full transition-all duration-500`} style={{ width: `${Math.min(100, percent)}%` }}></div>
                       </div>
 
-                      <div className="flex justify-between items-center text-[10px]">
-                        <span className="font-bold text-gray-400 uppercase">
-                          {budgetAmt > 0 ? `Limite: ${formatCurrency(budgetAmt, selectedAcc?.currency || selectedCard?.currency)}` : 'Sin limite'}
-                        </span>
-                        <span className={`font-black uppercase px-2 py-0.5 rounded-md ${isOver ? 'bg-rose-500 text-white animate-pulse' : percent > 80 ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'}`}>
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex flex-col gap-2">
+                           <div className="flex items-center gap-1.5 text-[10px]">
+                              <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
+                              <span className="font-semibold text-gray-400 uppercase tracking-wider gap-1">Límite: <span className="text-gray-500">{budgetAmt > 0 ? formatCurrency(budgetAmt, selectedAcc?.currency || selectedCard?.currency) : 'Sin definir'}</span></span>
+                           </div>
+                           {budgetAmt > 0 && (
+                             <div className={`flex items-center gap-1.5 text-[10px]`}>
+                               <div className={`w-1.5 h-1.5 rounded-full ${isOver ? 'bg-rose-500 animate-pulse' : 'bg-emerald-400'}`}></div>
+                               <span className={`font-semibold uppercase tracking-wider gap-1 ${isOver ? 'text-rose-500' : 'text-emerald-600'}`}>
+                                 Disp: <span className={isOver ? 'text-rose-600 font-bold' : 'text-emerald-700 font-bold'}>{isOver ? '$0.00' : formatCurrency(budgetAmt - actual, selectedAcc?.currency || selectedCard?.currency)}</span>
+                               </span>
+                             </div>
+                           )}
+                        </div>
+                        <span className={`font-black text-[10px] uppercase px-2.5 py-1 rounded-lg mt-0.5 ${isOver ? 'bg-rose-500 text-white animate-pulse shadow-md shadow-rose-200' : percent > 80 ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'}`}>
                           {percent}%
                         </span>
                       </div>
 
                       <button 
                         onClick={() => setSelectedCatDetail(cat)}
-                        className="mt-4 w-full py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-indigo-600 bg-gray-50 hover:bg-white transition-all border border-transparent hover:border-indigo-100 active:scale-95"
+                        className="mt-4 w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-indigo-600 bg-indigo-50/50 hover:bg-indigo-50 transition-all border border-transparent hover:border-indigo-100 active:scale-95"
                       >
-                        Ver detalle
+                        Ver movimientos
                       </button>
 
                       {isOver && (
-                        <div className="mt-3 flex items-center gap-1.5 text-[10px] font-bold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100">
+                        <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] font-extrabold text-rose-600 bg-rose-50 px-3 py-2 rounded-xl border border-rose-100 uppercase tracking-widest shadow-sm">
                           <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
                           Excedido por {formatCurrency(actual - budgetAmt, selectedAcc?.currency || selectedCard?.currency)}
                         </div>
@@ -670,7 +682,7 @@ export default function Dashboard() {
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                            <div className={`w-2 h-2 rounded-full ${item.isPaid ? 'bg-emerald-500' : (item.isPastDue ? 'bg-rose-500 animate-pulse' : 'bg-indigo-400')}`} />
-                           <p className="text-xl font-black text-gray-800 leading-tight">{item.name}</p>
+                           <p className="text-xl text-gray-800 leading-tight">{item.name}</p>
                         </div>
                         <div className="flex items-center gap-2 text-gray-400 pl-4">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -696,14 +708,14 @@ export default function Dashboard() {
                     <div className="mt-auto flex flex-col gap-4">
                        <div className="flex justify-between items-end bg-gray-50/30 p-4 rounded-3xl border border-gray-50">
                           <div className="flex flex-col">
-                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter mb-1">Presupuestado</p>
-                             <p className="text-xl font-black text-gray-900 tracking-tighter">
+                             <p className="text-[10px] font-medium text-gray-400 uppercase mb-1">Presupuestado</p>
+                             <p className="text-xl font-medium text-gray-900">
                                 {formatCurrency(item.amount, item.itemCurrencyCode)}
                              </p>
                              {!item.isPaid && (
                                 <button 
                                   onClick={(e) => { e.stopPropagation(); updateObligationAmount(item); }}
-                                  className="text-[10px] text-indigo-500 hover:text-indigo-700 font-bold underline mt-1 text-left"
+                                  className="text-[10px] text-indigo-500 hover:text-indigo-700 font-medium underline mt-1 text-left"
                                 >
                                   Editar monto para este mes
                                 </button>
@@ -714,14 +726,14 @@ export default function Dashboard() {
                              {item.isPaid ? (
                                <>
                                  <p className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter mb-1">Pagado Real</p>
-                                 <p className="text-2xl font-black text-emerald-600 tracking-tighter">
+                                 <p className="text-2xl font-medium text-emerald-600">
                                    {formatCurrency(item.paidAmount, item.itemCurrencyCode)}
                                  </p>
                                </>
                              ) : (
                                <>
                                  <p className="text-[10px] font-black text-amber-500 uppercase tracking-tighter mb-1">Pendiente</p>
-                                 <p className="text-2xl font-black text-gray-300 tracking-tighter italic">
+                                 <p className="text-2xl font-medium text-gray-300 italic">
                                     --
                                  </p>
                                </>
@@ -782,7 +794,7 @@ export default function Dashboard() {
                      <div key={card.id} className={`bg-white p-6 rounded-3xl shadow-sm border transition-all ${isOverBudget ? 'border-rose-200 shadow-rose-50/50' : 'border-gray-100 hover:shadow-md'}`}>
                         <div className="flex justify-between items-start mb-5">
                           <div>
-                            <p className="text-xl font-black text-gray-800 leading-tight mb-1">{card.name}</p>
+                            <p className="text-xl text-gray-800 leading-tight mb-1">{card.name}</p>
                             <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 font-black uppercase tracking-widest border border-indigo-100">
                               {card.type === 'CREDIT' ? 'Crédito' : 'Débito'}
                             </span>
@@ -798,12 +810,12 @@ export default function Dashboard() {
                               <div className="flex justify-between items-end mb-2">
                                 <div>
                                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Consumo del mes</p>
-                                  <p className="text-lg font-bold text-gray-800">{formatCurrency(grossSpent, card.currency)}</p>
+                                  <p className="text-lg font-medium text-gray-800">{formatCurrency(grossSpent, card.currency)}</p>
                                 </div>
                                 <div className="text-right">
                                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Reserva</p>
                                   <div className="flex items-center gap-1">
-                                    <p className="text-sm font-semibold text-gray-600">{formatCurrency(monthlyBudget, card.currency)}</p>
+                                    <p className="text-sm font-medium text-gray-600">{formatCurrency(monthlyBudget, card.currency)}</p>
                                     <button onClick={() => deleteCardBudget(currentCardBudget.id)} className="text-gray-300 hover:text-rose-500 transition-colors" title="Eliminar reserva"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
                                   </div>
                                 </div>
@@ -841,14 +853,14 @@ export default function Dashboard() {
                           <div className="flex justify-between items-end">
                             <div>
                               <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter mb-1">Deuda Pendiente</p>
-                              <p className={`text-3xl font-bold bg-clip-text text-transparent ${pendingDebt > 0 ? 'bg-gradient-to-r from-gray-900 to-gray-600' : 'bg-gray-400'}`}>
+                              <p className={`text-3xl font-medium bg-clip-text text-transparent ${pendingDebt > 0 ? 'bg-gradient-to-r from-gray-900 to-gray-600' : 'bg-gray-400'}`}>
                                 {formatCurrency(pendingDebt, card.currency)}
                               </p>
                             </div>
                             {card.type === 'CREDIT' && card.credit_limit && (
                               <div className="text-right">
                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Disp. Crédito</p>
-                                <p className="text-sm font-semibold text-gray-600">{formatCurrency(card.credit_limit - netSpent, card.currency)}</p>
+                                <p className="text-sm font-medium text-gray-600">{formatCurrency(card.credit_limit - netSpent, card.currency)}</p>
                               </div>
                             )}
                           </div>
