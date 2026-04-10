@@ -250,7 +250,7 @@ export default function Transactions() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-100 text-sm">
             <thead>
               <tr className="bg-gray-50/50">
@@ -326,6 +326,63 @@ export default function Transactions() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile View: Tickets */}
+        <div className="md:hidden flex flex-col bg-white">
+           {Object.entries(groupedTransactions).map(([dateGroup, txs]) => (
+               <Fragment key={dateGroup}>
+                  <div className="bg-gray-50/80 px-4 py-2 flex items-center gap-2 border-y border-gray-100">
+                     <div className="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
+                     <span className="text-[11px] font-black uppercase tracking-widest text-indigo-500">{dateGroup}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    {txs.map((t: any) => (
+                      <div key={t.id} className="p-4 flex flex-col gap-2 relative bg-white border-b border-gray-50 last:border-b-0">
+                         <div className="flex justify-between items-start gap-4">
+                            <div className="flex flex-col">
+                               <span className="text-gray-800 font-medium text-sm">{t.description}</span>
+                               <span className="text-[11px] text-gray-500 font-medium flex items-center gap-1 mt-1">
+                                 {t.card_id ? <CreditCard className="w-3.5 h-3.5 text-indigo-400" /> : <Wallet className="w-3.5 h-3.5 text-emerald-400" />}
+                                 {t.account?.name || t.card?.name}
+                               </span>
+                            </div>
+                            <div className="flex flex-col items-end">
+                               <span className={`font-bold text-base ${t.category?.type === 'INCOME' ? 'text-emerald-600' : 'text-gray-800'}`}>
+                                 {formatCurrency(t.amount, t.account?.currency || t.card?.currency)}
+                               </span>
+                            </div>
+                         </div>
+                         <div className="flex justify-between items-center mt-1">
+                            <div className="flex items-center gap-1.5">
+                               {getTxTypeBadge(t.category?.type)}
+                               <span className="text-gray-400 font-semibold text-[10px]">{t.category?.name}</span>
+                            </div>
+                            <button 
+                               onClick={() => deleteTx(t.id)} 
+                               className="p-1.5 text-gray-300 hover:text-rose-500 rounded-lg transition-all"
+                            >
+                               <Trash2 className="w-4 h-4" />
+                            </button>
+                         </div>
+                      </div>
+                    ))}
+                  </div>
+               </Fragment>
+           ))}
+           {transactions.length === 0 && (
+              <div className="text-center py-20 border-t border-gray-100">
+                <div className="flex flex-col items-center gap-4 text-gray-300">
+                  <div className="p-4 bg-gray-50 rounded-full">
+                    <Filter className="w-8 h-8 opacity-20" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-black uppercase tracking-widest text-xs">Sin resultados</p>
+                    <p className="text-xs mt-1 text-gray-400">No encontramos movimientos.</p>
+                  </div>
+                </div>
+              </div>
+           )}
         </div>
         
         {hasMore && (

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
-import { HelpCircle, ArrowRightLeft, TrendingUp, TrendingDown } from 'lucide-react';
+import { HelpCircle, ArrowRightLeft, TrendingUp, TrendingDown, User, LogOut } from 'lucide-react';
 
 const Section = ({ id, title, icon, children, openSection, setOpenSection }: any) => {
     const isOpen = openSection === id;
@@ -25,7 +25,8 @@ const Section = ({ id, title, icon, children, openSection, setOpenSection }: any
   };
 
 export default function SettingsView() {
-  const { service } = useBudget();
+  const { service, userInfo, logout } = useBudget();
+  const [imgError, setImgError] = useState(false);
   const [accounts, setAccounts] = useState([]);
   const [cards, setCards] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -174,8 +175,39 @@ export default function SettingsView() {
 
   return (
     <div className="space-y-8 pb-20">
+      <div className="flex md:hidden justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+        {userInfo && (
+          <div className="flex items-center gap-3">
+            {userInfo.picture && !imgError ? (
+              <img 
+                src={userInfo.picture} 
+                referrerPolicy="no-referrer"
+                onError={() => setImgError(true)}
+                className="w-10 h-10 rounded-full border border-gray-100 shadow-sm" 
+                alt="" 
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
+                <User className="w-5 h-5" />
+              </div>
+            )}
+            <div>
+              <p className="text-sm font-bold text-gray-800">{userInfo.name}</p>
+              <p className="text-xs text-gray-400">Cuenta de Google</p>
+            </div>
+          </div>
+        )}
+        <button 
+          onClick={logout}
+          className="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 transition-colors"
+          title="Cerrar Sesión"
+        >
+          <LogOut className="w-5 h-5" />
+        </button>
+      </div>
+
       <div>
-        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500">Configuración</h2>
+        <h2 className="text-3xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500">Configuración</h2>
         <p className="text-gray-500 mt-2">Personaliza tu experiencia y gestiona tus recursos financieros.</p>
       </div>
 

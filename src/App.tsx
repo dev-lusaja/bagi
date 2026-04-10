@@ -50,8 +50,8 @@ export default function App() {
     <div className="flex h-screen bg-gray-50 font-sans text-gray-900">
       <SavingOverlay isVisible={isSyncing} />
       
-      {/* Sidebar Navigation */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm">
+      {/* Sidebar Navigation (Desktop) */}
+      <aside className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col shadow-sm">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between gap-3 bg-gradient-to-r from-gray-50 to-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white border border-indigo-50 shadow-sm flex items-center justify-center overflow-hidden p-1">
@@ -133,7 +133,7 @@ export default function App() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-auto p-8">
+      <main className="flex-1 overflow-auto p-4 md:p-8 pb-24 md:pb-8">
         <div className="max-w-6xl mx-auto">
           {activeTab === 'home' && <Home onNavigate={setActiveTab} />}
           {activeTab === 'dashboard' && <Dashboard />}
@@ -141,6 +141,26 @@ export default function App() {
           {activeTab === 'settings' && <SettingsView />}
         </div>
       </main>
+
+      {/* Bottom Navigation (Mobile) */}
+      <nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex items-center justify-around p-3 pb-safe shadow-lg z-50">
+        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'home' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+          <HomeIcon className="w-6 h-6" />
+          <span className="text-[10px] font-bold">Inicio</span>
+        </button>
+        <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'dashboard' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+          <LayoutDashboard className="w-6 h-6" />
+          <span className="text-[10px] font-bold">Resumen</span>
+        </button>
+        <button onClick={() => setActiveTab('transactions')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'transactions' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+          <Receipt className="w-6 h-6" />
+          <span className="text-[10px] font-bold">Registro</span>
+        </button>
+        <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'settings' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+          <Settings className="w-6 h-6" />
+          <span className="text-[10px] font-bold">Ajustes</span>
+        </button>
+      </nav>
     </div>
   );
 }
