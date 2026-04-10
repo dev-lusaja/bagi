@@ -25,7 +25,7 @@ export interface Card {
 export interface Category {
     id: number;
     name: string;
-    type: 'INCOME' | 'EXPENSE';
+    type: 'INCOME' | 'EXPENSE' | 'TRANSFER';
     user_id: number;
 }
 

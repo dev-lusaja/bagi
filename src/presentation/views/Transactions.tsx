@@ -1,5 +1,5 @@
 import { useState, useEffect, Fragment } from 'react';
-import { Filter, CreditCard, Wallet, Coins, Tags, Calendar, Trash2 } from 'lucide-react';
+import { Filter, CreditCard, Wallet, Coins, Tags, Trash2 } from 'lucide-react';
 import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
 
