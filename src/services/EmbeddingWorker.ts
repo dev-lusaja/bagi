@@ -43,7 +43,7 @@ self.addEventListener('message', async (e) => {
         buffersToTransfer.push(slice.buffer);
       }
       
-      self.postMessage({ id, type: 'embedBatch_done', payload: results }, buffersToTransfer);
+      (self as any).postMessage({ id, type: 'embedBatch_done', payload: results }, buffersToTransfer);
     } catch (error: any) {
       console.warn("EmbeddingWorker embedBatch error:", error);
       self.postMessage({ id, type: 'embedBatch_error', error: error.message });
