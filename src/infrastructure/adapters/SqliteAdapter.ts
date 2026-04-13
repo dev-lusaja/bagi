@@ -17,8 +17,8 @@ export const initDb = async (buffer?: ArrayBuffer): Promise<Database> => {
         db = new sqlite.Database(new Uint8Array(buffer));
     } else {
         db = new sqlite.Database();
-        if (db) createSchema(db);
     }
+    if (db) createSchema(db);
     return db!;
 };
 
@@ -159,6 +159,41 @@ const createSchema = (db: Database) => {
             FOREIGN KEY(card_id) REFERENCES cards(id),
             FOREIGN KEY(account_id) REFERENCES accounts(id),
             FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS tx_embeddings (
+          tx_id       TEXT PRIMARY KEY,
+          account_id  TEXT NOT NULL,
+          vector      BLOB NOT NULL,
+          created_at  INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS monthly_category_summary (
+          id            INTEGER PRIMARY KEY AUTOINCREMENT,
+          account_id    TEXT NOT NULL,
+          category_id   INTEGER NOT NULL,
+          year_month    TEXT NOT NULL,
+          total_amount  REAL NOT NULL,
+          tx_count      INTEGER NOT NULL,
+          weekend_pct   REAL,
+          UNIQUE(account_id, category_id, year_month)
+        );
+
+        CREATE TABLE IF NOT EXISTS alert_scorer_weights (
+          alert_type    TEXT NOT NULL,
+          feature_name  TEXT NOT NULL,
+          weight        REAL NOT NULL DEFAULT 0.0,
+          updated_at    INTEGER NOT NULL,
+          PRIMARY KEY (alert_type, feature_name)
+        );
+
+        CREATE TABLE IF NOT EXISTS alert_feedback (
+          id          INTEGER PRIMARY KEY AUTOINCREMENT,
+          alert_id    TEXT NOT NULL,
+          alert_type  TEXT NOT NULL,
+          was_useful  INTEGER NOT NULL,
+          features    TEXT NOT NULL,
+          created_at  INTEGER NOT NULL
         );
     `);
 };
