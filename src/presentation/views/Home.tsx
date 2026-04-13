@@ -174,11 +174,11 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
   const currentGlobalBudget = globalBudgets.find(b => b.month === month && b.year === year);
   
   const onboardingSteps = [
-    { id: 'categories', title: 'Categorías', completed: categories.length > 0, icon: Tag, action: () => onNavigate?.('settings'), actionLabel: 'Ver', description: 'Revisa tus categorías.' },
-    { id: 'accounts', title: 'Cuentas', completed: accounts.length > 0, icon: Landmark, action: () => onNavigate?.('settings'), actionLabel: 'Crear', description: 'Registra tu primera cuenta.' },
-    { id: 'cards', title: 'Tarjetas', completed: cards.length > 0, icon: CreditCard, action: () => onNavigate?.('settings'), actionLabel: 'Asociar', description: 'Configura tus tarjetas de débito/crédito.' },
-    { id: 'recurring', title: 'Recurrentes', completed: recurringItems.length > 0, icon: Repeat, action: () => onNavigate?.('transactions'), actionLabel: 'Agregar', description: 'Tus gastos fijos.' },
-    { id: 'budget', title: 'Presupuesto', completed: !!currentGlobalBudget, icon: Wallet, action: () => onNavigate?.('dashboard'), actionLabel: 'Definir', description: 'Meta de gasto mensual.' }
+    { id: 'categories', title: 'Categorías', completed: categories.length > 0, icon: Tag, action: () => onNavigate?.('settings'), actionLabel: 'Ver', description: 'Revisa/crea tus categorías.' },
+    { id: 'accounts', title: 'Cuentas', completed: accounts.length > 0, icon: Landmark, action: () => onNavigate?.('settings'), actionLabel: 'Crear', description: 'Registra tu cuenta sueldo.' },
+    { id: 'cards', title: 'Tarjetas', completed: cards.length > 0, icon: CreditCard, action: () => onNavigate?.('settings'), actionLabel: 'Asociar', description: 'Configura tus tarjetas de crédito.' },
+    { id: 'recurring', title: 'Recurrentes', completed: recurringItems.length > 0, icon: Repeat, action: () => onNavigate?.('transactions'), actionLabel: 'Agregar', description: 'Registra tus gastos recurrentes.' },
+    { id: 'budget', title: 'Presupuesto', completed: !!currentGlobalBudget, icon: Wallet, action: () => onNavigate?.('dashboard'), actionLabel: 'Definir', description: 'Asigna tus gastos mensuales.' }
   ];
 
   const onboardingComplete = onboardingSteps.every(s => s.completed);
