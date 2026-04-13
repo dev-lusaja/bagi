@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { Filter } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
+import SmartAlertPanel from '../components/SmartAlertPanel';
 
 export default function Dashboard() {
   const { service } = useBudget();
@@ -19,7 +20,13 @@ export default function Dashboard() {
   const [cards, setCards] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [allMonthlyTransactions, setAllMonthlyTransactions] = useState([]);
+  const [prevMonthTransactions, setPrevMonthTransactions] = useState<any[]>([]);
   const [budgetObligations, setBudgetObligations] = useState([]);
+
+  // Controla cuándo el motor de alertas puede arrancar.
+  // Se pone en false cada vez que cambia la cuenta/mes y en true
+  // solo cuando fetchDashboardData completa exitosamente.
+  const [isDashboardDataReady, setIsDashboardDataReady] = useState(false);
 
   // Editing state
   const [isEditingGlobal, setIsEditingGlobal] = useState(false);
@@ -56,12 +63,13 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     if (!accountId) return;
+    setIsDashboardDataReady(false); // Marcar datos como no listos mientras recargamos
     const isCard = accountId.startsWith('c-');
     const actualId = parseInt(accountId.replace('c-', ''));
 
     if (isCard) {
       setGlobalBudget(null);
-      setBudgets([]); 
+      setBudgets([]);
       setCardBudgets([]);
     } else {
       const [gb, cb, crdb, obs] = await Promise.all([
@@ -78,9 +86,19 @@ export default function Dashboard() {
 
     const monthlyTx = await service.getTransactions({ year, month, noLimit: true });
 
+    // Fetch previous month and scope it to the same account/card for correct trend comparison
+    const prevMonth = month === 1 ? 12 : month - 1;
+    const prevYear = month === 1 ? year - 1 : year;
+    const prevMonthTxAll = await service.getTransactions({ year: prevYear, month: prevMonth, noLimit: true });
+    const prevMonthFiltered = prevMonthTxAll.filter((t: any) => isCard ? t.card_id === actualId : t.account_id === actualId);
+    setPrevMonthTransactions(prevMonthFiltered as any);
+
     setAllMonthlyTransactions(monthlyTx as any);
     const filtered = monthlyTx.filter((t: any) => isCard ? t.card_id === actualId : t.account_id === actualId);
     setTransactions(filtered as any);
+
+    // Todos los datos están listos — el motor de alertas puede arrancar
+    setIsDashboardDataReady(true);
   };
 
   useEffect(() => { fetchDashboardData(); }, [year, month, accountId]);
@@ -548,6 +566,20 @@ export default function Dashboard() {
               </div>
             );
           })()}
+
+          {/* SMART ALERT PANEL: solo mes actual, datos ya filtrados por cuenta, oculto si no hay data en absoluto */}
+          {!isCard && year === new Date().getFullYear() && month === new Date().getMonth() + 1 && (transactions.length > 0 || prevMonthTransactions.length > 0 || obligationsStatus.length > 0) && (
+            <SmartAlertPanel
+              currentMonthTx={transactions}
+              prevMonthTx={prevMonthTransactions}
+              categories={categories}
+              categoryBudgets={budgets}
+              budgetObligations={obligationsStatus}
+              currency={selectedAcc?.currency || 'COP'}
+              dataReady={isDashboardDataReady}
+              accountId={accountId || ''}
+            />
+          )}
 
           {/* Tabs Navigation */}
           <div className="flex space-x-1 mb-6 bg-gray-100/50 p-1 rounded-2xl w-fit">
