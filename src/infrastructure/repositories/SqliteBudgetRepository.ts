@@ -59,7 +59,8 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     }
 
     async updateAccount(id: number, account: Partial<Account>): Promise<Account> {
-        const keys = Object.keys(account).filter(k => k !== 'id');
+        const allowedKeys = ['name', 'currency', 'country', 'user_id'];
+        const keys = Object.keys(account).filter(k => allowedKeys.includes(k));
         const setClause = keys.map(k => `${k} = ?`).join(', ');
         const values = keys.map(k => (account as any)[k]);
         this.execute(`UPDATE accounts SET ${setClause} WHERE id = ?`, [...values, id]);
@@ -168,7 +169,8 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     }
 
     async updateCard(id: number, card: Partial<Card>): Promise<Card> {
-        const keys = Object.keys(card).filter(k => k !== 'id');
+        const allowedKeys = ['name', 'type', 'credit_limit', 'currency', 'user_id', 'payment_account_id', 'monthly_payment_budget'];
+        const keys = Object.keys(card).filter(k => allowedKeys.includes(k));
         const setClause = keys.map(k => `${k} = ?`).join(', ');
         const values = keys.map(k => (card as any)[k]);
         this.execute(`UPDATE cards SET ${setClause} WHERE id = ?`, [...values, id]);
@@ -211,9 +213,10 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     }
 
     async updateRecurringItem(id: number, item: Partial<RecurringItem>): Promise<RecurringItem> {
-        const keys = Object.keys(item).filter(k => k !== 'id');
+        const allowedKeys = ['name', 'amount', 'type', 'due_day', 'is_active', 'category_id', 'account_id', 'card_id', 'notes', 'start_year', 'start_month', 'user_id'];
+        const keys = Object.keys(item).filter(k => allowedKeys.includes(k));
         const setClause = keys.map(k => `${k} = ?`).join(', ');
-        const values = keys.map(k => (item as any)[k]);
+        const values = keys.map(k => k === 'is_active' ? ((item as any)[k] ? 1 : 0) : (item as any)[k]);
         this.execute(`UPDATE recurring_items SET ${setClause} WHERE id = ?`, [...values, id]);
         const res = this.query<RecurringItem>('SELECT * FROM recurring_items WHERE id = ?', [id]);
         return res[0];
@@ -237,7 +240,8 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     }
 
     async updateBudgetObligation(id: number, item: Partial<BudgetObligation>): Promise<BudgetObligation> {
-        const keys = Object.keys(item).filter(k => k !== 'id');
+        const allowedKeys = ['year', 'month', 'name', 'amount', 'due_day', 'notes', 'category_id', 'account_id', 'card_id', 'recurring_item_id', 'user_id'];
+        const keys = Object.keys(item).filter(k => allowedKeys.includes(k));
         const setClause = keys.map(k => `${k} = ?`).join(', ');
         const values = keys.map(k => (item as any)[k]);
         this.execute(`UPDATE budget_obligations SET ${setClause} WHERE id = ?`, [...values, id]);
@@ -263,7 +267,8 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     }
 
     async updateGlobalBudget(id: number, budget: Partial<GlobalBudget>): Promise<GlobalBudget> {
-        const keys = Object.keys(budget).filter(k => k !== 'id');
+        const allowedKeys = ['year', 'month', 'total_amount', 'account_id', 'user_id'];
+        const keys = Object.keys(budget).filter(k => allowedKeys.includes(k));
         const setClause = keys.map(k => `${k} = ?`).join(', ');
         const values = keys.map(k => (budget as any)[k]);
         this.execute(`UPDATE global_budgets SET ${setClause} WHERE id = ?`, [...values, id]);
