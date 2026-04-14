@@ -4,7 +4,7 @@ import { formatCurrency } from '../utils/format';
 import { 
   ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis
 } from 'recharts';
-import { CreditCard, Landmark, Wallet, CheckCircle2, AlertCircle, Tag, Repeat, HelpCircle, Info } from 'lucide-react';
+import { CreditCard, Landmark, Wallet, CheckCircle2, AlertCircle, Tag, Repeat, HelpCircle } from 'lucide-react';
 import { OnboardingChecklist } from '../components/OnboardingChecklist';
 
 export default function Home({ onNavigate }: { onNavigate?: (tab: string) => void }) {
