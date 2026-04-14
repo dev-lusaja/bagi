@@ -4,7 +4,7 @@ import { formatCurrency } from '../utils/format';
 import { 
   ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis
 } from 'recharts';
-import { CreditCard, Landmark, Wallet, CheckCircle2, AlertCircle, Tag, Repeat, HelpCircle } from 'lucide-react';
+import { CreditCard, Landmark, Wallet, CheckCircle2, AlertCircle, Tag, Repeat, HelpCircle, Info } from 'lucide-react';
 import { OnboardingChecklist } from '../components/OnboardingChecklist';
 
 export default function Home({ onNavigate }: { onNavigate?: (tab: string) => void }) {
@@ -114,57 +114,25 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
                 </div>
                 <h3 className="text-xl font-black text-gray-800 tracking-tight">{account.name}</h3>
               </div>
-              <p className="text-gray-400 font-bold text-[9px] uppercase tracking-[0.2em] mb-3">Presupuesto Maestro</p>
+              <div className="flex items-center justify-center sm:justify-start mb-1">
+                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em]">Saldo Libre</p>
+              </div>
+              <p className={`text-1xl sm:text-2xl font-black tracking-tight ${accountAvailable < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                {formatCurrency(accountAvailable, account.currency)}
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-tiny">
-                <p className="text-[9px] font-black text-gray-400 uppercase mb-0.5">Gasto Total</p>
-                <p className="text-base font-black text-gray-800">{formatCurrency(totalSpent, account.currency)}</p>
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
+                <span>Total Gastado:</span>
+                <span className="text-gray-800">{formatCurrency(totalSpent, account.currency)}</span>
               </div>
-              <div className={`p-3 rounded-xl border shadow-tiny ${accountAvailable < 0 ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'}`}>
-                <p className="text-[9px] font-black text-gray-400 uppercase mb-0.5">Saldo Libre</p>
-                <p className={`text-base font-black ${accountAvailable < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{formatCurrency(accountAvailable, account.currency)}</p>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
+                <span>Presupuesto:</span>
+                <span className="text-gray-800">{formatCurrency(budgetLimit, account.currency)}</span>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Parte Inferior: Desglose por Origen */}
-        <div className="space-y-3">
-           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-              {/* Desglose de Cuenta */}
-              <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-200 transition-colors">
-                <div className="flex justify-between items-center mb-3">
-                  <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
-                    <Wallet className="w-4 h-4" />
-                  </div>
-                  <span className="text-[9px] font-black px-2 py-0.5 bg-gray-50 text-gray-400 rounded-md border border-gray-100 uppercase italic">Cuenta</span>
-                </div>
-                <div className="space-y-0.5">
-                  <p className="text-[10px] font-bold text-gray-800">{formatCurrency(accSpent, account.currency)}</p>
-                  <p className="text-[9px] text-gray-400 font-bold uppercase italic opacity-70">Disp: {formatCurrency(accountAvailable, account.currency)}</p>
-                </div>
-              </div>
-
-              {/* Desglose de cada Tarjeta */}
-              {cardDetails.map(card => (
-                 <div key={card.id} className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm hover:border-purple-200 transition-colors">
-                   <div className="flex justify-between items-center mb-3">
-                     <div className="p-1.5 bg-purple-50 text-purple-600 rounded-lg">
-                       <CreditCard className="w-4 h-4" />
-                     </div>
-                     <span className="text-[9px] font-black px-2 py-0.5 bg-purple-50 text-purple-600 rounded-md border border-purple-100 uppercase italic">{card.name}</span>
-                   </div>
-                   <div className="space-y-0.5">
-                     <p className="text-[10px] font-bold text-gray-800">{formatCurrency(card.spent, card.currency)}</p>
-                     <p className={`text-[9px] font-bold uppercase italic opacity-70 ${card.available < 500 ? 'text-amber-500' : 'text-gray-400'}`}>
-                       Crédito: {formatCurrency(card.available, card.currency)}
-                     </p>
-                   </div>
-                 </div>
-              ))}
-           </div>
         </div>
       </div>
     );
