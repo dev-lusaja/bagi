@@ -1,11 +1,13 @@
 import { ShieldCheck, Database, ArrowRight, Heart, ChevronDown, Cloud, Lock, Smartphone } from 'lucide-react';
 import { useBudget } from '../context/BudgetContext';
 import { useState, useRef } from 'react';
+import { BudgetExplainer } from '../components/BudgetExplainer';
 
 export default function Login() {
   const { login } = useBudget();
   const [loading, setLoading] = useState(false);
-  const guideRef = useRef<HTMLDivElement>(null);
+  const privacyRef = useRef<HTMLDivElement>(null);
+  const methodologyRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleLogin = async (provider: 'google' | 'onedrive') => {
@@ -20,8 +22,12 @@ export default function Login() {
     }
   };
 
-  const scrollToGuide = () => {
-    guideRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToPrivacy = () => {
+    privacyRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const scrollToMethodology = () => {
+    methodologyRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const scrollToTop = () => {
@@ -90,15 +96,36 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="mt-10 flex flex-col items-center gap-2 animate-bounce cursor-pointer" onClick={scrollToGuide}>
+          <div className="mt-10 flex flex-col items-center gap-2 animate-bounce cursor-pointer" onClick={scrollToMethodology}>
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">¿Cómo funciona?</p>
             <ChevronDown className="w-5 h-5 text-indigo-300" />
           </div>
         </div>
       </section>
 
-      {/* SECTION 2: HOW IT WORKS */}
-      <section ref={guideRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-white snap-start shrink-0 relative">
+      {/* SECTION 2: BUDGET METHODOLOGY */}
+      <section ref={methodologyRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-white snap-start shrink-0 relative py-32">
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent" />
+        
+        <div className="max-w-6xl w-full space-y-16">
+          <div className="text-center space-y-4">
+            <h2 className="text-sm font-black text-indigo-600 uppercase tracking-[0.4em]">La Metodología</h2>
+            <h3 className="text-5xl font-black text-gray-900 tracking-tighter">Diseñado para darte claridad real.</h3>
+          </div>
+
+          <BudgetExplainer />
+
+          <div className="flex flex-col items-center gap-4 pt-12">
+            <div className="flex flex-col items-center gap-2 animate-bounce cursor-pointer" onClick={scrollToPrivacy}>
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Privacidad y Seguridad</p>
+              <ChevronDown className="w-5 h-5 text-indigo-300" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 3: PRIVACY & SECURITY */}
+      <section ref={privacyRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-gray-50 snap-start shrink-0 relative">
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent" />
         
         <div className="max-w-4xl w-full space-y-16">
@@ -108,8 +135,8 @@ export default function Login() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-gray-50/50 p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:bg-white hover:shadow-2xl hover:shadow-indigo-100/30 transition-all duration-500 group">
-              <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-50 group-hover:scale-110 transition-transform">
+            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:shadow-2xl hover:shadow-indigo-100/30 transition-all duration-500 group">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
                 <Smartphone className="w-7 h-7" />
               </div>
               <div className="space-y-3">
@@ -120,8 +147,8 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="bg-gray-50/50 p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:bg-white hover:shadow-2xl hover:shadow-indigo-100/30 transition-all duration-500 group">
-              <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50 group-hover:scale-110 transition-transform">
+            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:shadow-2xl hover:shadow-indigo-100/30 transition-all duration-500 group">
+              <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm group-hover:scale-110 transition-transform">
                 <Cloud className="w-7 h-7" />
               </div>
               <div className="space-y-3">
@@ -132,8 +159,8 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="bg-gray-50/50 p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:bg-white hover:shadow-2xl hover:shadow-indigo-100/30 transition-all duration-500 group">
-              <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-purple-600 shadow-sm border border-purple-50 group-hover:scale-110 transition-transform">
+            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:shadow-2xl hover:shadow-indigo-100/30 transition-all duration-500 group">
+              <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform">
                 <Lock className="w-7 h-7" />
               </div>
               <div className="space-y-3">
