@@ -190,8 +190,33 @@ export class BudgetService {
     async getBudgetObligations(y: number, m: number) { return this.repo.getBudgetObligations(y, m); }
     async updateBudgetObligation(id: number, data: any) { return this.performOperation(() => this.repo.updateBudgetObligation(id, data)); }
 
-    // Business Logic: Month Initialization (from backend/routes.py)
-    async initializeMonth(year: number, month: number, accountId: number, userId: number) {
+    // Business Logic: Instantiate Recurring Items specifically
+    async instantiateRecurringItems(year: number, month: number, accountId: number, userId: number) {
+        const items = await this.repo.getRecurringItems();
+        const obs = await this.repo.getBudgetObligations(year, month);
+        
+        const itemsToInstantiate = items.filter(item => {
+            if (!item.is_active || (item.start_year > year || (item.start_year === year && item.start_month > month))) return false;
+            if (item.account_id !== accountId) return false;
+            return !obs.some(o => o.recurring_item_id === item.id);
+        });
+
+        if (itemsToInstantiate.length === 0) return;
+
+        return this.performOperation(async () => {
+            for (const item of itemsToInstantiate) {
+                await this.repo.saveBudgetObligation({
+                    year, month, name: item.name, amount: item.amount,
+                    due_day: item.due_day, notes: item.notes,
+                    category_id: item.category_id, account_id: item.account_id,
+                    card_id: item.card_id, recurring_item_id: item.id, user_id: userId
+                });
+            }
+        });
+    }
+
+    // Business Logic: Copy limits from previous month
+    async copyPreviousMonthLimits(year: number, month: number, accountId: number, userId: number) {
         return this.performOperation(async () => {
             const prevMonth = month === 1 ? 12 : month - 1;
             const prevYear = month === 1 ? year - 1 : year;
@@ -223,24 +248,13 @@ export class BudgetService {
                     }
                 }
             }
-
-            // Instantiate Recurring Items
-            const items = await this.repo.getRecurringItems();
-            for (const item of items) {
-                if (item.is_active && (item.start_year < year || (item.start_year === year && item.start_month <= month))) {
-                    const obs = await this.repo.getBudgetObligations(year, month);
-                    const exists = obs.find(o => o.recurring_item_id === item.id);
-                    if (!exists) {
-                        await this.repo.saveBudgetObligation({
-                            year, month, name: item.name, amount: item.amount,
-                            due_day: item.due_day, notes: item.notes,
-                            category_id: item.category_id, account_id: item.account_id,
-                            card_id: item.card_id, recurring_item_id: item.id, user_id: userId
-                        });
-                    }
-                }
-            }
         });
+    }
+
+    // Business Logic: Month Initialization (Wrapper)
+    async initializeMonth(year: number, month: number, accountId: number, userId: number) {
+        await this.copyPreviousMonthLimits(year, month, accountId, userId);
+        await this.instantiateRecurringItems(year, month, accountId, userId);
     }
 
     private async seedCategories() {

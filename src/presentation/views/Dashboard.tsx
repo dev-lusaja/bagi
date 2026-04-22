@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useBudget } from '../context/BudgetContext';
-import { Filter } from 'lucide-react';
+import { Filter, ArrowRight, Repeat } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import SmartAlertPanel from '../components/SmartAlertPanel';
 
-export default function Dashboard() {
+export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   const { service } = useBudget();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -35,6 +35,9 @@ export default function Dashboard() {
   // UI state for details
   const [selectedCatDetail, setSelectedCatDetail] = useState<any>(null);
   const [selectedObligationDetail, setSelectedObligationDetail] = useState<any>(null);
+
+  // Monthly income for income gate
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
 
   // New Global Budget form
   const [newGlobalAmt, setNewGlobalAmt] = useState('');
@@ -72,13 +75,19 @@ export default function Dashboard() {
       setBudgets([]);
       setCardBudgets([]);
     } else {
-      const [gb, cb, crdb, obs] = await Promise.all([
+      const [gb, cb, crdb] = await Promise.all([
         service.getGlobalBudgets(year, month),
         service.getCategoryBudgets(year, month),
         service.getCardBudgets(year, month),
-        service.getBudgetObligations(year, month)
       ]);
-      setGlobalBudget(gb.find((b: any) => b.account_id === actualId) || null);
+      const currentGb = gb.find((b: any) => b.account_id === actualId) || null;
+      setGlobalBudget(currentGb);
+      
+      if (currentGb) {
+        await service.instantiateRecurringItems(year, month, actualId, 1);
+      }
+
+      const obs = await service.getBudgetObligations(year, month);
       setBudgets(cb.filter((b: any) => b.account_id === actualId) as any);
       setCardBudgets(crdb.filter((b: any) => b.account_id === actualId) as any);
       setBudgetObligations(obs as any);
@@ -97,6 +106,17 @@ export default function Dashboard() {
     const filtered = monthlyTx.filter((t: any) => isCard ? t.card_id === actualId : t.account_id === actualId);
     setTransactions(filtered as any);
 
+    // Calculate income for current account (income gate)
+    if (!isCard) {
+      const incomeForAccount = monthlyTx
+        .filter((t: any) => t.account_id === actualId)
+        .filter((t: any) => (categories as any[]).find((c: any) => c.id === t.category_id)?.type === 'INCOME')
+        .reduce((sum: number, t: any) => sum + t.amount, 0);
+      setMonthlyIncome(incomeForAccount);
+    } else {
+      setMonthlyIncome(0);
+    }
+
     // Todos los datos están listos — el motor de alertas puede arrancar
     setIsDashboardDataReady(true);
   };
@@ -113,8 +133,15 @@ export default function Dashboard() {
   const updateGlobalBudget = async (e: any) => {
     e.preventDefault();
     if (!globalBudget || !editGlobalAmt || !accountId) return;
+    
+    const amount = parseFloat(editGlobalAmt);
+    if (amount > monthlyIncome) {
+      alert(`No puedes presupuestar más de tus ingresos. Máximo disponible: ${formatCurrency(monthlyIncome, selectedAcc?.currency)}`);
+      return;
+    }
+
     await service.updateGlobalBudget(globalBudget.id, {
-      year, month, total_amount: parseFloat(editGlobalAmt), account_id: parseInt(accountId)
+      year, month, total_amount: amount, account_id: parseInt(accountId)
     });
     setIsEditingGlobal(false);
     fetchDashboardData();
@@ -123,10 +150,19 @@ export default function Dashboard() {
   const addGlobalBudget = async (e: any) => {
     e.preventDefault();
     if (!newGlobalAmt || !accountId) return;
+
+    const amount = parseFloat(newGlobalAmt);
+    if (amount > monthlyIncome) {
+      alert(`No puedes presupuestar más de tus ingresos. Máximo disponible: ${formatCurrency(monthlyIncome, selectedAcc?.currency)}`);
+      return;
+    }
+
     await service.addGlobalBudget({
-      year, month, total_amount: parseFloat(newGlobalAmt), account_id: parseInt(accountId)
+      year, month, total_amount: amount, account_id: parseInt(accountId)
     });
-    setNewGlobalAmt(''); fetchDashboardData();
+    setNewGlobalAmt('');
+    await handleAutoInstantiate();
+    fetchDashboardData();
   };
 
   const addBudget = async (e: any) => {
@@ -193,18 +229,27 @@ export default function Dashboard() {
     fetchDashboardData();
   }
 
-  const initializeBudget = async () => {
+  const handleAutoInstantiate = async () => {
     if (!accountId || accountId.startsWith('c-')) return;
-    
     const actualId = parseInt(accountId);
-
     try {
-      await service.initializeMonth(year, month, actualId, 1); // Using 1 as default userId
+      await service.instantiateRecurringItems(year, month, actualId, 1);
       fetchDashboardData();
-      alert('Mes inicializado con éxito. Se han copiado los límites y proyectado las obligaciones.');
     } catch (error) {
-      console.error('Error initializing budget:', error);
-      alert('Hubo un error al inicializar el presupuesto del mes.');
+      console.error('Error instantiating obligations:', error);
+    }
+  };
+
+  const handleCopyLimits = async () => {
+    if (!accountId || accountId.startsWith('c-')) return;
+    const actualId = parseInt(accountId);
+    try {
+      await service.copyPreviousMonthLimits(year, month, actualId, 1);
+      fetchDashboardData();
+      alert('Límites del mes pasado copiados con éxito.');
+    } catch (error) {
+      console.error('Error copying limits:', error);
+      alert('Hubo un error al copiar los límites.');
     }
   };
 
@@ -1013,14 +1058,58 @@ export default function Dashboard() {
                     )}
                   </>
                 ) : (
-                  <form onSubmit={addGlobalBudget} className="space-y-4">
-                    <h3 className="text-lg font-semibold mb-2">Definir Presupuesto Global</h3>
-                    <p className="text-sm opacity-90 mb-4">Establece un límite total para este mes antes de asignar límites por categoría.</p>
-                    <input type="number" step="0.01" className="w-full rounded-xl bg-white/20 text-white placeholder-white/70 border border-white/30 p-3 outline-none" placeholder={`Monto Total`} value={newGlobalAmt} onChange={e => setNewGlobalAmt(e.target.value)} required />
-                    <button type="submit" className="w-full bg-white text-indigo-600 font-semibold py-3 rounded-xl hover:bg-indigo-50 transition-colors">
-                      Guardar Global
-                    </button>
-                  </form>
+                  <>
+                    {monthlyIncome > 0 ? (
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold mb-2">Definir Presupuesto Global</h3>
+                        <div className="p-4 bg-white/10 rounded-xl border border-white/20 space-y-2">
+                          <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Ingresos detectados este mes</p>
+                          <p className="text-3xl font-black tracking-tight">{formatCurrency(monthlyIncome, selectedAcc?.currency || 'PEN')}</p>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            setNewGlobalAmt(monthlyIncome.toString());
+                            await service.addGlobalBudget({
+                              year, month, total_amount: monthlyIncome, account_id: parseInt(accountId)
+                            });
+                            await handleAutoInstantiate();
+                            fetchDashboardData();
+                          }}
+                          className="w-full bg-white text-indigo-600 font-bold py-3 rounded-xl hover:bg-indigo-50 transition-colors shadow-sm"
+                        >
+                          Usar como presupuesto
+                        </button>
+                        <div className="relative">
+                          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/20"></div></div>
+                          <div className="relative flex justify-center"><span className="bg-indigo-500 px-3 text-[10px] font-black uppercase tracking-widest opacity-80">o ajustar</span></div>
+                        </div>
+                        <form onSubmit={addGlobalBudget} className="space-y-3">
+                          <input type="number" step="0.01" className="w-full rounded-xl bg-white/20 text-white placeholder-white/70 border border-white/30 p-3 outline-none" placeholder="Monto personalizado" value={newGlobalAmt} onChange={e => setNewGlobalAmt(e.target.value)} required />
+                          <button type="submit" className="w-full bg-white/20 text-white font-semibold py-3 rounded-xl hover:bg-white/30 transition-colors border border-white/30">
+                            Guardar monto personalizado
+                          </button>
+                        </form>
+                      </div>
+                    ) : (
+                      <div className="space-y-5">
+                        <h3 className="text-lg font-semibold">Presupuesto Global</h3>
+                        <div className="p-5 bg-white/10 rounded-xl border border-white/20 text-center space-y-3">
+                          <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mx-auto">
+                            <svg className="w-7 h-7 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          </div>
+                          <p className="text-sm font-bold opacity-95">Registra ingresos primero</p>
+                          <p className="text-xs opacity-75 leading-relaxed">Para definir tu presupuesto necesitas registrar al menos un ingreso (salario) en esta cuenta para el mes seleccionado.</p>
+                        </div>
+                        <button
+                          onClick={() => onNavigate?.('transactions')}
+                          className="w-full flex items-center justify-center gap-2 bg-white text-indigo-600 font-bold py-3 rounded-xl hover:bg-indigo-50 transition-colors shadow-sm"
+                        >
+                          Ir a Transacciones
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -1118,13 +1207,13 @@ export default function Dashboard() {
                 </button>
               </form>
 
-              {!isCard && (budgets.length === 0 || budgetObligations.length === 0 || !globalBudget) && (
+              {!isCard && globalBudget && budgets.length === 0 && (
                 <button
-                  onClick={initializeBudget}
-                  className="mt-4 w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-dashed border-emerald-200 text-emerald-600 font-bold hover:bg-emerald-50 hover:border-emerald-300 transition-all text-sm"
+                  onClick={handleCopyLimits}
+                  className="mt-4 w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-dashed border-indigo-200 text-indigo-600 font-bold hover:bg-indigo-50 hover:border-indigo-300 transition-all text-xs"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                  Inicializar Mes
+                  <Repeat className="w-4 h-4" />
+                  Copiar límites del mes pasado
                 </button>
               )}
             </div>

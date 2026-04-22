@@ -4,7 +4,7 @@ import { formatCurrency } from '../utils/format';
 import { 
   ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis
 } from 'recharts';
-import { CreditCard, Landmark, Wallet, CheckCircle2, AlertCircle, Tag, Repeat, HelpCircle } from 'lucide-react';
+import { CreditCard, Landmark, Wallet, CheckCircle2, AlertCircle, Tag, Repeat, HelpCircle, DollarSign } from 'lucide-react';
 import { OnboardingChecklist } from '../components/OnboardingChecklist';
 
 export default function Home({ onNavigate }: { onNavigate?: (tab: string) => void }) {
@@ -141,11 +141,17 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
   const orphanedCards = cards.filter(c => !c.payment_account_id);
   const currentGlobalBudget = globalBudgets.find(b => b.month === month && b.year === year);
   
+  const hasCurrentMonthIncome = transactions.some((t: any) => {
+    const cat = categories.find((c: any) => c.id === t.category_id);
+    return cat?.type === 'INCOME';
+  });
+
   const onboardingSteps = [
     { id: 'categories', title: 'Categorías', completed: categories.length > 0, icon: Tag, action: () => onNavigate?.('settings'), actionLabel: 'Ver', description: 'Revisa/crea tus categorías.' },
     { id: 'accounts', title: 'Cuentas', completed: accounts.length > 0, icon: Landmark, action: () => onNavigate?.('settings'), actionLabel: 'Crear', description: 'Registra tu cuenta sueldo.' },
     { id: 'cards', title: 'Tarjetas', completed: cards.length > 0, icon: CreditCard, action: () => onNavigate?.('settings'), actionLabel: 'Asociar', description: 'Configura tus tarjetas de crédito.' },
     { id: 'recurring', title: 'Recurrentes', completed: recurringItems.length > 0, icon: Repeat, action: () => onNavigate?.('transactions'), actionLabel: 'Agregar', description: 'Registra tus gastos recurrentes.' },
+    { id: 'income', title: 'Ingresos', completed: hasCurrentMonthIncome, icon: DollarSign, action: () => onNavigate?.('transactions'), actionLabel: 'Registrar', description: 'Registra tu salario antes de planificar.' },
     { id: 'budget', title: 'Presupuesto', completed: !!currentGlobalBudget, icon: Wallet, action: () => onNavigate?.('dashboard'), actionLabel: 'Definir', description: 'Asigna tus gastos mensuales.' }
   ];
 

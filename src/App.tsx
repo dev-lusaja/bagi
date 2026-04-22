@@ -136,7 +136,7 @@ export default function App() {
       <main className="flex-1 overflow-auto p-4 md:p-8 pb-24 md:pb-8">
         <div className="max-w-6xl mx-auto">
           {activeTab === 'home' && <Home onNavigate={setActiveTab} />}
-          {activeTab === 'dashboard' && <Dashboard />}
+          {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} />}
           {activeTab === 'transactions' && <Transactions />}
           {activeTab === 'settings' && <SettingsView />}
         </div>
