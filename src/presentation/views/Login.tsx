@@ -37,7 +37,7 @@ export default function Login() {
   return (
     <div ref={containerRef} className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth snap-y snap-mandatory bg-gray-50 text-gray-900">
       {/* SECTION 1: HERO & LOGIN */}
-      <section className="h-screen w-full flex items-center justify-center p-6 relative snap-start shrink-0">
+      <section className="min-h-screen w-full flex flex-col items-center justify-center p-6 py-12 md:h-screen md:py-6 relative snap-start shrink-0">
         {/* Decorative Gradients */}
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/5 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/5 blur-[100px] rounded-full" />
@@ -45,7 +45,7 @@ export default function Login() {
         <div className="w-full max-w-lg relative animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div className="text-center mb-10 space-y-4">
             <div className="inline-flex p-2 rounded-[2.5rem] bg-white shadow-xl shadow-indigo-100/50 border border-indigo-50 mb-4 overflow-hidden">
-              <img src="/logo_full.png" className="w-32 h-32 object-contain" alt="Bagi Logo" />
+              <img src="/logo_full.png" className="w-24 h-24 sm:w-32 sm:h-32 object-contain" alt="Bagi Logo" />
             </div>
             <p className="text-gray-500 text-lg font-bold max-w-xs mx-auto leading-tight">
               Gestión financiera personal <br/> protegida por tu propia nube.
@@ -125,7 +125,7 @@ export default function Login() {
       </section>
 
       {/* SECTION 3: PRIVACY & SECURITY */}
-      <section ref={privacyRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-gray-50 snap-start shrink-0 relative">
+      <section ref={privacyRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 py-20 bg-gray-50 snap-start shrink-0 relative">
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent" />
         
         <div className="max-w-4xl w-full space-y-16">
