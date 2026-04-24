@@ -35,9 +35,9 @@ export default function Login() {
   };
 
   return (
-    <div ref={containerRef} className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth snap-y snap-mandatory bg-gray-50 text-gray-900">
+    <div ref={containerRef} className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth snap-y snap-mandatory scroll-pt-10 bg-gray-50 text-gray-900">
       {/* SECTION 1: HERO & LOGIN */}
-      <section className="min-h-screen w-full flex flex-col items-center justify-center p-6 py-12 md:h-screen md:py-6 relative snap-start shrink-0">
+      <section className="min-h-screen w-full flex flex-col items-center justify-center p-6 py-12 md:h-screen md:py-6 relative snap-start snap-always shrink-0">
         {/* Decorative Gradients */}
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/5 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/5 blur-[100px] rounded-full" />
@@ -104,7 +104,7 @@ export default function Login() {
       </section>
 
       {/* SECTION 2: BUDGET METHODOLOGY */}
-      <section ref={methodologyRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-white snap-start shrink-0 relative py-32">
+      <section ref={methodologyRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-white snap-start snap-always shrink-0 relative py-32">
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent" />
         
         <div className="max-w-6xl w-full space-y-16">
@@ -125,7 +125,7 @@ export default function Login() {
       </section>
 
       {/* SECTION 3: PRIVACY & SECURITY */}
-      <section ref={privacyRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 py-20 bg-gray-50 snap-start shrink-0 relative">
+      <section ref={privacyRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 py-20 bg-gray-50 snap-start snap-always shrink-0 relative">
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent" />
         
         <div className="max-w-4xl w-full space-y-16">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LayoutDashboard, Receipt, Settings, LogOut, Home as HomeIcon, Loader2, CloudCheck, CloudAlert, User } from 'lucide-react';
 import Home from './presentation/views/Home';
 import Dashboard from './presentation/views/Dashboard';
@@ -10,6 +10,7 @@ import { SavingOverlay } from './presentation/components/SavingOverlay';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
+  const mainRef = useRef<HTMLDivElement>(null);
   const [imgError, setImgError] = useState(false);
   const { isInitialized, isSyncing, hasPendingChanges, sync, userInfo, isAuthenticated, logout } = useBudget();
 
@@ -27,6 +28,12 @@ export default function App() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasPendingChanges]);
+
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, [activeTab]);
 
   if (!isInitialized) {
     return (
@@ -133,7 +140,7 @@ export default function App() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-auto p-4 md:p-8 pb-24 md:pb-8">
+      <main ref={mainRef} className="flex-1 overflow-auto scroll-smooth overscroll-contain p-4 md:p-8 pb-24 md:pb-8">
         <div className="max-w-6xl mx-auto">
           {activeTab === 'home' && <Home onNavigate={setActiveTab} />}
           {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} />}
