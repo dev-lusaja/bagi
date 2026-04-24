@@ -58,8 +58,8 @@ export const BudgetExplainer: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <div className="relative flex justify-center">
           <div className="w-64 h-64 bg-emerald-600/5 rounded-full absolute blur-3xl" />
-          <div className="grid grid-cols-2 gap-4 relative">
-             <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-50 -rotate-6 w-40">
+          <div className="flex flex-row flex-wrap justify-center gap-4 relative">
+             <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-50 -rotate-6 w-36 sm:w-40">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><Tag className="w-3.5 h-3.5" /></div>
                   <span className="font-bold text-[10px]">Mercado</span>
@@ -71,7 +71,7 @@ export const BudgetExplainer: React.FC = () => {
                   <p className="text-[8px] font-bold text-gray-400">$350 / $500</p>
                 </div>
              </div>
-             <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-50 rotate-6 mt-10 w-40">
+             <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-50 rotate-6 mt-6 sm:mt-10 w-36 sm:w-40">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><Tag className="w-3.5 h-3.5" /></div>
                   <span className="font-bold text-[10px]">Ocio</span>

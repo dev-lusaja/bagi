@@ -47,7 +47,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans text-gray-900">
+    <div className="flex h-screen bg-gray-50 font-sans text-gray-900 overflow-hidden">
       <SavingOverlay isVisible={isSyncing} />
       
       {/* Sidebar Navigation (Desktop) */}

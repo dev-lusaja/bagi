@@ -35,7 +35,7 @@ export default function Login() {
   };
 
   return (
-    <div ref={containerRef} className="h-screen overflow-y-auto scroll-smooth snap-y snap-mandatory bg-gray-50 text-gray-900">
+    <div ref={containerRef} className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth snap-y snap-mandatory bg-gray-50 text-gray-900">
       {/* SECTION 1: HERO & LOGIN */}
       <section className="h-screen w-full flex items-center justify-center p-6 relative snap-start shrink-0">
         {/* Decorative Gradients */}
@@ -78,7 +78,7 @@ export default function Login() {
               </button>
             </div>
 
-            <div className="pt-8 border-t border-gray-50 grid grid-cols-2 gap-4 text-center">
+            <div className="pt-8 border-t border-gray-50 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
               <div className="space-y-3 p-4 bg-indigo-50/50 rounded-3xl border border-indigo-100/50 hover:bg-indigo-50 transition-colors group">
                   <div className="flex justify-center text-indigo-600 bg-white w-10 h-10 mx-auto rounded-xl items-center shadow-sm group-hover:scale-110 transition-transform"><ShieldCheck className="w-5 h-5" /></div>
                   <div>
