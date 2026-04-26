@@ -52,6 +52,9 @@ export default function SettingsView() {
   const [recNotes, setRecNotes] = useState('');
   const [recStartMonth, setRecStartMonth] = useState(new Date().getMonth() + 1);
   const [recStartYear, setRecStartYear] = useState(new Date().getFullYear());
+  const [recEndMonth, setRecEndMonth] = useState(new Date().getMonth() + 1);
+  const [recEndYear, setRecEndYear] = useState(new Date().getFullYear());
+  const [hasEndDate, setHasEndDate] = useState(false);
 
   const [cardPaymentAccId, setCardPaymentAccId] = useState('');
 
@@ -63,6 +66,7 @@ export default function SettingsView() {
 
   const [openSection, setOpenSection] = useState(null); // All closed by default
   const [showCatHelp, setShowCatHelp] = useState(false);
+
 
   const fetchAll = async () => {
     const [accs, crds, cats, recs] = await Promise.all([
@@ -138,6 +142,8 @@ export default function SettingsView() {
         notes: recNotes,
         start_month: recStartMonth,
         start_year: recStartYear,
+        end_month: hasEndDate ? recEndMonth : null,
+        end_year: hasEndDate ? recEndYear : null,
         user_id: 1,
         is_active: true
     });
@@ -160,13 +166,15 @@ export default function SettingsView() {
       amount: parseFloat(editRecData.amount),
       type: item.type,
       due_day: parseInt(editRecData.due_day),
-      category_id: item.category_id,
-      account_id: item.account_id,
-      card_id: item.card_id,
+      category_id: parseInt(editRecData.category_id),
+      account_id: editRecData.account_id,
+      card_id: editRecData.card_id,
       is_active: item.is_active,
       notes: editRecData.notes,
       start_month: parseInt(editRecData.start_month),
-      start_year: parseInt(editRecData.start_year)
+      start_year: parseInt(editRecData.start_year),
+      end_month: editRecData.end_month ? parseInt(editRecData.end_month) : null,
+      end_year: editRecData.end_year ? parseInt(editRecData.end_year) : null
     });
     setEditingRecId(null);
     setEditRecData(null);
@@ -492,10 +500,40 @@ export default function SettingsView() {
                   <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-black text-emerald-600 ml-1 uppercase tracking-widest">Año de Inicio</label>
                       <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold" value={recStartYear} onChange={e => setRecStartYear(parseInt(e.target.value))} required>
-                          {[2025, 2026, 2027, 2028].map(y => <option key={y} value={y}>{y}</option>)}
+                          {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
                       </select>
                   </div>
               </div>
+              
+              <div className="flex items-center gap-3 p-4 bg-white/50 rounded-2xl border border-emerald-100/50">
+                  <input 
+                    type="checkbox" 
+                    id="hasEndDate" 
+                    className="w-5 h-5 rounded-lg border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    checked={hasEndDate}
+                    onChange={e => setHasEndDate(e.target.checked)}
+                  />
+                  <label htmlFor="hasEndDate" className="text-sm font-bold text-gray-700 cursor-pointer">
+                    Esta obligación tiene una fecha de finalización (ej. compra a cuotas)
+                  </label>
+              </div>
+
+              {hasEndDate && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t border-emerald-100/50 pt-4 animate-in slide-in-from-top-2 duration-300">
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-black text-rose-600 ml-1 uppercase tracking-widest">Mes de Finalización</label>
+                        <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-rose-700" value={recEndMonth} onChange={e => setRecEndMonth(parseInt(e.target.value))} required>
+                            {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-black text-rose-600 ml-1 uppercase tracking-widest">Año de Finalización</label>
+                        <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-rose-700" value={recEndYear} onChange={e => setRecEndYear(parseInt(e.target.value))} required>
+                            {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
+                        </select>
+                    </div>
+                </div>
+              )}
               <button type="submit" className="bg-emerald-600 text-white px-6 py-4 rounded-xl hover:bg-emerald-700 font-bold shadow-lg shadow-emerald-100 transition-all active:scale-95 uppercase tracking-widest text-xs">Guardar Obligación</button>
           </form>
           <div className="space-y-4">
@@ -537,6 +575,78 @@ export default function SettingsView() {
                               </select>
                             </div>
                           </div>
+                          
+                          <div className="flex items-center gap-2 p-2 bg-indigo-50/30 rounded-xl border border-indigo-50 mt-2">
+                             <input 
+                                type="checkbox" 
+                                id={`editHasEndDate-${r.id}`}
+                                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                checked={!!editRecData.end_year}
+                                onChange={e => {
+                                  if (!e.target.checked) {
+                                    setEditRecData({...editRecData, end_year: null, end_month: null});
+                                  } else {
+                                    setEditRecData({...editRecData, end_year: new Date().getFullYear(), end_month: new Date().getMonth() + 1});
+                                  }
+                                }}
+                             />
+                             <label htmlFor={`editHasEndDate-${r.id}`} className="text-[10px] font-black text-indigo-900 uppercase tracking-widest cursor-pointer">Definir fecha de finalización</label>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[10px] font-black text-indigo-400 uppercase">Categoría</label>
+                              <select 
+                                className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" 
+                                value={editRecData.category_id} 
+                                onChange={e => setEditRecData({...editRecData, category_id: e.target.value})}
+                              >
+                                {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                              </select>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[10px] font-black text-indigo-400 uppercase">Origen</label>
+                              <select 
+                                className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" 
+                                value={editRecData.card_id ? `c-${editRecData.card_id}` : editRecData.account_id} 
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  if (val.startsWith('c-')) {
+                                    setEditRecData({...editRecData, card_id: parseInt(val.replace('c-', '')), account_id: null});
+                                  } else {
+                                    setEditRecData({...editRecData, account_id: parseInt(val), card_id: null});
+                                  }
+                                }}
+                              >
+                                <optgroup label="Cuentas">
+                                  {accounts.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                                </optgroup>
+                                <optgroup label="Tarjetas">
+                                  {cards.map((c: any) => <option key={`c-${c.id}`} value={`c-${c.id}`}>{c.name}</option>)}
+                                </optgroup>
+                              </select>
+                            </div>
+                          </div>
+
+                          {editRecData.end_year && (
+                            <div className="grid grid-cols-2 gap-4 border-t border-indigo-50 pt-4">
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Mes Fin</label>
+                                <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-rose-100" value={editRecData.end_month || ''} onChange={e => setEditRecData({...editRecData, end_month: e.target.value})}>
+                                  <option value="">Indefinido</option>
+                                  {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
+                                </select>
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Año Fin</label>
+                                <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-rose-100" value={editRecData.end_year || ''} onChange={e => setEditRecData({...editRecData, end_year: e.target.value})}>
+                                   <option value="">Indefinido</option>
+                                   {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
+                                </select>
+                              </div>
+                            </div>
+                          )}
+
                           <div className="flex gap-2 pt-2">
                             <button onClick={() => saveRecEdit(r)} className="flex-1 bg-indigo-600 text-white py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-100">Guardar</button>
                             <button onClick={() => {setEditingRecId(null); setEditRecData(null);}} className="px-6 bg-gray-100 text-gray-400 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95">X</button>

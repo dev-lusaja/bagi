@@ -291,6 +291,13 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
     fetchDashboardData();
   };
 
+  const deleteObligation = async (id: number) => {
+    if (confirm('¿Deseas eliminar esta instancia de la obligación? No afectará a los meses futuros.')) {
+      await service.deleteBudgetObligation(id);
+      fetchDashboardData();
+    }
+  };
+
   const payCard = async (card: any, currentSpent: number) => {
     const incomeCats = (categories as any[]).filter((c: any) => c.type === 'INCOME');
     const expenseCats = (categories as any[]).filter((c: any) => c.type === 'EXPENSE');
@@ -503,6 +510,8 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
   const theoreticalFreeBalance = globalBudget ? globalBudget.total_amount - totalPlannedArchitecture : 0;
   const isOverPlannedArchitecture = globalBudget && totalPlannedArchitecture > globalBudget.total_amount;
 
+  const isCurrentMonth = year === new Date().getFullYear() && month === new Date().getMonth() + 1;
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
@@ -688,7 +697,7 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                            </div>
                         </div>
 
-                        {b && (
+                        {b && isCurrentMonth && (
                           <button
                             onClick={() => deleteBudget((b as any).id)}
                             className="p-2 rounded-xl text-gray-200 group-hover:text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-all border border-transparent shadow-sm hover:shadow-none"
@@ -773,6 +782,15 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                       >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                       </button>
+                      {isCurrentMonth && (
+                        <button 
+                          onClick={() => deleteObligation(item.id)}
+                          className="p-3 text-gray-300 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all active:scale-90 border border-transparent hover:border-rose-100"
+                          title="Eliminar esta instancia"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                      )}
                     </div>
 
                     {item.notes && (
@@ -789,7 +807,7 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                              <p className="text-xl font-medium text-gray-900">
                                 {formatCurrency(item.amount, item.itemCurrencyCode)}
                              </p>
-                             {!item.isPaid && (
+                             {!item.isPaid && isCurrentMonth && (
                                 <button 
                                   onClick={(e) => { e.stopPropagation(); updateObligationAmount(item); }}
                                   className="text-[10px] text-indigo-500 hover:text-indigo-700 font-medium underline mt-1 text-left"
@@ -818,7 +836,7 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                           </div>
                        </div>
 
-                       {!item.isPaid ? (
+                       {!item.isPaid && isCurrentMonth ? (
                          <button
                            onClick={() => payRecurring(item)}
                            className="w-full flex items-center justify-center gap-3 py-4 bg-gray-900 text-white rounded-[1.5rem] hover:bg-indigo-600 transition-all shadow-xl shadow-gray-200 active:scale-95 font-black text-xs uppercase tracking-[0.2em]"
@@ -826,6 +844,10 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                            <span>REGISTRAR PAGO</span>
                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                          </button>
+                       ) : !item.isPaid && !isCurrentMonth ? (
+                         <div className="flex items-center justify-center gap-2 py-3 bg-gray-50 text-gray-400 rounded-2xl border border-gray-100 font-black text-[10px] uppercase tracking-[0.2em]">
+                           <span>NO DISPONIBLE</span>
+                         </div>
                        ) : (
                          <div className="flex items-center justify-center gap-2 py-3 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100 font-black text-[10px] uppercase tracking-[0.2em]">
                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
@@ -893,7 +915,9 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Reserva</p>
                                   <div className="flex items-center gap-1">
                                     <p className="text-sm font-medium text-gray-600">{formatCurrency(monthlyBudget, card.currency)}</p>
-                                    <button onClick={() => deleteCardBudget(currentCardBudget.id)} className="text-gray-300 hover:text-rose-500 transition-colors" title="Eliminar reserva"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+                                    {isCurrentMonth && (
+                                      <button onClick={() => deleteCardBudget(currentCardBudget.id)} className="text-gray-300 hover:text-rose-500 transition-colors" title="Eliminar reserva"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -1012,9 +1036,11 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                   <>
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-medium opacity-90">Presupuesto mensual</h3>
-                      <button onClick={toggleEditGlobal} className="p-1 hover:bg-white/20 rounded-lg transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                      </button>
+                      {isCurrentMonth && (
+                        <button onClick={toggleEditGlobal} className="p-1 hover:bg-white/20 rounded-lg transition-colors">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </button>
+                      )}
                     </div>
                     {isEditingGlobal ? (
                       <form onSubmit={updateGlobalBudget} className="space-y-3 mt-2">
@@ -1083,12 +1109,18 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/20"></div></div>
                           <div className="relative flex justify-center"><span className="bg-indigo-500 px-3 text-[10px] font-black uppercase tracking-widest opacity-80">o ajustar</span></div>
                         </div>
-                        <form onSubmit={addGlobalBudget} className="space-y-3">
-                          <input type="number" step="0.01" className="w-full rounded-xl bg-white/20 text-white placeholder-white/70 border border-white/30 p-3 outline-none" placeholder="Monto personalizado" value={newGlobalAmt} onChange={e => setNewGlobalAmt(e.target.value)} required />
-                          <button type="submit" className="w-full bg-white/20 text-white font-semibold py-3 rounded-xl hover:bg-white/30 transition-colors border border-white/30">
-                            Guardar monto personalizado
-                          </button>
-                        </form>
+                        {isCurrentMonth ? (
+                          <form onSubmit={addGlobalBudget} className="space-y-3">
+                            <input type="number" step="0.01" className="w-full rounded-xl bg-white/20 text-white placeholder-white/70 border border-white/30 p-3 outline-none" placeholder="Monto personalizado" value={newGlobalAmt} onChange={e => setNewGlobalAmt(e.target.value)} required />
+                            <button type="submit" className="w-full bg-white/20 text-white font-semibold py-3 rounded-xl hover:bg-white/30 transition-colors border border-white/30">
+                              Guardar monto personalizado
+                            </button>
+                          </form>
+                        ) : (
+                          <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-center">
+                            <p className="text-xs opacity-60">No se puede definir el presupuesto de meses pasados.</p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="space-y-5">
@@ -1189,7 +1221,7 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
             </div>
           )}
 
-          {!isCard && (
+          {!isCard && isCurrentMonth && (
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-1">
               <h3 className="text-lg font-semibold mb-4">Asignar limites por categoría</h3>
               <form onSubmit={addBudget} className="space-y-4">

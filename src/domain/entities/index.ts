@@ -55,6 +55,8 @@ export interface RecurringItem {
     notes?: string;
     start_year: number;
     start_month: number;
+    end_year?: number;
+    end_month?: number;
     user_id: number;
 }
 

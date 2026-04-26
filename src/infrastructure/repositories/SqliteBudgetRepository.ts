@@ -206,14 +206,20 @@ export class SqliteBudgetRepository implements IBudgetRepository {
 
     async saveRecurringItem(item: Omit<RecurringItem, 'id'>): Promise<RecurringItem> {
         this.execute(
-            'INSERT INTO recurring_items (name, amount, type, due_day, is_active, category_id, account_id, card_id, notes, start_year, start_month, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [item.name, item.amount, item.type, item.due_day, item.is_active ? 1 : 0, item.category_id ?? null, item.account_id ?? null, item.card_id ?? null, item.notes ?? null, item.start_year, item.start_month, item.user_id]
+            'INSERT INTO recurring_items (name, amount, type, due_day, is_active, category_id, account_id, card_id, notes, start_year, start_month, end_year, end_month, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                item.name, item.amount, item.type, item.due_day, item.is_active ? 1 : 0, 
+                item.category_id ?? null, item.account_id ?? null, item.card_id ?? null, 
+                item.notes ?? null, item.start_year, item.start_month, 
+                item.end_year ?? null, item.end_month ?? null,
+                item.user_id
+            ]
         );
         return { ...item, id: this.getLastInsertId() };
     }
 
     async updateRecurringItem(id: number, item: Partial<RecurringItem>): Promise<RecurringItem> {
-        const allowedKeys = ['name', 'amount', 'type', 'due_day', 'is_active', 'category_id', 'account_id', 'card_id', 'notes', 'start_year', 'start_month', 'user_id'];
+        const allowedKeys = ['name', 'amount', 'type', 'due_day', 'is_active', 'category_id', 'account_id', 'card_id', 'notes', 'start_year', 'start_month', 'end_year', 'end_month', 'user_id'];
         const keys = Object.keys(item).filter(k => allowedKeys.includes(k));
         const setClause = keys.map(k => `${k} = ?`).join(', ');
         const values = keys.map(k => k === 'is_active' ? ((item as any)[k] ? 1 : 0) : (item as any)[k]);

@@ -18,7 +18,9 @@ export const initDb = async (buffer?: ArrayBuffer): Promise<Database> => {
     } else {
         db = new sqlite.Database();
     }
-    if (db) createSchema(db);
+    if (db) {
+        createSchema(db);
+    }
     return db!;
 };
 
@@ -78,6 +80,8 @@ const createSchema = (db: Database) => {
             notes TEXT,
             start_year INTEGER DEFAULT 2026,
             start_month INTEGER DEFAULT 1,
+            end_year INTEGER,
+            end_month INTEGER,
             user_id INTEGER,
             FOREIGN KEY(category_id) REFERENCES categories(id),
             FOREIGN KEY(account_id) REFERENCES accounts(id),
