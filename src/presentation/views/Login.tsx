@@ -2,6 +2,7 @@ import { ShieldCheck, Database, ArrowRight, Heart, ChevronDown, Cloud, Lock, Sma
 import { useBudget } from '../context/BudgetContext';
 import { useState, useRef } from 'react';
 import { BudgetExplainer } from '../components/BudgetExplainer';
+import AlertModal from '../components/AlertModal';
 
 export default function Login() {
   const { login } = useBudget();
@@ -10,13 +11,21 @@ export default function Login() {
   const methodologyRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const [alertConfig, setAlertConfig] = useState<{ isOpen: boolean; title: string; message: string; type: 'info' | 'error' | 'success' }>({
+    isOpen: false, title: '', message: '', type: 'info'
+  });
+
+  const showAlert = (title: string, message: string, type: 'info' | 'error' | 'success' = 'info') => {
+    setAlertConfig({ isOpen: true, title, message, type });
+  };
+
   const handleLogin = async (provider: 'google' | 'onedrive') => {
     setLoading(true);
     try {
       await login(provider);
     } catch (error) {
       console.error('Login failed', error);
-      alert('Error al iniciar sesión. Por favor, intenta de nuevo.');
+      showAlert('Error de acceso', 'No pudimos conectar con tu cuenta. Por favor, intenta de nuevo.', 'error');
     } finally {
       setLoading(false);
     }
@@ -188,6 +197,13 @@ export default function Login() {
           </div>
         </div>
       </section>
+      <AlertModal
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+      />
     </div>
   );
 }

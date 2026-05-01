@@ -70,7 +70,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 throw error;
             }
         } else {
-            alert('OneDrive integration coming soon!');
+            throw new Error('OneDrive integration coming soon!');
         }
     };
 

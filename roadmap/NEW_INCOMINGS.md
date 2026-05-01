@@ -1,6 +1,6 @@
 # Ingresos Primero: Flujo de Presupuesto Basado en Ingresos Reales
 
-El usuario registra su salario como transacción tipo `INCOME`. El presupuesto global se define como un monto arbitrario sin vínculo a esos ingresos. Este cambio conecta ambos: **los ingresos registrados del mes alimentan la definición del presupuesto global**, y sin ingresos no se puede planificar.
+El usuario registra su salario como transacción tipo `INCOME`. El presupuesto mensual se define como un monto arbitrario sin vínculo a esos ingresos. Este cambio conecta ambos: **los ingresos registrados del mes alimentan la definición del presupuesto mensual**, y sin ingresos no se puede planificar.
 
 ## Decisiones del Usuario
 
@@ -51,12 +51,12 @@ setMonthlyIncome(incomeForAccount);
 
 Nuevo state: `const [monthlyIncome, setMonthlyIncome] = useState(0);`
 
-**2. Reemplazar el form "Definir Presupuesto Global"**
+**2. Reemplazar el form "Definir Presupuesto mensual"**
 
 Cuando NO existe `globalBudget`:
 
 - **Si `monthlyIncome > 0`:** Mostrar desglose de ingresos detectados + botón "Usar como presupuesto" + opción de ajustar manualmente.
-- **Si `monthlyIncome === 0`:** Mostrar bloqueo duro: mensaje que indica que debe registrar ingresos primero + botón que navega a Transacciones. **Sin input de monto. Sin botón guardar.** No hay forma de crear el presupuesto global.
+- **Si `monthlyIncome === 0`:** Mostrar bloqueo duro: mensaje que indica que debe registrar ingresos primero + botón que navega a Transacciones. **Sin input de monto. Sin botón guardar.** No hay forma de crear el presupuesto mensual.
 
 **3. Bloquear "Inicializar Mes" sin ingresos**
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
 import { HelpCircle, ArrowRightLeft, TrendingUp, TrendingDown, User, LogOut } from 'lucide-react';
+import AlertModal from '../components/AlertModal';
 
 const Section = ({ id, title, icon, children, openSection, setOpenSection }: any) => {
     const isOpen = openSection === id;
@@ -67,6 +68,14 @@ export default function SettingsView() {
   const [openSection, setOpenSection] = useState(null); // All closed by default
   const [showCatHelp, setShowCatHelp] = useState(false);
 
+  const [alertConfig, setAlertConfig] = useState<{ isOpen: boolean; title: string; message: string; type: 'info' | 'error' | 'success' }>({
+    isOpen: false, title: '', message: '', type: 'info'
+  });
+
+  const showAlert = (title: string, message: string, type: 'info' | 'error' | 'success' = 'info') => {
+    setAlertConfig({ isOpen: true, title, message, type });
+  };
+
 
   const fetchAll = async () => {
     const [accs, crds, cats, recs] = await Promise.all([
@@ -101,7 +110,7 @@ export default function SettingsView() {
     e.preventDefault();
     const budgetVal = 0.0;
     if (!cardPaymentAccId) {
-      alert('Debes seleccionar una cuenta de pago.');
+      showAlert('Cuenta requerida', 'Debes seleccionar una cuenta de pago para tu tarjeta.', 'info');
       return;
     }
 
@@ -711,6 +720,13 @@ export default function SettingsView() {
           </div>
         </Section>
       </div>
+      <AlertModal
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+      />
     </div>
   );
 }
