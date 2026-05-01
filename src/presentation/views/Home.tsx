@@ -26,7 +26,7 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
         service.getAccounts(),
         service.getCards(),
         service.getGlobalBudgets(year, month),
-        service.getTransactions(),
+        service.getTransactions({ year, month, noLimit: true }),
         service.getCategories(),
         service.getRecurringItems(),
       ]);
@@ -36,10 +36,7 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
       setGlobalBudgets(gb);
       setCategories(cats);
       setRecurringItems(recs);
-      setTransactions(txs.filter((t: any) => {
-        const d = new Date(t.date);
-        return d.getFullYear() === year && (d.getMonth() + 1) === month;
-      }));
+      setTransactions(txs);
     };
     fetchData();
   }, [service, year, month]);

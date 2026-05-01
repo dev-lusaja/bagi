@@ -51,13 +51,47 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
   // Inline card budget form
   const [inlineCardBgt, setInlineCardBgt] = useState<{ [key: number]: string }>({});
 
-  const [isSalaryPromptOpen, setIsSalaryPromptOpen] = useState(false);
-  const [alertConfig, setAlertConfig] = useState<{ isOpen: boolean; title: string; message: string; type: 'info' | 'error' | 'success' }>({
+  const [promptConfig, setPromptConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    defaultValue: string;
+    inputType: 'text' | 'number';
+    onConfirm: (val: string) => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    defaultValue: '',
+    inputType: 'text',
+    onConfirm: () => {}
+  });
+
+  const [alertConfig, setAlertConfig] = useState<{ 
+    isOpen: boolean; 
+    title: string; 
+    message: string; 
+    type: 'info' | 'error' | 'success' | 'warning';
+    onConfirm?: () => void;
+  }>({
     isOpen: false, title: '', message: '', type: 'info'
   });
 
-  const showAlert = (title: string, message: string, type: 'info' | 'error' | 'success' = 'info') => {
+  const showAlert = (title: string, message: string, type: 'info' | 'error' | 'success' | 'warning' = 'info') => {
     setAlertConfig({ isOpen: true, title, message, type });
+  };
+
+  const showConfirm = (title: string, message: string, onConfirm: () => void, type: 'info' | 'warning' | 'error' = 'warning') => {
+    setAlertConfig({
+      isOpen: true,
+      title,
+      message,
+      type,
+      onConfirm: () => {
+        onConfirm();
+        setAlertConfig(prev => ({ ...prev, isOpen: false, onConfirm: undefined }));
+      }
+    });
   };
 
   useEffect(() => {
@@ -264,158 +298,179 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
     }
   };
 
-  const payRecurring = async (item: any) => {
-    const confirmAmt = prompt(`Confirmar monto para ${item.name}:`, item.amount.toString());
-    if (confirmAmt === null) return;
+  const payRecurring = (item: any) => {
+    setPromptConfig({
+      isOpen: true,
+      title: 'Registrar Pago',
+      message: `Confirmar monto para ${item.name}`,
+      defaultValue: item.amount.toString(),
+      inputType: 'number',
+      onConfirm: async (confirmAmt) => {
+        const amount = parseFloat(confirmAmt);
+        if (isNaN(amount)) return;
 
-    const amount = parseFloat(confirmAmt);
-    if (isNaN(amount)) return;
+        // Use linked account/card if available, otherwise current dashboard selection
+        const finalAccountId = item.account_id || (accountId.startsWith('c-') ? null : parseInt(accountId));
+        const finalCardId = item.card_id || (accountId.startsWith('c-') ? parseInt(accountId.replace('c-', '')) : null);
 
-    // Use linked account/card if available, otherwise current dashboard selection
-    const finalAccountId = item.account_id || (accountId.startsWith('c-') ? null : parseInt(accountId));
-    const finalCardId = item.card_id || (accountId.startsWith('c-') ? parseInt(accountId.replace('c-', '')) : null);
+        await service.addTransaction({
+          amount,
+          description: `Pago Recurrente: ${item.name}`,
+          date: new Date().toISOString(),
+          category_id: item.category_id,
+          budget_obligation_id: item.id,
+          account_id: finalAccountId,
+          card_id: finalCardId,
+          user_id: 1 // Default
+        });
 
-    await service.addTransaction({
-      amount,
-      description: `Pago Recurrente: ${item.name}`,
-      date: new Date().toISOString(),
-      category_id: item.category_id,
-      budget_obligation_id: item.id,
-      account_id: finalAccountId,
-      card_id: finalCardId,
-      user_id: 1 // Default
+        setPromptConfig(prev => ({ ...prev, isOpen: false }));
+        fetchDashboardData();
+      }
     });
-
-    fetchDashboardData();
   };
 
-  const updateObligationAmount = async (item: any) => {
-    const newAmt = prompt(`Actualizar monto para ${item.name} (${item.year}-${item.month}):`, item.amount.toString());
-    if (newAmt === null) return;
-    const amount = parseFloat(newAmt);
-    if (isNaN(amount)) return;
+  const updateObligationAmount = (item: any) => {
+    setPromptConfig({
+      isOpen: true,
+      title: 'Actualizar Monto',
+      message: `Nuevo monto para ${item.name} (${item.year}-${item.month})`,
+      defaultValue: item.amount.toString(),
+      inputType: 'number',
+      onConfirm: async (newAmt) => {
+        const amount = parseFloat(newAmt);
+        if (isNaN(amount)) return;
 
-    await service.updateBudgetObligation(item.id, {
-      ...item,
-      amount
+        await service.updateBudgetObligation(item.id, {
+          ...item,
+          amount
+        });
+        setPromptConfig(prev => ({ ...prev, isOpen: false }));
+        fetchDashboardData();
+      }
     });
-    fetchDashboardData();
   };
 
-  const deleteObligation = async (id: number) => {
-    if (confirm('¿Deseas eliminar esta instancia de la obligación? No afectará a los meses futuros.')) {
-      await service.deleteBudgetObligation(id);
-      fetchDashboardData();
-    }
+  const deleteObligation = (id: number) => {
+    showConfirm(
+      'Eliminar instancia',
+      '¿Deseas eliminar esta instancia de la obligación? No afectará a los meses futuros.',
+      async () => {
+        await service.deleteBudgetObligation(id);
+        fetchDashboardData();
+      }
+    );
   };
 
-  const payCard = async (card: any, currentSpent: number) => {
-    const incomeCats = (categories as any[]).filter((c: any) => c.type === 'INCOME');
-    const expenseCats = (categories as any[]).filter((c: any) => c.type === 'EXPENSE');
-    const transferCats = (categories as any[]).filter((c: any) => c.type === 'TRANSFER');
+  const payCard = (card: any, netSpent: number) => {
+    const defaultAmt = netSpent > 0 ? netSpent.toString() : '';
+    setPromptConfig({
+      isOpen: true,
+      title: 'Abono a Tarjeta',
+      message: `Confirmar monto a abonar a ${card.name}`,
+      defaultValue: defaultAmt,
+      inputType: 'number',
+      onConfirm: async (confirmAmt) => {
+        const amount = parseFloat(confirmAmt);
+        if (isNaN(amount) || amount <= 0) return;
 
-    if (transferCats.length === 0 && incomeCats.length === 0) {
-      showAlert('Configuración necesaria', "Debes crear al menos una categoría de tipo 'Transferencia' o 'Ingreso' para registrar abonos a tarjetas.", 'info');
-      return;
-    }
+        const incomeCats = categories.filter((c: any) => c.type === 'INCOME');
+        const transferCats = categories.filter((c: any) => c.type === 'TRANSFER');
+        const expenseCats = categories.filter((c: any) => c.type === 'EXPENSE');
 
-    let pagoCat = transferCats.find((c: any) => c.name.toLowerCase().includes('pago tarjeta') || c.name.toLowerCase().includes('pago de tarjeta'));
-    if (!pagoCat) {
-      pagoCat = expenseCats.find((c: any) => c.name.toLowerCase().includes('pago tarjeta') || c.name.toLowerCase().includes('pago de tarjeta'));
-    }
+        let catId = 0;
+        const abonoCat = transferCats.find((c: any) => c.name.toLowerCase().includes('abono a tarjeta') || c.name.toLowerCase().includes('abono a'));
 
-    if (!pagoCat) {
-      showAlert('Categoría faltante', "Por favor crea una categoría llamada 'Pago tarjeta' para poder registrar la salida del dinero de tu cuenta.", 'info');
-      return;
-    }
-
-    const defaultAmt = currentSpent > 0 ? currentSpent.toString() : '';
-    const confirmAmt = prompt(`Confirmar monto a abonar a ${card.name}:`, defaultAmt);
-    if (confirmAmt === null) return;
-    const amount = parseFloat(confirmAmt);
-    if (isNaN(amount) || amount <= 0) return;
-
-    let catId = 0;
-    const abonoCat = transferCats.find((c: any) => c.name.toLowerCase().includes('abono a tarjeta') || c.name.toLowerCase().includes('abono a'));
-
-    if (abonoCat) {
-      catId = abonoCat.id;
-    } else {
-      const altAbono = incomeCats.find((c: any) => c.name.toLowerCase().includes('abono a tarjeta') || c.name.toLowerCase().includes('abono a'));
-      if (altAbono) {
-        catId = altAbono.id;
-      } else {
-        const allPossible = [...transferCats, ...incomeCats];
-        const catNames = allPossible.map((c: any, i: number) => `${i + 1}. ${c.name}`).join('\n');
-        const catPick = prompt(`Selecciona la categoría para el ABONO (Ingreso a tarjeta):\n${catNames}`, "1");
-        if (!catPick) return;
-        const pickIdx = parseInt(catPick) - 1;
-        if (pickIdx >= 0 && pickIdx < allPossible.length) {
-          catId = allPossible[pickIdx].id;
+        if (abonoCat) {
+          catId = abonoCat.id;
         } else {
+          const allPossible = categories.filter((c: any) => c.type !== 'EXPENSE');
+          const catNames = allPossible.map((c, i) => `${i}: ${c.name}`).join('\n');
+          const catPick = prompt(`Selecciona la categoría para el ABONO (Ingreso a tarjeta):\n${catNames}`, "0");
+          if (catPick === null) return;
+          const pickIdx = parseInt(catPick);
+          if (pickIdx >= 0 && pickIdx < allPossible.length) {
+            catId = allPossible[pickIdx].id;
+          } else {
+            return;
+          }
+        }
+
+        // 1. Ingreso a la tarjeta (para bajar la deuda)
+        await service.addTransaction({
+          amount,
+          description: `Abono a Tarjeta: ${card.name}`,
+          date: new Date().toISOString(),
+          category_id: catId,
+          account_id: null,
+          card_id: card.id,
+          user_id: 1
+        });
+
+        // 2. Gasto de la cuenta de banco (Pago de tarjeta)
+        let pagoCat = transferCats.find((c: any) => c.name.toLowerCase().includes('pago tarjeta') || c.name.toLowerCase().includes('pago de tarjeta'));
+        if (!pagoCat) {
+          pagoCat = expenseCats.find((c: any) => c.name.toLowerCase().includes('pago tarjeta') || c.name.toLowerCase().includes('pago de tarjeta'));
+        }
+
+        const sourceAcc = card.payment_account_id || (!accountId.startsWith('c-') ? parseInt(accountId) : null);
+        if (sourceAcc && pagoCat) {
+          await service.addTransaction({
+            amount,
+            description: `Pago de Tarjeta: ${card.name}`,
+            date: new Date().toISOString(),
+            category_id: pagoCat.id,
+            account_id: sourceAcc,
+            card_id: null,
+            user_id: 1
+          });
+        }
+
+        setPromptConfig(prev => ({ ...prev, isOpen: false }));
+        fetchDashboardData();
+      }
+    });
+  };
+
+  const handleQuickSalary = () => {
+    setPromptConfig({
+      isOpen: true,
+      title: 'Registrar Salario',
+      message: 'Ingresa el monto de tu salario para este mes.',
+      defaultValue: '',
+      inputType: 'number',
+      onConfirm: async (confirmAmt) => {
+        const amount = parseFloat(confirmAmt);
+        if (isNaN(amount) || amount <= 0) return;
+
+        const incomeCats = categories.filter((c: any) => c.type === 'INCOME');
+        if (incomeCats.length === 0) {
+          showAlert('Configuración necesaria', "No tienes categorías de ingreso configuradas. Crea una primero.", 'info');
           return;
         }
+
+        let catId = incomeCats[0].id;
+        const salarioCat = incomeCats.find(c => c.name.toLowerCase().includes('salari') || c.name.toLowerCase().includes('sueldo'));
+        if (salarioCat) {
+          catId = salarioCat.id;
+        }
+
+        const dateStr = new Date(year, month - 1, 1, 12, 0, 0).toISOString();
+
+        await service.addTransaction({
+          amount,
+          description: "Salario",
+          date: dateStr,
+          category_id: catId,
+          account_id: parseInt(accountId),
+          card_id: null,
+          user_id: 1
+        });
+
+        setPromptConfig(prev => ({ ...prev, isOpen: false }));
+        fetchDashboardData();
       }
-    }
-
-    // 1. Ingreso a la tarjeta (para bajar la deuda)
-    await service.addTransaction({
-      amount,
-      description: `Abono a Tarjeta: ${card.name}`,
-      date: new Date().toISOString(),
-      category_id: catId,
-      account_id: null,
-      card_id: card.id,
-      user_id: 1
     });
-
-    // 2. Gasto de la cuenta de banco
-    const sourceAcc = card.payment_account_id || (!accountId.startsWith('c-') ? parseInt(accountId) : null);
-    if (sourceAcc) {
-      await service.addTransaction({
-        amount,
-        description: `Pago de Tarjeta: ${card.name}`,
-        date: new Date().toISOString(),
-        category_id: pagoCat.id,
-        account_id: sourceAcc,
-        card_id: null,
-        user_id: 1
-      });
-    }
-
-    fetchDashboardData();
-  };
-
-  const handleQuickSalary = async (amountStr: string) => {
-    setIsSalaryPromptOpen(false);
-    const amount = parseFloat(amountStr);
-    if (isNaN(amount) || amount <= 0) return;
-
-    const incomeCats = (categories as any[]).filter((c: any) => c.type === 'INCOME');
-    if (incomeCats.length === 0) {
-      showAlert('Configuración necesaria', "No tienes categorías de ingreso configuradas. Crea una primero.", 'info');
-      return;
-    }
-
-    let catId = incomeCats[0].id;
-    const salarioCat = incomeCats.find(c => c.name.toLowerCase().includes('salari') || c.name.toLowerCase().includes('sueldo'));
-    if (salarioCat) {
-      catId = salarioCat.id;
-    }
-
-    const dateStr = new Date(year, month - 1, 1, 12, 0, 0).toISOString();
-
-    await service.addTransaction({
-      amount,
-      description: "Salario",
-      date: dateStr,
-      category_id: catId,
-      account_id: parseInt(accountId),
-      card_id: null,
-      user_id: 1
-    });
-
-    fetchDashboardData();
   };
 
   const isCard = accountId.startsWith('c-');
@@ -988,8 +1043,8 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                                 onChange={e => setInlineCardBgt({ ...inlineCardBgt, [card.id]: e.target.value })}
                                 required
                               />
-                              <button type="submit" disabled={!globalBudget || remainingGlobal <= 0} className="px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                                Guardar
+                              <button type="submit" disabled={!globalBudget || theoreticalFreeBalance <= 0} className="px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                {theoreticalFreeBalance <= 0 ? 'Agotado' : 'Guardar'}
                               </button>
                             </form>
                           </div>
@@ -1177,7 +1232,7 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                           <p className="text-xs opacity-75 leading-relaxed">Para definir tu presupuesto necesitas registrar al menos un ingreso (salario) en esta cuenta para el mes seleccionado.</p>
                         </div>
                         <button
-                          onClick={() => setIsSalaryPromptOpen(true)}
+                          onClick={handleQuickSalary}
                           className="w-full flex items-center justify-center gap-2 bg-white text-indigo-600 font-bold py-3 rounded-xl hover:bg-indigo-50 transition-colors shadow-sm"
                         >
                           Ingresa tu salario
@@ -1276,10 +1331,10 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                 <input type="number" step="0.01" className="w-full rounded-xl border border-gray-200 p-3 shadow-sm" placeholder={`Monto en ${selectedAcc?.currency || ''}`} value={newBgtAmt} onChange={e => setNewBgtAmt(e.target.value)} required />
                 <button
                   type="submit"
-                  disabled={!globalBudget || remainingGlobal <= 0}
+                  disabled={!globalBudget || theoreticalFreeBalance <= 0}
                   className="w-full bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {!globalBudget ? 'Define Presupuesto mensual Primero' : (remainingGlobal <= 0 ? 'Presupuesto Agotado' : 'Asignar Límite')}
+                  {!globalBudget ? 'Define Presupuesto mensual Primero' : (theoreticalFreeBalance <= 0 ? 'Presupuesto Agotado' : 'Asignar Límite')}
                 </button>
               </form>
 
@@ -1450,21 +1505,22 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
         </div>
       )}
       <PromptModal
-        isOpen={isSalaryPromptOpen}
-        title="Ingreso rápido de salario"
-        message={`¿Cuánto fue tu ingreso para el mes seleccionado?`}
-        placeholder="Ej: 1500.00"
-        inputType="number"
-        confirmText="Registrar ingreso"
-        onConfirm={handleQuickSalary}
-        onCancel={() => setIsSalaryPromptOpen(false)}
+        isOpen={promptConfig.isOpen}
+        title={promptConfig.title}
+        message={promptConfig.message}
+        defaultValue={promptConfig.defaultValue}
+        inputType={promptConfig.inputType}
+        onConfirm={promptConfig.onConfirm}
+        onCancel={() => setPromptConfig({ ...promptConfig, isOpen: false })}
       />
+
       <AlertModal
         isOpen={alertConfig.isOpen}
         title={alertConfig.title}
         message={alertConfig.message}
         type={alertConfig.type}
-        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+        onConfirm={alertConfig.onConfirm}
+        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false, onConfirm: undefined })}
       />
     </div>
   );
