@@ -116,7 +116,7 @@ export class SqliteBudgetRepository implements IBudgetRepository {
         }
 
         sql += ' ORDER BY t.date DESC, t.id DESC';
-        
+
         if (filters?.limit) {
             sql += ' LIMIT ?';
             params.push(filters.limit);
@@ -128,9 +128,9 @@ export class SqliteBudgetRepository implements IBudgetRepository {
             // Default limit for safety if not specified
             sql += ' LIMIT 100';
         }
-        
+
         const rawResults = this.query<any>(sql, params);
-        
+
         return rawResults.map(r => ({
             ...r,
             category: { id: r.category_id, name: r.category_name, type: r.category_type },
@@ -208,9 +208,9 @@ export class SqliteBudgetRepository implements IBudgetRepository {
         this.execute(
             'INSERT INTO recurring_items (name, amount, type, due_day, is_active, category_id, account_id, card_id, notes, start_year, start_month, end_year, end_month, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
-                item.name, item.amount, item.type, item.due_day, item.is_active ? 1 : 0, 
-                item.category_id ?? null, item.account_id ?? null, item.card_id ?? null, 
-                item.notes ?? null, item.start_year, item.start_month, 
+                item.name, item.amount, item.type, item.due_day, item.is_active ? 1 : 0,
+                item.category_id ?? null, item.account_id ?? null, item.card_id ?? null,
+                item.notes ?? null, item.start_year, item.start_month,
                 item.end_year ?? null, item.end_month ?? null,
                 item.user_id
             ]

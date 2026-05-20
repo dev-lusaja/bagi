@@ -193,7 +193,7 @@ export default function Transactions() {
                  {categories.filter((c: any) => c.type === 'TRANSFER').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                </optgroup>
                <optgroup label="Gastos">
-                 {categories.filter((c: any) => c.type === 'EXPENSE').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                 {categories.filter((c: any) => c.type === 'EXPENSE' && c.name !== 'Servicios Recurrentes' && c.name !== 'Deudas Recurrentes').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                </optgroup>
              </select>
            </div>
@@ -232,7 +232,7 @@ export default function Transactions() {
                       {categories.filter((c: any) => c.type === 'TRANSFER').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </optgroup>
                     <optgroup label="Gastos">
-                      {categories.filter((c: any) => c.type === 'EXPENSE').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      {categories.filter((c: any) => c.type === 'EXPENSE' && c.name !== 'Servicios Recurrentes' && c.name !== 'Deudas Recurrentes').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </optgroup>
                  </select>
                </div>

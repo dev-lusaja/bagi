@@ -483,7 +483,9 @@ export default function SettingsView() {
                       <label className="text-xs font-bold text-gray-400 ml-1">CATEGORÍA</label>
                       <select className="rounded-xl border-gray-200 shadow-sm p-3 border" value={recCatId} onChange={e => setRecCatId(e.target.value)} required>
                           <option value="" disabled>Seleccionar</option>
-                          {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                          {categories
+                            .filter((c: any) => c.name === "Servicios Recurrentes" || c.name === "Deudas Recurrentes")
+                            .map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -610,7 +612,13 @@ export default function SettingsView() {
                                 value={editRecData.category_id} 
                                 onChange={e => setEditRecData({...editRecData, category_id: e.target.value})}
                               >
-                                {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                {categories
+                                  .filter((c: any) => 
+                                    c.name === "Servicios Recurrentes" || 
+                                    c.name === "Deudas Recurrentes" || 
+                                    c.id === parseInt(editRecData.category_id)
+                                  )
+                                  .map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                               </select>
                             </div>
                             <div className="flex flex-col gap-1">

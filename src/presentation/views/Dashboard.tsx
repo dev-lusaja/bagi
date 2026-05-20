@@ -6,22 +6,22 @@ import SmartAlertPanel from '../components/SmartAlertPanel';
 import PromptModal from '../components/PromptModal';
 import AlertModal from '../components/AlertModal';
 
-export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) => void }) {
+export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (tab: string) => void }) {
   const { service } = useBudget();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [accountId, setAccountId] = useState('');
   const [activeTab, setActiveTab] = useState('consumption');
 
-  const [accounts, setAccounts] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
 
-  const [budgets, setBudgets] = useState([]); // category budgets
+  const [budgets, setBudgets] = useState<any[]>([]); // category budgets
   const [cardBudgets, setCardBudgets] = useState<any[]>([]); // card budgets
   const [globalBudget, setGlobalBudget] = useState<any>(null); // global budget
-  const [cards, setCards] = useState([]);
-  const [transactions, setTransactions] = useState([]);
-  const [allMonthlyTransactions, setAllMonthlyTransactions] = useState([]);
+  const [cards, setCards] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [allMonthlyTransactions, setAllMonthlyTransactions] = useState<any[]>([]);
   const [prevMonthTransactions, setPrevMonthTransactions] = useState<any[]>([]);
   const [budgetObligations, setBudgetObligations] = useState([]);
 
@@ -374,7 +374,6 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
         const amount = parseFloat(confirmAmt);
         if (isNaN(amount) || amount <= 0) return;
 
-        const incomeCats = categories.filter((c: any) => c.type === 'INCOME');
         const transferCats = categories.filter((c: any) => c.type === 'TRANSFER');
         const expenseCats = categories.filter((c: any) => c.type === 'EXPENSE');
 
@@ -547,10 +546,23 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
     return acc + Math.max(0, bgtAmt - grossSpent);
   }, 0);
 
+  const filteredRecurring = (budgetObligations as any[]).filter(item => {
+    if (item.card_id) return isCard && item.card_id === actualId;
+    if (item.account_id) return !isCard && item.account_id === actualId;
+    return !isCard; // Show items with no source only on accounts
+  });
+
   const totalPlannedCommitment = (categories as any[]).reduce((acc: number, cat: any) => {
     if (cat.type !== 'EXPENSE') return acc;
-    const b = (budgets as any[]).find((b: any) => b.category_id === cat.id);
-    const budgetAmt = b ? b.amount : 0;
+    let budgetAmt = 0;
+    if (cat.name === "Servicios Recurrentes" || cat.name === "Deudas Recurrentes") {
+      budgetAmt = (filteredRecurring as any[])
+        .filter((o: any) => o.category_id === cat.id)
+        .reduce((sum: number, o: any) => sum + o.amount, 0);
+    } else {
+      const b = (budgets as any[]).find((b: any) => b.category_id === cat.id);
+      budgetAmt = b ? b.amount : 0;
+    }
     const actualAmt = actualsByCategory[cat.id] || 0;
     return acc + Math.max(budgetAmt, actualAmt);
   }, 0) + totalRemainingCardReserve;
@@ -562,22 +574,20 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
 
   const categoriesWithoutLimit = (categories as any[]).filter((c: any) => {
     const hasBudget = budgets.some((b: any) => b.category_id === c.id);
+    const isSpecialRecurring = c.name === "Servicios Recurrentes" || c.name === "Deudas Recurrentes";
     const hasTx = actualsByCategory[c.id] > 0;
-    return hasTx && !hasBudget && c.type === 'EXPENSE';
+    return hasTx && !hasBudget && !isSpecialRecurring && c.type === 'EXPENSE';
   });
 
   const categoriesToShow = (categories as any[]).filter((c: any) => {
     if (c.type === 'TRANSFER') return false; // Don't show transfers in consumption budget
+    if (c.name === "Servicios Recurrentes" || c.name === "Deudas Recurrentes") return false;
     const hasBudget = budgets.some((b: any) => b.category_id === c.id);
     const hasTx = actualsByCategory[c.id] > 0;
     return (hasBudget || hasTx) && c.type === 'EXPENSE';
   });
 
-  const filteredRecurring = (budgetObligations as any[]).filter(item => {
-    if (item.card_id) return isCard && item.card_id === actualId;
-    if (item.account_id) return !isCard && item.account_id === actualId;
-    return !isCard; // Show items with no source only on accounts
-  });
+
 
   const obligationsStatus = filteredRecurring.map(item => {
     const linkedTx = (transactions as any[]).find((t: any) => t.budget_obligation_id === item.id);
@@ -598,6 +608,8 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
 
   // Para los límites variables, restamos los servicios que ya están en esas categorías para no duplicar
   const totalVariableLimitsPlan = (budgets as any[]).reduce((acc, b) => {
+    const cat = (categories as any[]).find((c: any) => c.id === b.category_id);
+    if (cat?.name === "Servicios Recurrentes" || cat?.name === "Deudas Recurrentes") return acc;
     const recurringInCat = (filteredRecurring as any[])
       .filter(ri => ri.category_id === b.category_id)
       .reduce((s, ri) => s + ri.amount, 0);
@@ -609,7 +621,6 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
   const isOverPlannedArchitecture = globalBudget && totalPlannedArchitecture > globalBudget.total_amount;
 
   const isPastMonth = year < new Date().getFullYear() || (year === new Date().getFullYear() && month < new Date().getMonth() + 1);
-  const isCurrentMonth = year === new Date().getFullYear() && month === new Date().getMonth() + 1;
 
   return (
     <div className="space-y-8">
@@ -767,15 +778,26 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                 {categoriesToShow.map((cat: any) => {
                   const b = (budgets as any[]).find((b: any) => b.category_id === cat.id);
                   const actual = actualsByCategory[cat.id] || 0;
-                  const budgetAmt = b ? (b as any).amount : 0;
+                  const isSpecialRecurring = cat.name === "Servicios Recurrentes" || cat.name === "Deudas Recurrentes";
+                  
+                    let budgetAmt = b ? (b as any).amount : 0;
+                    if (isSpecialRecurring) {
+                      budgetAmt = (filteredRecurring as any[])
+                        .filter((o: any) => o.category_id === cat.id)
+                        .reduce((sum: number, o: any) => sum + o.amount, 0);
+                    }
 
                   // Real percentage — no cap so we can show 3000% etc.
                   const percent = budgetAmt > 0 ? Math.round((actual / budgetAmt) * 100) : (actual > 0 ? 100 : 0);
                   const isOver = percent > 100;
                   let barColor = budgetAmt > 0 ? 'bg-emerald-500' : 'bg-indigo-400';
                   if (budgetAmt > 0) {
-                    if (percent > 80) barColor = 'bg-amber-500';
-                    if (isOver) barColor = 'bg-rose-500';
+                    if (isSpecialRecurring) {
+                      if (isOver) barColor = 'bg-rose-500';
+                    } else {
+                      if (percent > 80) barColor = 'bg-amber-500';
+                      if (isOver) barColor = 'bg-rose-500';
+                    }
                   }
 
                   return (
@@ -796,7 +818,7 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                           </div>
                         </div>
 
-                        {b && !isPastMonth && (
+                        {b && !isPastMonth && !isSpecialRecurring && (
                           <button
                             onClick={() => deleteBudget((b as any).id)}
                             className="p-2 rounded-xl text-gray-200 group-hover:text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-all border border-transparent shadow-sm hover:shadow-none"
@@ -815,7 +837,13 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-1.5 text-[10px]">
                             <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
-                            <span className="font-semibold text-gray-400 uppercase tracking-wider gap-1">Límite: <span className="text-gray-500">{budgetAmt > 0 ? formatCurrency(budgetAmt, selectedAcc?.currency || selectedCard?.currency) : 'Sin definir'}</span></span>
+                            <span className="font-semibold text-gray-400 uppercase tracking-wider gap-1">
+                              Límite: <span className="text-gray-500">
+                                {budgetAmt > 0 
+                                  ? `${formatCurrency(budgetAmt, selectedAcc?.currency || selectedCard?.currency)}${isSpecialRecurring ? ' (Fijo/Obligaciones)' : ''}` 
+                                  : 'Sin definir'}
+                              </span>
+                            </span>
                           </div>
                           {budgetAmt > 0 && (
                             <div className={`flex items-center gap-1.5 text-[10px]`}>
@@ -1326,7 +1354,9 @@ export default function Dashboard({ onNavigate }: { onNavigate?: (tab: string) =
               <form onSubmit={addBudget} className="space-y-4">
                 <select className="w-full rounded-xl border border-gray-200 p-3 shadow-sm" value={newBgtCatId} onChange={e => setNewBgtCatId(e.target.value)} required>
                   <option value="" disabled>Seleccionar Categoría</option>
-                  {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {categories
+                    .filter((c: any) => c.type === 'EXPENSE' && c.name !== 'Servicios Recurrentes' && c.name !== 'Deudas Recurrentes')
+                    .map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
                 <input type="number" step="0.01" className="w-full rounded-xl border border-gray-200 p-3 shadow-sm" placeholder={`Monto en ${selectedAcc?.currency || ''}`} value={newBgtAmt} onChange={e => setNewBgtAmt(e.target.value)} required />
                 <button

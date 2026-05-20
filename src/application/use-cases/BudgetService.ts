@@ -5,6 +5,8 @@ const DEFAULT_CATEGORIES = [
     { name: "Salida de dinero al exterior", type: "EXPENSE" },
     { name: "Servicios", type: "EXPENSE" },
     { name: "Deudas", type: "EXPENSE" },
+    { name: "Servicios Recurrentes", type: "EXPENSE" },
+    { name: "Deudas Recurrentes", type: "EXPENSE" },
     { name: "Ahorros", type: "EXPENSE" },
     { name: "Otros gastos", type: "EXPENSE" },
     { name: "Mercado", type: "EXPENSE" },
@@ -190,7 +192,6 @@ export class BudgetService {
     async getBudgetObligations(y: number, m: number) { return this.repo.getBudgetObligations(y, m); }
     async updateBudgetObligation(id: number, data: any) { return this.performOperation(() => this.repo.updateBudgetObligation(id, data)); }
     async deleteBudgetObligation(id: number) { return this.performOperation(() => this.repo.deleteBudgetObligation(id)); }
-    async deleteBudgetObligation(id: number) { return this.performOperation(() => this.repo.deleteBudgetObligation(id)); }
 
     // Business Logic: Instantiate Recurring Items specifically
     async instantiateRecurringItems(year: number, month: number, accountId: number, userId: number) {
@@ -204,7 +205,7 @@ export class BudgetService {
             if (item.start_year > year || (item.start_year === year && item.start_month > month)) return false;
             
             // Check End Date (if exists)
-            if (item.end_year && (item.end_year < year || (item.end_year === year && item.end_month < month))) return false;
+            if (item.end_year && (item.end_year < year || (item.end_year === year && item.end_month && item.end_month < month))) return false;
 
             if (item.account_id !== accountId) return false;
             return !obs.some(o => o.recurring_item_id === item.id);
