@@ -34,6 +34,9 @@ export interface AlertEngineInput {
   currency: string;
   accountId: string;
   db?: Database;
+  cardBudgets?: any[];
+  linkedCards?: any[];
+  allMonthlyTransactions?: any[];
 }
 
 function expenseOnly(txs: any[], categories: any[]): any[] {
@@ -272,10 +275,73 @@ async function* detectWeekendSpending(
   await new Promise(r => setTimeout(r, 0));
 }
 
+async function* detectCardOverspend(
+  linkedCards: any[] | undefined,
+  cardBudgets: any[] | undefined,
+  allMonthlyTransactions: any[] | undefined,
+  categories: any[],
+  currency: string,
+  scope: string
+): AsyncGenerator<SmartAlert> {
+  if (!linkedCards || !cardBudgets || !allMonthlyTransactions) return;
+
+  for (const card of linkedCards) {
+    const cardTx = allMonthlyTransactions.filter((t: any) => t.card_id === card.id);
+    const grossSpent = cardTx.reduce((sum: number, tx: any) => {
+      const cat = categories.find((c: any) => c.id === tx.category_id);
+      return cat?.type === 'EXPENSE' ? sum + tx.amount : sum;
+    }, 0);
+    const currentBgt = cardBudgets.find((b: any) => b.card_id === card.id);
+    const bgtAmt = currentBgt ? currentBgt.amount : 0;
+
+    if (bgtAmt > 0 && grossSpent > bgtAmt) {
+      const excess = grossSpent - bgtAmt;
+      const fmt = (v: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency, maximumFractionDigits: 0 }).format(v);
+
+      yield {
+        id: `${scope}-cardover-${card.id}`,
+        type: 'ANOMALY',
+        severity: 'CRITICAL',
+        title: `Sobre-consumo en tarjeta ${card.name}`,
+        message: `Has gastado ${fmt(grossSpent)} en tu tarjeta "${card.name}", superando la reserva planificada de ${fmt(bgtAmt)} por ${fmt(excess)}.`,
+        amount: excess,
+        currency,
+      };
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+}
+
+async function* detectObligationOverspend(
+  obligations: any[],
+  currency: string,
+  scope: string
+): AsyncGenerator<SmartAlert> {
+  if (!obligations) return;
+
+  for (const item of obligations) {
+    if (item.isPaid && item.paidAmount > item.amount) {
+      const excess = item.paidAmount - item.amount;
+      const fmt = (v: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency, maximumFractionDigits: 0 }).format(v);
+
+      yield {
+        id: `${scope}-oblover-${item.id}`,
+        type: 'ANOMALY',
+        severity: 'WARNING',
+        title: `Sobre-gasto en obligación: ${item.name}`,
+        message: `El pago real de "${item.name}" fue de ${fmt(item.paidAmount)}, superando el monto presupuestado de ${fmt(item.amount)} por ${fmt(excess)}.`,
+        amount: excess,
+        currency,
+      };
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+}
+
 // --- Generador central ---
 
 export async function* runAlertEngine(input: AlertEngineInput): AsyncGenerator<SmartAlert> {
-  const { currentMonthTx, prevMonthTx, categories, categoryBudgets, budgetObligations, currentDay, daysInMonth, currency, accountId, db } = input;
+  const { currentMonthTx, prevMonthTx, categories, categoryBudgets, budgetObligations, currentDay, daysInMonth, currency, accountId, db, cardBudgets, linkedCards, allMonthlyTransactions } = input;
   const scope = accountId;
 
   await embeddingService.init();
@@ -291,6 +357,8 @@ export async function* runAlertEngine(input: AlertEngineInput): AsyncGenerator<S
   for await (const a of detectOverdueObligations(budgetObligations, currentDay, currency, scope)) allAlerts.push(a);
   for await (const a of detectSavingOpportunity(currentMonthTx, categoryBudgets, categories, currentDay, daysInMonth, currency, scope, db)) allAlerts.push(a);
   for await (const a of detectWeekendSpending(currentMonthTx, categories, currentDay, currency, scope, db)) allAlerts.push(a);
+  for await (const a of detectCardOverspend(linkedCards, cardBudgets, allMonthlyTransactions, categories, currency, scope)) allAlerts.push(a);
+  for await (const a of detectObligationOverspend(budgetObligations, currency, scope)) allAlerts.push(a);
 
   if (embeddingService.isAvailable() && db) {
     embeddingService.saveToDB(db, currentMonthTx, scope);

@@ -28,6 +28,9 @@ interface Props {
   currency: string;
   dataReady: boolean; // true solo cuando el Dashboard terminó de cargar todos los datos
   accountId: string;  // ID de la cuenta/tarjeta para separar alertas descartadas
+  cardBudgets?: any[];
+  linkedCards?: any[];
+  allMonthlyTransactions?: any[];
 }
 
 const severityConfig = {
@@ -54,7 +57,19 @@ const severityConfig = {
   },
 };
 
-export default function SmartAlertPanel({ currentMonthTx, prevMonthTx, categories, categoryBudgets, budgetObligations, currency, dataReady, accountId }: Props) {
+export default function SmartAlertPanel({
+  currentMonthTx,
+  prevMonthTx,
+  categories,
+  categoryBudgets,
+  budgetObligations,
+  currency,
+  dataReady,
+  accountId,
+  cardBudgets,
+  linkedCards,
+  allMonthlyTransactions,
+}: Props) {
   const [alerts, setAlerts] = useState<SmartAlert[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(getDismissed);
   const [isRunning, setIsRunning] = useState(false);
@@ -93,7 +108,10 @@ export default function SmartAlertPanel({ currentMonthTx, prevMonthTx, categorie
       daysInMonth,
       currency,
       accountId,
-      db
+      db,
+      cardBudgets,
+      linkedCards,
+      allMonthlyTransactions
     };
 
     const engine = runAlertEngine(inputData);
@@ -119,7 +137,7 @@ export default function SmartAlertPanel({ currentMonthTx, prevMonthTx, categorie
         setIsRunning(false);
       }
     })();
-  }, [dataReady, accountId, currentMonthTx]);
+  }, [dataReady, accountId, currentMonthTx, cardBudgets, linkedCards]);
 
   const dismiss = (id: string) => {
     const next = new Set(dismissed).add(id);
@@ -158,8 +176,10 @@ export default function SmartAlertPanel({ currentMonthTx, prevMonthTx, categorie
   const warningCount = activeAlerts.filter(a => a.severity === 'WARNING').length;
   const dismissedCount = alerts.filter(a => dismissed.has(a.id)).length;
 
-  // Estado: datos aún cargando (antes de que el Dashboard diga que está listo)
-  if (!dataReady && !isRunning && activeAlerts.length === 0) {
+  // Estado: analizando datos (cargando o ejecutando sin alertas aún)
+  const isAnalyzing = !dataReady || (isRunning && activeAlerts.length === 0);
+
+  if (isAnalyzing) {
     return (
       <div className="mb-6 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
         <div className="flex items-center gap-3 px-5 py-3.5">
@@ -179,19 +199,29 @@ export default function SmartAlertPanel({ currentMonthTx, prevMonthTx, categorie
     );
   }
 
-  // Estado: todo procesado pero sin alertas (y nada descartado)
-  if (!isRunning && activeAlerts.length === 0) {
-    return dismissedCount > 0 ? (
-      <div className="mb-4 flex items-center justify-end">
-        <button
-          onClick={undoDismissAll}
-          className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 hover:text-indigo-500 transition-colors uppercase tracking-widest"
-        >
-          <RotateCcw className="w-3 h-3" />
-          Restaurar {dismissedCount} alerta(s) descartada(s)
-        </button>
+  // Estado: todo procesado pero sin alertas
+  if (activeAlerts.length === 0) {
+    return (
+      <div className="mb-6 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3.5 bg-gray-50/30">
+          <div className="flex items-center gap-3">
+            <Sparkles className="w-4 h-4 text-gray-400 shrink-0" />
+            <span className="text-sm font-medium text-gray-500">
+              No se tienen alertas de Bagi en este momento.
+            </span>
+          </div>
+          {dismissedCount > 0 && (
+            <button
+              onClick={undoDismissAll}
+              className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 hover:text-indigo-500 transition-colors uppercase tracking-widest"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Restaurar ({dismissedCount})
+            </button>
+          )}
+        </div>
       </div>
-    ) : null;
+    );
   }
 
   return (

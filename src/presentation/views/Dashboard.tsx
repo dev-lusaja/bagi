@@ -3,6 +3,7 @@ import { useBudget } from '../context/BudgetContext';
 import { Filter, ArrowRight, Repeat } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import SmartAlertPanel from '../components/SmartAlertPanel';
+import BudgetDiagnosticWidget from '../components/BudgetDiagnosticWidget';
 import PromptModal from '../components/PromptModal';
 import AlertModal from '../components/AlertModal';
 
@@ -11,7 +12,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [accountId, setAccountId] = useState('');
-  const [activeTab, setActiveTab] = useState('consumption');
+  const [activeTab, setActiveTab] = useState('diagnostic');
 
   const [accounts, setAccounts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -64,13 +65,13 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     message: '',
     defaultValue: '',
     inputType: 'text',
-    onConfirm: () => {}
+    onConfirm: () => { }
   });
 
-  const [alertConfig, setAlertConfig] = useState<{ 
-    isOpen: boolean; 
-    title: string; 
-    message: string; 
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
     type: 'info' | 'error' | 'success' | 'warning';
     onConfirm?: () => void;
   }>({
@@ -517,18 +518,6 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
   const totalSpent = totalSpentGlobal; // Alias for cleaner JSX reading
   const monthlyReserved = cardBudgets.reduce((acc: number, b: any) => acc + b.amount, 0);
 
-  // Consider an excess ONLY if individual card spent > its reserved budget
-  const cardExcess = linkedCards.reduce((acc: number, card: any) => {
-    const cardTx = (allMonthlyTransactions as any[]).filter((t: any) => t.card_id === card.id);
-    const grossSpent = cardTx.reduce((sum: number, tx: any) => {
-      const cat = (categories as any[]).find((c: any) => c.id === tx.category_id);
-      if (cat?.type === 'EXPENSE') return sum + tx.amount;
-      return sum;
-    }, 0);
-    const currentBgt = cardBudgets.find((b: any) => b.card_id === card.id);
-    const bgtAmt = currentBgt ? currentBgt.amount : 0;
-    return acc + Math.max(0, grossSpent - bgtAmt);
-  }, 0);
 
   // Remaining budget based on reality (Cash Flow)
   const remainingGlobal = globalBudget ? globalBudget.total_amount - totalSpentGlobal : 0;
@@ -620,6 +609,27 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
   const theoreticalFreeBalance = globalBudget ? globalBudget.total_amount - totalPlannedArchitecture : 0;
   const isOverPlannedArchitecture = globalBudget && totalPlannedArchitecture > globalBudget.total_amount;
 
+  // --- Lógica de la Triple Barra Segmentada ---
+  const totalVariableSpent = (categories as any[]).reduce((acc: number, cat: any) => {
+    if (cat.type !== 'EXPENSE') return acc;
+    if (cat.name === "Servicios Recurrentes" || cat.name === "Deudas Recurrentes") return acc;
+    return acc + (actualsByCategory[cat.id] || 0);
+  }, 0);
+
+  const totalObligationsPaid = obligationsStatus.filter((item: any) => item.isPaid).reduce((acc: number, item: any) => acc + item.amount, 0);
+  const obligationsActualPaid = obligationsStatus.filter((item: any) => item.isPaid).reduce((acc: number, item: any) => acc + item.paidAmount, 0);
+  const paidObligationsCount = obligationsStatus.filter((item: any) => item.isPaid).length;
+  const totalObligationsCount = filteredRecurring.length;
+
+  const totalCardsSpent = linkedCards.reduce((acc: number, card: any) => {
+    const cardTx = (allMonthlyTransactions as any[]).filter((t: any) => t.card_id === card.id);
+    const grossSpent = cardTx.reduce((sum: number, tx: any) => {
+      const cat = (categories as any[]).find((c: any) => c.id === tx.category_id);
+      return cat?.type === 'EXPENSE' ? sum + tx.amount : sum;
+    }, 0);
+    return acc + grossSpent;
+  }, 0);
+
   const isPastMonth = year < new Date().getFullYear() || (year === new Date().getFullYear() && month < new Date().getMonth() + 1);
 
   return (
@@ -673,27 +683,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="col-span-1 md:col-span-2">
-          {/* ADVERTENCIA DE PRESUPUESTO INSUFICIENTE (PLANIFICACIÓN) */}
-          {isOverPlanned && (
-            <div className="mb-6 bg-rose-50 border border-rose-200 p-4 rounded-xl flex items-start gap-3 text-rose-800 shadow-sm transition-all border-l-4 border-l-rose-500">
-              <svg className="w-6 h-6 shrink-0 text-rose-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
-              <div>
-                <h4 className="font-bold text-lg leading-none">Presupuesto insuficiente · Faltan {formatCurrency(budgetDiff, selectedAcc?.currency || 'PEN')}</h4>
-                <p className="text-sm mt-1 text-rose-700/80 font-medium">Las categorías asignadas (objetivos) superan tu presupuesto mensual. Reduce límites o aumenta el presupuesto.</p>
-              </div>
-            </div>
-          )}
 
-          {/* ADVERTENCIA DE GASTO REAL EXCEDIDO */}
-          {isOverBudgeted && (
-            <div className="mb-6 bg-rose-600 p-4 rounded-xl flex items-start gap-3 text-white shadow-lg animate-pulse">
-              <svg className="w-6 h-6 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
-              <div>
-                <h4 className="font-bold">Gasto Excedido</h4>
-                <p className="text-sm">¡Atención! Actualmente has gastado más dinero del que habías presupuestado para este mes ({formatCurrency(Math.abs(remainingGlobal), selectedAcc?.currency)} de déficit).</p>
-              </div>
-            </div>
-          )}
 
           {/* ALERTAS GLOBALES */}
           {!isCard && (() => {
@@ -742,11 +732,20 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
               currency={selectedAcc?.currency || 'COP'}
               dataReady={isDashboardDataReady}
               accountId={accountId || ''}
+              cardBudgets={cardBudgets}
+              linkedCards={linkedCards}
+              allMonthlyTransactions={allMonthlyTransactions}
             />
           )}
 
           {/* Tabs Navigation */}
-          <div className="flex space-x-1 mb-6 bg-gray-100/50 p-1 rounded-2xl w-fit">
+          <div className="flex space-x-1 mb-6 bg-gray-100/50 p-1 rounded-2xl w-fit flex-wrap gap-y-1">
+            <button
+              onClick={() => setActiveTab('diagnostic')}
+              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'diagnostic' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
+            >
+              Resumen
+            </button>
             <button
               onClick={() => setActiveTab('consumption')}
               className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'consumption' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
@@ -769,6 +768,31 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
             )}
           </div>
 
+          {activeTab === 'diagnostic' && (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-6">
+              <h3 className="text-xl font-semibold">Resumen</h3>
+              <BudgetDiagnosticWidget
+                globalBudget={globalBudget}
+                totalSpentGlobal={totalSpentGlobal}
+                totalPlannedCommitment={totalPlannedArchitecture}
+                currency={selectedAcc?.currency || selectedCard?.currency || 'PEN'}
+                categories={categories}
+                budgets={budgets}
+                actualsByCategory={actualsByCategory}
+                filteredRecurring={filteredRecurring}
+                variablePlan={totalVariableLimitsPlan}
+                variableSpent={totalVariableSpent}
+                obligationsPlan={totalServicesPlan}
+                obligationsPaid={totalObligationsPaid}
+                obligationsActualPaid={obligationsActualPaid}
+                paidObligationsCount={paidObligationsCount}
+                totalObligationsCount={totalObligationsCount}
+                cardsPlan={totalCardsPlan}
+                cardsSpent={totalCardsSpent}
+              />
+            </div>
+          )}
+
           {activeTab === 'consumption' && (
             <>
               <h3 className="text-xl font-semibold mb-6">Consumo por categoría</h3>
@@ -779,13 +803,13 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                   const b = (budgets as any[]).find((b: any) => b.category_id === cat.id);
                   const actual = actualsByCategory[cat.id] || 0;
                   const isSpecialRecurring = cat.name === "Servicios Recurrentes" || cat.name === "Deudas Recurrentes";
-                  
-                    let budgetAmt = b ? (b as any).amount : 0;
-                    if (isSpecialRecurring) {
-                      budgetAmt = (filteredRecurring as any[])
-                        .filter((o: any) => o.category_id === cat.id)
-                        .reduce((sum: number, o: any) => sum + o.amount, 0);
-                    }
+
+                  let budgetAmt = b ? (b as any).amount : 0;
+                  if (isSpecialRecurring) {
+                    budgetAmt = (filteredRecurring as any[])
+                      .filter((o: any) => o.category_id === cat.id)
+                      .reduce((sum: number, o: any) => sum + o.amount, 0);
+                  }
 
                   // Real percentage — no cap so we can show 3000% etc.
                   const percent = budgetAmt > 0 ? Math.round((actual / budgetAmt) * 100) : (actual > 0 ? 100 : 0);
@@ -839,8 +863,8 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                             <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
                             <span className="font-semibold text-gray-400 uppercase tracking-wider gap-1">
                               Límite: <span className="text-gray-500">
-                                {budgetAmt > 0 
-                                  ? `${formatCurrency(budgetAmt, selectedAcc?.currency || selectedCard?.currency)}${isSpecialRecurring ? ' (Fijo/Obligaciones)' : ''}` 
+                                {budgetAmt > 0
+                                  ? `${formatCurrency(budgetAmt, selectedAcc?.currency || selectedCard?.currency)}${isSpecialRecurring ? ' (Fijo/Obligaciones)' : ''}`
                                   : 'Sin definir'}
                               </span>
                             </span>
@@ -1201,12 +1225,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                           </div>
                         </div>
 
-                        {cardExcess > 0 && (
-                          <div className="mt-3 text-[10px] text-rose-200 font-bold italic flex items-center gap-1 bg-white/5 p-2 rounded-lg border border-white/10">
-                            <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                            Sobre-consumo en tarjetas: {formatCurrency(cardExcess, selectedAcc?.currency)}
-                          </div>
-                        )}
+
                       </>
                     )}
                   </>
@@ -1281,7 +1300,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                 <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                 </div>
-                <h3 className="text-lg font-bold text-gray-800">Planificación Global</h3>
+                <h3 className="text-lg font-bold text-gray-800">Planificación mensual</h3>
               </div>
 
               <div className="space-y-5">

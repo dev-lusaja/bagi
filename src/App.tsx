@@ -56,7 +56,7 @@ export default function App() {
   return (
     <div className="flex h-screen bg-gray-50 font-sans text-gray-900 overflow-hidden">
       <SavingOverlay isVisible={isSyncing} />
-      
+
       {/* Sidebar Navigation (Desktop) */}
       <aside className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col shadow-sm">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between gap-3 bg-gradient-to-r from-gray-50 to-white">
@@ -66,42 +66,41 @@ export default function App() {
             </div>
             <h1 className="text-xl font-black text-gray-800 tracking-tighter">Bagi</h1>
           </div>
-          <button 
+          <button
             onClick={sync}
             disabled={isSyncing}
-            className={`p-2 rounded-lg transition-all ${
-              isSyncing ? 'animate-pulse text-indigo-400' : 
-              hasPendingChanges ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' : 
-              'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
-            }`}
+            className={`p-2 rounded-lg transition-all ${isSyncing ? 'animate-pulse text-indigo-400' :
+                hasPendingChanges ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' :
+                  'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+              }`}
             title={isSyncing ? 'Sincronizando...' : hasPendingChanges ? 'Cambios pendientes - Clic para sincronizar' : 'Todo sincronizado'}
           >
-            {isSyncing ? <Loader2 className="w-5 h-5 animate-spin" /> : 
-             hasPendingChanges ? <CloudAlert className="w-5 h-5" /> : 
-             <CloudCheck className="w-5 h-5" />}
+            {isSyncing ? <Loader2 className="w-5 h-5 animate-spin" /> :
+              hasPendingChanges ? <CloudAlert className="w-5 h-5" /> :
+                <CloudCheck className="w-5 h-5" />}
           </button>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-2">
-          <button 
+          <button
             onClick={() => setActiveTab('home')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'home' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <HomeIcon className="w-5 h-5" />
             <span>Inicio</span>
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('dashboard')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <LayoutDashboard className="w-5 h-5" />
             <span>Presupuesto</span>
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('transactions')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'transactions' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <Receipt className="w-5 h-5" />
             <span>Transacciones</span>
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('settings')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <Settings className="w-5 h-5" />
@@ -109,39 +108,39 @@ export default function App() {
           </button>
         </nav>
         <div className="p-4 border-t border-gray-100 space-y-4">
-           {userInfo && (
-             <div className="px-4 py-2 flex items-center gap-3">
-               {userInfo.picture && !imgError ? (
-                 <img 
-                   src={userInfo.picture} 
-                   referrerPolicy="no-referrer"
-                   onError={() => setImgError(true)}
-                   className="w-8 h-8 rounded-full border border-gray-100 shadow-sm" 
-                   alt="" 
-                 />
-               ) : (
-                 <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
-                   <User className="w-4 h-4" />
-                 </div>
-               )}
-               <div className="overflow-hidden">
-                 <p className="text-xs font-bold text-gray-800 truncate">{userInfo.name}</p>
-                 <p className="text-[10px] text-gray-400">Google Account</p>
-               </div>
-             </div>
-           )}
-           <button 
-              onClick={logout}
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors">
-              <LogOut className="w-5 h-5" />
-              <span>Cerrar Sesión</span>
-           </button>
+          {userInfo && (
+            <div className="px-4 py-2 flex items-center gap-3">
+              {userInfo.picture && !imgError ? (
+                <img
+                  src={userInfo.picture}
+                  referrerPolicy="no-referrer"
+                  onError={() => setImgError(true)}
+                  className="w-8 h-8 rounded-full border border-gray-100 shadow-sm"
+                  alt=""
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
+                  <User className="w-4 h-4" />
+                </div>
+              )}
+              <div className="overflow-hidden">
+                <p className="text-xs font-bold text-gray-800 truncate">{userInfo.name}</p>
+                <p className="text-[10px] text-gray-400">Google Account</p>
+              </div>
+            </div>
+          )}
+          <button
+            onClick={logout}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors">
+            <LogOut className="w-5 h-5" />
+            <span>Cerrar Sesión</span>
+          </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <main ref={mainRef} className="flex-1 overflow-auto scroll-smooth overscroll-contain p-4 md:p-8 pb-24 md:pb-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-[90rem] mx-auto">
           {activeTab === 'home' && <Home onNavigate={setActiveTab} />}
           {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} />}
           {activeTab === 'transactions' && <Transactions />}
