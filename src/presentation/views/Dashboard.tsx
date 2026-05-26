@@ -558,7 +558,6 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
 
   // Warning logic
   const isOverBudgeted = globalBudget && totalSpentGlobal > globalBudget.total_amount; // Current reality
-  const isOverPlanned = globalBudget && totalPlannedCommitment > globalBudget.total_amount; // Planning level
   const budgetDiff = globalBudget ? Math.abs(totalPlannedCommitment - globalBudget.total_amount) : 0;
 
   const categoriesWithoutLimit = (categories as any[]).filter((c: any) => {
@@ -616,7 +615,6 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     return acc + (actualsByCategory[cat.id] || 0);
   }, 0);
 
-  const totalObligationsPaid = obligationsStatus.filter((item: any) => item.isPaid).reduce((acc: number, item: any) => acc + item.amount, 0);
   const obligationsActualPaid = obligationsStatus.filter((item: any) => item.isPaid).reduce((acc: number, item: any) => acc + item.paidAmount, 0);
   const paidObligationsCount = obligationsStatus.filter((item: any) => item.isPaid).length;
   const totalObligationsCount = filteredRecurring.length;
@@ -783,7 +781,6 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                 variablePlan={totalVariableLimitsPlan}
                 variableSpent={totalVariableSpent}
                 obligationsPlan={totalServicesPlan}
-                obligationsPaid={totalObligationsPaid}
                 obligationsActualPaid={obligationsActualPaid}
                 paidObligationsCount={paidObligationsCount}
                 totalObligationsCount={totalObligationsCount}
