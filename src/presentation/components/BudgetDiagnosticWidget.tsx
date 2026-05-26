@@ -14,7 +14,6 @@ interface Props {
   variablePlan: number;
   variableSpent: number;
   obligationsPlan: number;
-  obligationsPaid: number;
   obligationsActualPaid: number;
   paidObligationsCount: number;
   totalObligationsCount: number;
@@ -34,7 +33,6 @@ export default function BudgetDiagnosticWidget({
   variablePlan,
   variableSpent,
   obligationsPlan,
-  obligationsPaid,
   obligationsActualPaid,
   paidObligationsCount,
   totalObligationsCount,
