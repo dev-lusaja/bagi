@@ -40,6 +40,7 @@ export interface Transaction {
     recurring_item_id?: number;
     budget_obligation_id?: number;
     user_id: number;
+    imputation_date: string;
 }
 
 export interface RecurringItem {

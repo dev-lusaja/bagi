@@ -107,11 +107,11 @@ export class SqliteBudgetRepository implements IBudgetRepository {
         if (filters?.year && filters?.month) {
             const monthStr = filters.month.toString().padStart(2, '0');
             const pattern = `${filters.year}-${monthStr}-%`;
-            sql += " AND t.date LIKE ?";
+            sql += " AND t.imputation_date LIKE ?";
             params.push(pattern);
         } else if (filters?.year) {
             const pattern = `${filters.year}-%`;
-            sql += " AND t.date LIKE ?";
+            sql += " AND t.imputation_date LIKE ?";
             params.push(pattern);
         }
 
@@ -140,15 +140,17 @@ export class SqliteBudgetRepository implements IBudgetRepository {
     }
 
     async saveTransaction(transaction: Omit<Transaction, 'id'>): Promise<Transaction> {
+        const imputationDate = transaction.imputation_date || transaction.date;
         this.execute(
-            'INSERT INTO transactions (date, amount, description, account_id, card_id, category_id, recurring_item_id, budget_obligation_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO transactions (date, amount, description, account_id, card_id, category_id, recurring_item_id, budget_obligation_id, user_id, imputation_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 transaction.date, transaction.amount, transaction.description,
                 transaction.account_id ?? null, transaction.card_id ?? null, transaction.category_id ?? null,
-                transaction.recurring_item_id ?? null, transaction.budget_obligation_id ?? null, transaction.user_id
+                transaction.recurring_item_id ?? null, transaction.budget_obligation_id ?? null, transaction.user_id,
+                imputationDate
             ]
         );
-        return { ...transaction, id: this.getLastInsertId() };
+        return { ...transaction, imputation_date: imputationDate, id: this.getLastInsertId() };
     }
 
     async deleteTransaction(id: number): Promise<void> {

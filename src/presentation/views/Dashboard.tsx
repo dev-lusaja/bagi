@@ -314,10 +314,15 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
         const finalAccountId = item.account_id || (accountId.startsWith('c-') ? null : parseInt(accountId));
         const finalCardId = item.card_id || (accountId.startsWith('c-') ? parseInt(accountId.replace('c-', '')) : null);
 
+        //const day = Math.min(item.due_day || 1, 28);
+        const day = 1; // Siempre imputar al primer dia del mes
+        const imputationDate = new Date(item.year, item.month - 1, day, 12, 0, 0).toISOString();
+
         await service.addTransaction({
           amount,
           description: `Pago Recurrente: ${item.name}`,
           date: new Date().toISOString(),
+          imputation_date: imputationDate,
           category_id: item.category_id,
           budget_obligation_id: item.id,
           account_id: finalAccountId,
@@ -375,6 +380,14 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
         const amount = parseFloat(confirmAmt);
         if (isNaN(amount) || amount <= 0) return;
 
+        let imputationDate = undefined;
+        const now = new Date();
+        if (now.getFullYear() !== year || now.getMonth() + 1 !== month) {
+          //const day = Math.min(now.getDate(), 28);
+          const day = 1; // Siempre imputar al primer dia del mes
+          imputationDate = new Date(year, month - 1, day, 12, 0, 0).toISOString();
+        }
+
         const transferCats = categories.filter((c: any) => c.type === 'TRANSFER');
         const expenseCats = categories.filter((c: any) => c.type === 'EXPENSE');
 
@@ -401,6 +414,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
           amount,
           description: `Abono a Tarjeta: ${card.name}`,
           date: new Date().toISOString(),
+          imputation_date: imputationDate,
           category_id: catId,
           account_id: null,
           card_id: card.id,
@@ -419,6 +433,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
             amount,
             description: `Pago de Tarjeta: ${card.name}`,
             date: new Date().toISOString(),
+            imputation_date: imputationDate,
             category_id: pagoCat.id,
             account_id: sourceAcc,
             card_id: null,

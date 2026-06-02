@@ -110,16 +110,16 @@ export function refreshMonthlySummary(
       SELECT
         t.account_id,
         t.category_id,
-        strftime('%Y-%m', t.date)                         AS ym,
+        strftime('%Y-%m', t.imputation_date)              AS ym,
         SUM(t.amount)                                      AS total_amount,
         COUNT(*)                                           AS tx_count,
-        CAST(SUM(CASE WHEN strftime('%w', t.date) IN ('0','5','6')
+        CAST(SUM(CASE WHEN strftime('%w', t.imputation_date) IN ('0','5','6')
                       THEN t.amount ELSE 0 END) AS REAL)
           / NULLIF(SUM(t.amount), 0)                       AS weekend_pct
       FROM transactions t
       JOIN categories c ON c.id = t.category_id AND c.type = 'EXPENSE'
       WHERE t.account_id = ?
-        AND strftime('%Y-%m', t.date) = ?
+        AND strftime('%Y-%m', t.imputation_date) = ?
       GROUP BY t.account_id, t.category_id, ym
     `;
     db.run(sql, [accountId, yearMonth]);

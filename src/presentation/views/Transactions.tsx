@@ -28,6 +28,9 @@ export default function Transactions() {
   const [sourceId, setSourceId] = useState(''); // 'id' for account, 'c-id' for card
   const [catId, setCatId] = useState('');
   const [date, setDate] = useState('');
+  const currentPeriod = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
+  const [budgetPeriod, setBudgetPeriod] = useState(currentPeriod);
+  const [overrideBudgetPeriod, setOverrideBudgetPeriod] = useState(false);
 
   const fetchFilters = async (isLoadMore = false) => {
     if (isLoadMore) setLoadingMore(true);
@@ -81,6 +84,17 @@ export default function Transactions() {
       finalDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0).toISOString();
     }
 
+    const activePeriod = budgetPeriod || currentPeriod;
+    const [bYear, bMonth] = activePeriod.split('-');
+    const txDay = date ? parseInt(date.split('-')[2]) : new Date().getDate();
+    const tempDate = new Date(parseInt(bYear), parseInt(bMonth) - 1, txDay, 12, 0, 0);
+    let finalImputationDate: string;
+    if (tempDate.getMonth() !== parseInt(bMonth) - 1) {
+      finalImputationDate = new Date(parseInt(bYear), parseInt(bMonth), 0, 12, 0, 0).toISOString();
+    } else {
+      finalImputationDate = tempDate.toISOString();
+    }
+
     await service.addTransaction({
         description: desc, 
         amount: parseFloat(amt), 
@@ -88,9 +102,10 @@ export default function Transactions() {
         card_id: isCard ? actualId : null,
         category_id: parseInt(catId),
         date: finalDate,
+        imputation_date: finalImputationDate,
         user_id: 1 // Default
     });
-    setDesc(''); setAmt(''); 
+    setDesc(''); setAmt(''); setBudgetPeriod(currentPeriod); setOverrideBudgetPeriod(false);
     fetchFilters(); // Reset to first page
   };
 
@@ -111,6 +126,22 @@ export default function Transactions() {
       default:
         return null;
     }
+  };
+
+  const getImputationBadge = (t: any) => {
+    if (!t.imputation_date) return null;
+    const d = new Date(t.date);
+    const imp = new Date(t.imputation_date);
+    if (d.getFullYear() !== imp.getFullYear() || d.getMonth() !== imp.getMonth()) {
+      const periodStr = imp.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+      const capitalized = periodStr.charAt(0).toUpperCase() + periodStr.slice(1);
+      return (
+        <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-md mt-1 w-fit">
+          Imputado a {capitalized}
+        </span>
+      );
+    }
+    return null;
   };
 
   const groupedTransactions = (() => {
@@ -158,10 +189,6 @@ export default function Transactions() {
           Registrar nuevo movimiento
         </h3>
         <form onSubmit={addTx} className="grid grid-cols-1 md:grid-cols-6 gap-4">
-           <div className="flex flex-col gap-1">
-             <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Fecha</label>
-             <input type="date" className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all" value={date} onChange={e=>setDate(e.target.value)} />
-           </div>
            <div className="md:col-span-2 flex flex-col gap-1">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Descripción</label>
              <input className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all" placeholder="Ej: Supermercado..." value={desc} onChange={e=>setDesc(e.target.value)} required />
@@ -182,7 +209,7 @@ export default function Transactions() {
                </optgroup>
              </select>
            </div>
-           <div className="flex flex-col gap-1">
+           <div className="md:col-span-2 flex flex-col gap-1">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Categoría</label>
              <select className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all" value={catId} onChange={e=>setCatId(e.target.value)} required>
                <option value="" disabled>Seleccionar...</option>
@@ -197,10 +224,49 @@ export default function Transactions() {
                </optgroup>
              </select>
            </div>
-           <button type="submit" className="md:col-span-6 bg-gray-900 text-white py-3 rounded-2xl hover:bg-gray-800 transition-all font-bold shadow-lg shadow-gray-200 active:scale-[0.98] mt-2">
-             Guardar Transacción
-           </button>
-        </form>
+
+           <div className="md:col-span-2 flex flex-col gap-1">
+             <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Fecha de Registro</label>
+             <input type="date" className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all" value={date} onChange={e => {
+               const newDate = e.target.value;
+               setDate(newDate);
+               if (!overrideBudgetPeriod) {
+                 if (newDate) {
+                   const [y, m] = newDate.split('-');
+                   setBudgetPeriod(`${y}-${m}`);
+                 } else {
+                   setBudgetPeriod(currentPeriod);
+                 }
+               }
+             }} />
+           </div>
+           <div className="md:col-span-2 flex flex-col gap-1">
+             <div className="flex items-center justify-between">
+               <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Período Presupuestario</label>
+             </div>
+             <input type="month" className={`rounded-xl border border-gray-100 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all ${overrideBudgetPeriod ? 'bg-white' : 'bg-gray-50/50 text-gray-400'}`} value={budgetPeriod} onChange={e=>setBudgetPeriod(e.target.value)} disabled={!overrideBudgetPeriod} />
+             <label className="flex items-center gap-1.5 cursor-pointer select-none ml-1 mt-1">
+               <input type="checkbox" className="w-3.5 h-3.5 rounded accent-indigo-600 cursor-pointer" checked={overrideBudgetPeriod} onChange={e => {
+                 const checked = e.target.checked;
+                 setOverrideBudgetPeriod(checked);
+                 if (!checked) {
+                   if (date) {
+                     const [y, m] = date.split('-');
+                     setBudgetPeriod(`${y}-${m}`);
+                   } else {
+                     setBudgetPeriod(currentPeriod);
+                   }
+                 }
+               }} />
+               <span className="text-[10px] font-bold text-gray-400">Cambiar período presupuestario</span>
+             </label>
+           </div>
+           <div className="md:col-span-2 flex flex-col gap-1 justify-end">
+             <button type="submit" className="bg-gray-900 text-white py-2.5 rounded-xl hover:bg-gray-800 transition-all font-bold shadow-lg shadow-gray-200 active:scale-[0.98] text-sm h-[44px]">
+               Guardar Transacción
+             </button>
+           </div>
+         </form>
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
@@ -283,7 +349,7 @@ export default function Transactions() {
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                            <span className="text-gray-800 font-normal">{t.description}</span>
-
+                           {getImputationBadge(t)}
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -348,6 +414,7 @@ export default function Transactions() {
                          <div className="flex justify-between items-start gap-4">
                             <div className="flex flex-col">
                                <span className="text-gray-800 font-medium text-sm">{t.description}</span>
+                               {getImputationBadge(t)}
                                <span className="text-[11px] text-gray-500 font-medium flex items-center gap-1 mt-1">
                                  {t.card_id ? <CreditCard className="w-3.5 h-3.5 text-indigo-400" /> : <Wallet className="w-3.5 h-3.5 text-emerald-400" />}
                                  {t.account?.name || t.card?.name}

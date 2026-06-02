@@ -112,6 +112,7 @@ const createSchema = (db: Database) => {
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             date TEXT,
+            imputation_date TEXT NOT NULL,
             amount REAL,
             description TEXT,
             account_id INTEGER,
