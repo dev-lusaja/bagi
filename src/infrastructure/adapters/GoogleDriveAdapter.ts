@@ -90,7 +90,7 @@ export class GoogleDriveAdapter {
         });
     }
 
-    async tryRestoreSession(): Promise<{ name: string; picture: string } | null> {
+    async tryRestoreSession(): Promise<{ name: string; picture: string; email: string } | null> {
         const savedToken = localStorage.getItem(this.STORAGE_KEY);
         if (!savedToken) return null;
 
@@ -219,7 +219,7 @@ export class GoogleDriveAdapter {
         return result.id;
     }
 
-    async getUserInfo(): Promise<{ name: string; picture: string } | null> {
+    async getUserInfo(): Promise<{ name: string; picture: string; email: string } | null> {
         if (!this.accessToken) return null;
         try {
             const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -236,7 +236,8 @@ export class GoogleDriveAdapter {
             const data = await response.json();
             return {
                 name: data.name,
-                picture: data.picture
+                picture: data.picture,
+                email: data.email ?? '',
             };
         } catch (err: any) {
             console.error('[Drive] Error fetching user info:', err);

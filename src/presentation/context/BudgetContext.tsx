@@ -2,13 +2,14 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { BudgetService } from '../../application/use-cases/BudgetService';
 import { SqliteBudgetRepository } from '../../infrastructure/repositories/SqliteBudgetRepository';
 import { GoogleDriveAdapter } from '../../infrastructure/adapters/GoogleDriveAdapter';
+import { AnalyticsService } from '../../services/AnalyticsService';
 
 interface BudgetContextType {
     service: BudgetService;
     isInitialized: boolean;
     isSyncing: boolean;
     hasPendingChanges: boolean;
-    userInfo: { name: string; picture: string } | null;
+    userInfo: { name: string; picture: string; email: string } | null;
     isAuthenticated: boolean;
     login: (provider: 'google' | 'onedrive') => Promise<void>;
     logout: () => Promise<void>;
@@ -22,7 +23,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [isInitialized, setIsInitialized] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [hasPendingChanges, setHasPendingChanges] = useState(false);
-    const [userInfo, setUserInfo] = useState<{ name: string; picture: string } | null>(null);
+    const [userInfo, setUserInfo] = useState<{ name: string; picture: string; email: string } | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
@@ -33,8 +34,12 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 
                 const restored = await service.tryRestoreSession();
                 if (restored) {
-                    setUserInfo(service.getUserInfo());
+                    const info = service.getUserInfo();
+                    setUserInfo(info);
                     setIsAuthenticated(true);
+                    if (info?.email) {
+                        AnalyticsService.identify(info.email, info.name);
+                    }
                 }
 
                 setIsInitialized(true);
@@ -63,8 +68,12 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (provider === 'google') {
             try {
                 await service.login();
-                setUserInfo(service.getUserInfo());
+                const info = service.getUserInfo();
+                setUserInfo(info);
                 setIsAuthenticated(true);
+                if (info?.email) {
+                    AnalyticsService.identify(info.email, info.name);
+                }
             } catch (error) {
                 await handleAuthError(error);
                 throw error;
@@ -76,6 +85,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const logout = async () => {
         await service.logout();
+        AnalyticsService.reset();
         setIsAuthenticated(false);
         setUserInfo(null);
     };

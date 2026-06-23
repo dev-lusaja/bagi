@@ -7,6 +7,7 @@ import SettingsView from './presentation/views/Settings';
 import Login from './presentation/views/Login';
 import { useBudget } from './presentation/context/BudgetContext';
 import { SavingOverlay } from './presentation/components/SavingOverlay';
+import { AnalyticsService } from './services/AnalyticsService';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -33,6 +34,8 @@ export default function App() {
     if (mainRef.current) {
       mainRef.current.scrollTo({ top: 0, behavior: 'auto' });
     }
+    // Track SPA navigation as a page_view event in GA4
+    AnalyticsService.trackPageView(activeTab);
   }, [activeTab]);
 
   if (!isInitialized) {

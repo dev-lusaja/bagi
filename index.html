@@ -5,6 +5,15 @@
     <link rel="icon" type="image/png" href="/logo_circle.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bagi</title>
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-P7L1ZKQJ5G"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      // send_page_view: false → manual tracking per SPA section in App.tsx
+      gtag('config', 'G-P7L1ZKQJ5G', { send_page_view: false });
+    </script>
   </head>
   <body>
     <div id="root"></div>
