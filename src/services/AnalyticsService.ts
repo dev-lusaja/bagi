@@ -4,6 +4,7 @@
  * Handles user identification (name + SHA-256 hashed email as user_id)
  * and SPA page-view tracking per section.
  */
+import { ErrorLogger } from './SentryLogger';
 
 const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined;
 
@@ -49,7 +50,7 @@ export const AnalyticsService = {
         user_id: userId,
       });
     } catch (err) {
-      console.warn('[Analytics] identify failed:', err);
+      ErrorLogger.capture(err, { source: 'AnalyticsService - identify' });
     }
   },
 

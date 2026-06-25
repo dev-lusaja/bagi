@@ -1,6 +1,7 @@
 import { Database } from 'sql.js';
 import { SmartAlert, AlertType, AlertEngineInput } from '../application/intelligence/AlertEngine';
 import { getCategoryStats, DEFAULT_STATS } from './FeatureExtractor';
+import { ErrorLogger } from './SentryLogger';
 
 export interface AlertFeatures {
   ratio_vs_mean: number;
@@ -42,7 +43,7 @@ export class AlertScorer {
       }
       stmt.free();
     } catch (e) {
-      console.warn("loadWeights error:", e);
+      ErrorLogger.capture(e, { source: 'AlertScorer - loadWeights' });
     }
   }
 
@@ -88,7 +89,7 @@ export class AlertScorer {
       db.exec('COMMIT;');
     } catch (e) {
       db.exec('ROLLBACK;');
-      console.warn("updateWeights error:", e);
+      ErrorLogger.capture(e, { source: 'AlertScorer - updateWeights' });
     }
   }
 }
@@ -131,7 +132,9 @@ export function buildAlertFeatures(
     recStmt.bind([alert.type, sevenDaysAgo]);
     if (recStmt.step()) recentSameTypeLength = 1;
     recStmt.free();
-  } catch(e) {}
+  } catch(e) {
+    ErrorLogger.capture(e, { source: 'AlertScorer - buildAlertFeatures' });
+  }
 
   return {
     ratio_vs_mean: alert.amount && stats.mean > 0

@@ -1,5 +1,6 @@
 import { IBudgetRepository } from '../../domain/repositories/IBudgetRepository';
 import { GoogleDriveAdapter } from '../../infrastructure/adapters/GoogleDriveAdapter';
+import { ErrorLogger } from '../../services/SentryLogger';
 
 const DEFAULT_CATEGORIES = [
     { name: "Salida de dinero al exterior", type: "EXPENSE" },
@@ -130,7 +131,7 @@ export class BudgetService {
             }
             this.pendingChanges = false;
         } catch (error: any) {
-            console.error('[Service] %cSync Failed', 'color: #ef4444', error);
+            ErrorLogger.capture(error, { source: 'BudgetService - syncToDrive' });
             if (error.message === 'AUTH_ERROR') throw error;
         } finally {
             this.isSyncing = false;
@@ -148,7 +149,7 @@ export class BudgetService {
             }
             return result;
         } catch (err) {
-            console.error('[Service] Operation failed', err);
+            ErrorLogger.capture(err, { source: 'BudgetService - performOperation' });
             throw err;
         }
     }

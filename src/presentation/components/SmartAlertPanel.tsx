@@ -3,6 +3,7 @@ import { X, AlertTriangle, Sparkles, ChevronDown, ChevronUp, RotateCcw, ThumbsUp
 import { SmartAlert, runAlertEngine } from '../../application/intelligence/AlertEngine';
 import { getDb } from '../../infrastructure/adapters/SqliteAdapter';
 import { AlertScorer, buildAlertFeatures } from '../../services/AlertScorer';
+import { ErrorLogger } from '../../services/SentryLogger';
 
 const DISMISSED_KEY = 'bagi_dismissed_alerts';
 
@@ -10,7 +11,8 @@ function getDismissed(): Set<string> {
   try {
     const raw = localStorage.getItem(DISMISSED_KEY);
     return raw ? new Set(JSON.parse(raw)) : new Set();
-  } catch {
+  } catch (error) {
+    ErrorLogger.capture(error, { source: 'SmartAlertPanel - getDismissed' });
     return new Set();
   }
 }
@@ -165,7 +167,7 @@ export default function SmartAlertPanel({
       scorer.loadWeights(db);
       scorer.updateWeights(db, alert.id, alert.type, features, isUseful);
     } catch(e) {
-      console.warn("Error enviando feedback:", e);
+      ErrorLogger.capture(e, { source: 'SmartAlertPanel - handleFeedback' });
     }
     // Ocultar alerta después de dar feedback
     dismiss(alert.id);

@@ -1,4 +1,5 @@
 import { Database } from 'sql.js';
+import { ErrorLogger } from './SentryLogger';
 
 export function vecToBlob(v: Float32Array): Uint8Array {
   return new Uint8Array(v.buffer, v.byteOffset, v.byteLength);
@@ -56,7 +57,7 @@ class EmbeddingService {
         this.worker.postMessage({ id, type: 'init' });
 
       } catch (e) {
-        console.warn('[EmbeddingService] No se pudo instanciar worker', e);
+        ErrorLogger.capture(e, { source: 'EmbeddingService - init' });
         this.available = false;
         resolve(); // resolve para usar fallback de texto
       }
@@ -91,7 +92,7 @@ class EmbeddingService {
           this.memCache.set(t, outVectors[i]);
         });
       } catch (e) {
-        console.warn('[EmbeddingService] error in embedBatch', e);
+        ErrorLogger.capture(e, { source: 'EmbeddingService - embedBatch' });
       }
     }
 
@@ -130,7 +131,7 @@ class EmbeddingService {
       }
       dbStmt.free();
     } catch (e) {
-      console.warn('[EmbeddingService] loadFromDB error', e);
+      ErrorLogger.capture(e, { source: 'EmbeddingService - loadFromDB' });
     }
   }
 
@@ -153,7 +154,7 @@ class EmbeddingService {
       db.exec('COMMIT;');
     } catch (e) {
       db.exec('ROLLBACK;');
-      console.warn('[EmbeddingService] saveToDB error', e);
+      ErrorLogger.capture(e, { source: 'EmbeddingService - saveToDB' });
     }
   }
 }

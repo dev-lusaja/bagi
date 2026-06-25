@@ -6,6 +6,7 @@ import SmartAlertPanel from '../components/SmartAlertPanel';
 import BudgetDiagnosticWidget from '../components/BudgetDiagnosticWidget';
 import PromptModal from '../components/PromptModal';
 import AlertModal from '../components/AlertModal';
+import { ErrorLogger } from '../../services/SentryLogger';
 
 export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (tab: string) => void }) {
   const { service } = useBudget();
@@ -282,7 +283,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
       await service.instantiateRecurringItems(year, month, actualId, 1);
       fetchDashboardData();
     } catch (error) {
-      console.error('Error instantiating obligations:', error);
+      ErrorLogger.capture(error, { source: 'Dashboard - handleAutoInstantiate' });
     }
   };
 
@@ -294,7 +295,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
       fetchDashboardData();
       showAlert('Límites copiados', 'Límites del mes pasado copiados con éxito.', 'success');
     } catch (error) {
-      console.error('Error copying limits:', error);
+      ErrorLogger.capture(error, { source: 'Dashboard - handleCopyLimits' });
       showAlert('Error', 'Hubo un error al copiar los límites.', 'error');
     }
   };

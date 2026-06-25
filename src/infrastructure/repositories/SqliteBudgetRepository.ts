@@ -1,6 +1,7 @@
 import { IBudgetRepository } from '../../domain/repositories/IBudgetRepository';
 import { Account, Transaction, Card, Category, RecurringItem, BudgetObligation, GlobalBudget, CategoryBudget, CardBudget } from '../../domain/entities';
 import { initDb, getDb } from '../adapters/SqliteAdapter';
+import { ErrorLogger } from '../../services/SentryLogger';
 
 export class SqliteBudgetRepository implements IBudgetRepository {
     async initializeDatabase(sqlFile?: ArrayBuffer): Promise<void> {
@@ -24,7 +25,7 @@ export class SqliteBudgetRepository implements IBudgetRepository {
             stmt.free();
             return results;
         } catch (err) {
-            console.error(`[SQL Error] %c${sql}`, 'color: #ef4444', err);
+            ErrorLogger.capture(err, { source: 'SqliteBudgetRepository - query', sql });
             throw err;
         }
     }
@@ -35,7 +36,7 @@ export class SqliteBudgetRepository implements IBudgetRepository {
         try {
             db.run(sql, safeParams);
         } catch (err) {
-            console.error(`[SQL Error] %c${sql}`, 'color: #ef4444', err);
+            ErrorLogger.capture(err, { source: 'SqliteBudgetRepository - execute', sql });
             throw err;
         }
     }

@@ -2,7 +2,9 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { BudgetService } from '../../application/use-cases/BudgetService';
 import { SqliteBudgetRepository } from '../../infrastructure/repositories/SqliteBudgetRepository';
 import { GoogleDriveAdapter } from '../../infrastructure/adapters/GoogleDriveAdapter';
+import * as Sentry from '@sentry/react';
 import { AnalyticsService } from '../../services/AnalyticsService';
+import { ErrorLogger } from '../../services/SentryLogger';
 
 interface BudgetContextType {
     service: BudgetService;
@@ -38,13 +40,16 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     setUserInfo(info);
                     setIsAuthenticated(true);
                     if (info?.email) {
+                        Sentry.setUser({ id: info.email, email: info.email, username: info.name });
                         AnalyticsService.identify(info.email, info.name);
+                    } else {
+                        Sentry.setUser(null);
                     }
                 }
 
                 setIsInitialized(true);
             } catch (error: any) {
-                console.error("Initialization failed", error);
+                ErrorLogger.capture(error, { source: 'BudgetContext - init' });
                 await handleAuthError(error);
                 setIsInitialized(true);
             }
@@ -72,9 +77,13 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 setUserInfo(info);
                 setIsAuthenticated(true);
                 if (info?.email) {
+                    Sentry.setUser({ id: info.email, email: info.email, username: info.name });
                     AnalyticsService.identify(info.email, info.name);
+                } else {
+                    Sentry.setUser(null);
                 }
             } catch (error) {
+                ErrorLogger.capture(error, { source: 'BudgetContext - login google' });
                 await handleAuthError(error);
                 throw error;
             }
@@ -85,6 +94,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const logout = async () => {
         await service.logout();
+        Sentry.setUser(null);
         AnalyticsService.reset();
         setIsAuthenticated(false);
         setUserInfo(null);
@@ -94,6 +104,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         try {
             await service.syncToDrive();
         } catch (error) {
+            ErrorLogger.capture(error, { source: 'BudgetContext - sync' });
             await handleAuthError(error);
         }
     };

@@ -8,6 +8,7 @@ import { Database } from 'sql.js';
 import { getCategoryStats } from '../../services/FeatureExtractor';
 import { AlertScorer, buildAlertFeatures } from '../../services/AlertScorer';
 import { embeddingService } from '../../services/EmbeddingService';
+import { ErrorLogger } from '../../services/SentryLogger';
 
 export type AlertSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 export type AlertType = 'ANOMALY' | 'TREND' | 'DUPLICATE' | 'OPPORTUNITY' | 'PATTERN' | 'OVERDUE';
@@ -258,7 +259,9 @@ async function* detectWeekendSpending(
       }
       stmt.free();
       if (count > 0) baseline = sum / count;
-    } catch(e) {}
+    } catch(e) {
+      ErrorLogger.capture(e, { source: 'AlertEngine - detectWeekendSpending' });
+    }
   }
 
   if (weekendPct < baseline + 0.15) return;

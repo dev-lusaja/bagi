@@ -1,4 +1,5 @@
 import { Database } from 'sql.js';
+import { ErrorLogger } from './SentryLogger';
 
 export interface CategoryStats {
   mean: number;
@@ -93,7 +94,7 @@ export function getCategoryStats(
       sampleSize: rows.length,
     };
   } catch (e) {
-    console.warn("getCategoryStats error:", e);
+    ErrorLogger.capture(e, { source: 'FeatureExtractor - getCategoryStats' });
     return DEFAULT_STATS;
   }
 }
@@ -124,6 +125,6 @@ export function refreshMonthlySummary(
     `;
     db.run(sql, [accountId, yearMonth]);
   } catch(e) {
-    console.warn("refreshMonthlySummary error:", e);
+    ErrorLogger.capture(e, { source: 'FeatureExtractor - refreshMonthlySummary' });
   }
 }

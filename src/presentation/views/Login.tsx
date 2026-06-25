@@ -3,6 +3,7 @@ import { useBudget } from '../context/BudgetContext';
 import { useState, useRef } from 'react';
 import { BudgetExplainer } from '../components/BudgetExplainer';
 import AlertModal from '../components/AlertModal';
+import { ErrorLogger } from '../../services/SentryLogger';
 
 export default function Login() {
   const { login } = useBudget();
@@ -24,7 +25,7 @@ export default function Login() {
     try {
       await login(provider);
     } catch (error) {
-      console.error('Login failed', error);
+      ErrorLogger.capture(error, { source: 'Login - handleLogin' });
       showAlert('Error de acceso', 'No pudimos conectar con tu cuenta. Por favor, intenta de nuevo.', 'error');
     } finally {
       setLoading(false);

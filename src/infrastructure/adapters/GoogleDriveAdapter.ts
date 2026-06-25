@@ -1,3 +1,5 @@
+import { ErrorLogger } from '../../services/SentryLogger';
+
 export interface GoogleDriveConfig {
     clientId: string;
     apiKey: string;
@@ -127,6 +129,7 @@ export class GoogleDriveAdapter {
             const files = response.result.files;
             return files && files.length > 0 ? (files[0].id ?? null) : null;
         } catch (err: any) {
+            ErrorLogger.capture(err, { source: 'GoogleDriveAdapter - findFile' });
             this.handleGapiError(err);
             throw err;
         }
@@ -142,6 +145,7 @@ export class GoogleDriveAdapter {
             });
             return response.result.modifiedTime;
         } catch (err: any) {
+            ErrorLogger.capture(err, { source: 'GoogleDriveAdapter - getFileModifiedTime' });
             this.handleGapiError(err);
             return null;
         }
@@ -173,6 +177,7 @@ export class GoogleDriveAdapter {
             });
             return createResponse.result.id;
         } catch (err: any) {
+            ErrorLogger.capture(err, { source: 'GoogleDriveAdapter - getOrCreateFolder' });
             this.handleGapiError(err);
             throw err;
         }
@@ -240,6 +245,7 @@ export class GoogleDriveAdapter {
                 email: data.email ?? '',
             };
         } catch (err: any) {
+            ErrorLogger.capture(err, { source: 'GoogleDriveAdapter - getUserInfo' });
             console.error('[Drive] Error fetching user info:', err);
             if (err.message === 'AUTH_ERROR') throw err;
             return null;
