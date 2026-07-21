@@ -10,7 +10,7 @@ export interface GoogleDriveConfig {
 const DEFAULT_CONFIG: GoogleDriveConfig = {
     clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
     apiKey: import.meta.env.VITE_GOOGLE_API_KEY || '',
-    scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile',
+    scope: 'https://www.googleapis.com/auth/drive.file openid profile email',
     discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
 };
 

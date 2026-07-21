@@ -4,7 +4,7 @@ import { SqliteBudgetRepository } from '../../infrastructure/repositories/Sqlite
 import { GoogleDriveAdapter } from '../../infrastructure/adapters/GoogleDriveAdapter';
 import * as Sentry from '@sentry/react';
 import { AnalyticsService } from '../../services/AnalyticsService';
-import { ErrorLogger } from '../../services/SentryLogger';
+import { ErrorLogger, DebugLogger } from '../../services/SentryLogger';
 
 interface BudgetContextType {
     service: BudgetService;
@@ -82,6 +82,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 } else {
                     Sentry.setUser(null);
                 }
+                DebugLogger.capture(`Login ${info?.email}`, {data: info});
             } catch (error) {
                 ErrorLogger.capture(error, { source: 'BudgetContext - login google' });
                 await handleAuthError(error);

@@ -1,5 +1,5 @@
 const BASE_URL = 'http://192.168.0.172:8000';
-
+console.log("pase por el api.ts");
 const getHeaders = () => {
   const token = localStorage.getItem('token');
   return {
