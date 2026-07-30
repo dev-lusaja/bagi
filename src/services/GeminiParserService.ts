@@ -9,7 +9,7 @@ export interface ParsedTransaction {
 }
 
 export class GeminiParserService {
-  private API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
+  private API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent';
 
   async parse(
     transcript: string,
