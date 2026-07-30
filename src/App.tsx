@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { LayoutDashboard, Receipt, Settings, LogOut, Home as HomeIcon, Loader2, CloudCheck, CloudAlert, User } from 'lucide-react';
+import { LayoutDashboard, Receipt, Settings, LogOut, Home as HomeIcon, Loader2, CloudCheck, CloudAlert, User, Sparkles } from 'lucide-react';
 import Home from './presentation/views/Home';
 import Dashboard from './presentation/views/Dashboard';
 import Transactions from './presentation/views/Transactions';
 import SettingsView from './presentation/views/Settings';
+import Intelligence from './presentation/views/Intelligence';
 import Login from './presentation/views/Login';
 import { useBudget } from './presentation/context/BudgetContext';
 import { SavingOverlay } from './presentation/components/SavingOverlay';
@@ -104,6 +105,12 @@ export default function App() {
             <span>Transacciones</span>
           </button>
           <button
+            onClick={() => setActiveTab('intelligence')}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'intelligence' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
+            <Sparkles className="w-5 h-5" />
+            <span>Bagi IA</span>
+          </button>
+          <button
             onClick={() => setActiveTab('settings')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <Settings className="w-5 h-5" />
@@ -147,6 +154,7 @@ export default function App() {
           {activeTab === 'home' && <Home onNavigate={setActiveTab} />}
           {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} />}
           {activeTab === 'transactions' && <Transactions />}
+          {activeTab === 'intelligence' && <Intelligence />}
           {activeTab === 'settings' && <SettingsView />}
         </div>
       </main>
@@ -164,6 +172,10 @@ export default function App() {
         <button onClick={() => setActiveTab('transactions')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'transactions' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
           <Receipt className="w-6 h-6" />
           <span className="text-[10px] font-bold">Registro</span>
+        </button>
+        <button onClick={() => setActiveTab('intelligence')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'intelligence' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+          <Sparkles className="w-6 h-6" />
+          <span className="text-[10px] font-bold">Bagi IA</span>
         </button>
         <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'settings' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
           <Settings className="w-6 h-6" />

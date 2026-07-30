@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
-import { HelpCircle, ArrowRightLeft, TrendingUp, TrendingDown, User, LogOut } from 'lucide-react';
+import { HelpCircle, ArrowRightLeft, TrendingUp, TrendingDown, User, LogOut, Sparkles } from 'lucide-react';
 import AlertModal from '../components/AlertModal';
 
 const Section = ({ id, title, icon, children, openSection, setOpenSection }: any) => {
@@ -67,6 +67,34 @@ export default function SettingsView() {
 
   const [openSection, setOpenSection] = useState(null); // All closed by default
   const [showCatHelp, setShowCatHelp] = useState(false);
+
+  const [settingsGeminiKey, setSettingsGeminiKey] = useState('');
+  const [hasSavedKey, setHasSavedKey] = useState(false);
+
+  useEffect(() => {
+    const key = localStorage.getItem('bagi_gemini_api_key') || '';
+    setHasSavedKey(!!key);
+  }, []);
+
+  const handleSaveSettingsKey = (e: any) => {
+    e.preventDefault();
+    if (settingsGeminiKey.trim()) {
+      localStorage.setItem('bagi_gemini_api_key', settingsGeminiKey.trim());
+      setHasSavedKey(true);
+      setSettingsGeminiKey('');
+      showAlert('Éxito', 'API Key de Gemini guardada correctamente.', 'success');
+    }
+  };
+
+  const handleDeleteSettingsKey = (e: any) => {
+    e.preventDefault();
+    if (confirm('¿Estás seguro de borrar tu API Key de Gemini?')) {
+      localStorage.removeItem('bagi_gemini_api_key');
+      setHasSavedKey(false);
+      setSettingsGeminiKey('');
+      showAlert('Éxito', 'API Key de Gemini eliminada.', 'success');
+    }
+  };
 
   const [alertConfig, setAlertConfig] = useState<{ isOpen: boolean; title: string; message: string; type: 'info' | 'error' | 'success' }>({
     isOpen: false, title: '', message: '', type: 'info'
@@ -725,6 +753,49 @@ export default function SettingsView() {
                       )}
                   </div>
               ))}
+          </div>
+        </Section>
+
+        <Section 
+          id="bagi-ia" 
+          title="Bagi IA (Configuración)" 
+          openSection={openSection}
+          setOpenSection={setOpenSection}
+          icon={<Sparkles className="w-6 h-6" />}
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500 font-medium">
+              Gestiona tu API Key de Gemini para el registro de transacciones mediante voz.
+            </p>
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Tu Gemini API Key</label>
+              <div className="flex gap-2">
+                <input 
+                  type="password" 
+                  value={settingsGeminiKey} 
+                  onChange={e => setSettingsGeminiKey(e.target.value)} 
+                  placeholder={hasSavedKey ? '••••••••••••••••••••••••' : 'Ingresa tu Gemini API Key...'} 
+                  className="flex-1 rounded-xl border border-gray-200 shadow-sm p-3 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono"
+                />
+                <button 
+                  onClick={handleSaveSettingsKey} 
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-95 text-sm"
+                >
+                  Guardar
+                </button>
+                {hasSavedKey && (
+                  <button 
+                    onClick={handleDeleteSettingsKey} 
+                    className="bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 py-3 rounded-xl font-bold transition-all active:scale-95 text-sm"
+                  >
+                    Borrar
+                  </button>
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-gray-400">
+              ¿No tienes una? Consíguela gratis en <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline font-bold">Google AI Studio</a>.
+            </p>
           </div>
         </Section>
       </div>
