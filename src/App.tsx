@@ -58,7 +58,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans text-gray-900 overflow-hidden">
+    <div className="flex h-[100dvh] bg-gray-50 font-sans text-gray-900 overflow-hidden">
       <SavingOverlay isVisible={isSyncing} />
 
       {/* Sidebar Navigation (Desktop) */}
@@ -160,7 +160,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation (Mobile) */}
-      <nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex items-center justify-around p-3 pb-safe shadow-lg z-50">
+      <nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex items-center justify-around p-3 shadow-lg z-50">
         <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'home' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
           <HomeIcon className="w-6 h-6" />
           <span className="text-[10px] font-bold">Inicio</span>

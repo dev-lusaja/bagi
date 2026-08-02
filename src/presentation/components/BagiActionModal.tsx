@@ -77,7 +77,7 @@ export default function BagiActionModal({
       aria-modal="true"
       aria-label={title}
     >
-      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100 max-h-[92vh] flex flex-col">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100 max-h-[85dvh] flex flex-col">
 
         {/* ─── Cabecera con gradiente ─── */}
         <div className="relative bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-6 text-white flex-shrink-0">
