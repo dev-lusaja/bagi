@@ -103,15 +103,14 @@ export default function Intelligence() {
 
   // Contenido del header del modal: resumen visual de la transacción detectada
   const transactionHeaderContent = editedTx ? (
-    <div className="flex items-center justify-between mt-3 bg-white/10 rounded-2xl p-3.5">
+    <div className="flex items-center justify-between mt-2 bg-white/10 rounded-xl p-3">
       <div className="flex-1 min-w-0">
-        <p className="text-3xl font-black tabular-nums leading-none">
+        <p className="text-2xl font-black tabular-nums leading-none">
           {editedTx.type === 'EXPENSE' ? '−' : editedTx.type === 'INCOME' ? '+' : ''}
           {new Intl.NumberFormat(lang.startsWith('en') ? 'en-US' : 'es-CO').format(editedTx.amount)}
         </p>
-        <p className="text-sm opacity-75 mt-1.5 truncate">{editedTx.description}</p>
       </div>
-      <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-white/20 px-3 py-2 rounded-xl flex-shrink-0 ml-3">
+      <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-white/20 px-2 py-1.5 rounded-lg flex-shrink-0 ml-3">
         {editedTx.type === 'INCOME' && <><TrendingUp className="w-3.5 h-3.5 text-emerald-300" /> Ingreso</>}
         {editedTx.type === 'EXPENSE' && <><TrendingDown className="w-3.5 h-3.5 text-rose-300" /> Gasto</>}
         {editedTx.type === 'TRANSFER' && <><ArrowLeftRight className="w-3.5 h-3.5 text-blue-300" /> Traspaso</>}
@@ -179,10 +178,7 @@ export default function Intelligence() {
                   onChange={(e) => setLang(e.target.value)}
                   disabled={isRecording || isProcessing}
                 >
-                  <option value="es-CO">Español (Colombia)</option>
-                  <option value="es-PE">Español (Perú)</option>
-                  <option value="es-ES">Español (España)</option>
-                  <option value="en-US">English (United States)</option>
+                  <option value="es-ES">Español</option>
                 </select>
               </div>
             </div>
