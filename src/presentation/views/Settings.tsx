@@ -88,16 +88,27 @@ export default function SettingsView() {
 
   const handleDeleteSettingsKey = (e: any) => {
     e.preventDefault();
-    if (confirm('¿Estás seguro de borrar tu API Key de Gemini?')) {
-      localStorage.removeItem('bagi_gemini_api_key');
-      setHasSavedKey(false);
-      setSettingsGeminiKey('');
-      showAlert('Éxito', 'API Key de Gemini eliminada.', 'success');
-    }
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Eliminar API Key',
+      message: '¿Estás seguro de borrar tu API Key de Gemini?',
+      type: 'error',
+      onConfirm: () => {
+        localStorage.removeItem('bagi_gemini_api_key');
+        setHasSavedKey(false);
+        setSettingsGeminiKey('');
+        showAlert('Éxito', 'API Key de Gemini eliminada.', 'success');
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const [alertConfig, setAlertConfig] = useState<{ isOpen: boolean; title: string; message: string; type: 'info' | 'error' | 'success' }>({
     isOpen: false, title: '', message: '', type: 'info'
+  });
+
+  const [confirmConfig, setConfirmConfig] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void; type: 'error' | 'warning' | 'info' }>({
+    isOpen: false, title: '', message: '', onConfirm: () => {}, type: 'error'
   });
 
   const showAlert = (title: string, message: string, type: 'info' | 'error' | 'success' = 'info') => {
@@ -188,13 +199,20 @@ export default function SettingsView() {
   };
 
   const deleteItem = async (type: string, id: number) => {
-    if (confirm('¿Estás seguro?')) {
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Eliminar elemento',
+      message: '¿Estás seguro de eliminar este elemento? Esta acción no se puede deshacer.',
+      type: 'error',
+      onConfirm: async () => {
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         if (type === 'categories') await service.deleteCategory(id);
         if (type === 'accounts') await service.deleteAccount(id);
         if (type === 'cards') await service.deleteCard(id);
         if (type === 'recurring_items') await service.deleteRecurringItem(id);
         fetchAll();
-    }
+      }
+    });
   };
 
   const saveRecEdit = async (item: any) => {
@@ -805,6 +823,16 @@ export default function SettingsView() {
         message={alertConfig.message}
         type={alertConfig.type}
         onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+      />
+      <AlertModal
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        type={confirmConfig.type}
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+        onConfirm={confirmConfig.onConfirm}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
       />
     </div>
   );

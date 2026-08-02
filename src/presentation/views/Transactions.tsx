@@ -2,6 +2,7 @@ import { useState, useEffect, Fragment } from 'react';
 import { Filter, CreditCard, Wallet, Coins, Tags, Trash2 } from 'lucide-react';
 import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
+import AlertModal from '../components/AlertModal';
 
 export default function Transactions() {
   const { service } = useBudget();
@@ -31,6 +32,9 @@ export default function Transactions() {
   const currentPeriod = `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
   const [budgetPeriod, setBudgetPeriod] = useState(currentPeriod);
   const [overrideBudgetPeriod, setOverrideBudgetPeriod] = useState(false);
+  
+  // Delete Confirmation
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   const fetchFilters = async (isLoadMore = false) => {
     if (isLoadMore) setLoadingMore(true);
@@ -109,11 +113,17 @@ export default function Transactions() {
     fetchFilters(); // Reset to first page
   };
 
-  const deleteTx = async (id: number) => {
-    if (!confirm('¿Estás seguro de eliminar esta transacción?')) return;
+  const requestDelete = (id: number) => {
+    setDeleteConfirmId(id);
+  };
+
+  const confirmDeleteTx = async () => {
+    if (deleteConfirmId === null) return;
+    const id = deleteConfirmId;
+    setDeleteConfirmId(null);
     await service.deleteTransaction(id);
     fetchFilters();
-  }
+  };
 
   const getTxTypeBadge = (type: string) => {
     switch (type) {
@@ -369,7 +379,7 @@ export default function Transactions() {
                        </td>
                       <td className="px-6 py-4 text-right">
                         <button 
-                          onClick={() => deleteTx(t.id)} 
+                          onClick={() => requestDelete(t.id)} 
                           className="p-2 text-gray-200 group-hover:text-rose-300 hover:text-white hover:bg-rose-500 rounded-xl transition-all shadow-sm"
                           title="Eliminar transacción"
                         >
@@ -432,7 +442,7 @@ export default function Transactions() {
                                <span className="text-gray-400 font-semibold text-[10px]">{t.category?.name}</span>
                             </div>
                             <button 
-                               onClick={() => deleteTx(t.id)} 
+                               onClick={() => requestDelete(t.id)} 
                                className="p-1.5 text-gray-300 hover:text-rose-500 rounded-lg transition-all"
                             >
                                <Trash2 className="w-4 h-4" />
@@ -475,6 +485,17 @@ export default function Transactions() {
           </div>
         )}
       </div>
+      
+      <AlertModal 
+        isOpen={deleteConfirmId !== null}
+        title="Eliminar transacción"
+        message="¿Estás seguro de eliminar esta transacción? Esta acción no se puede deshacer."
+        type="error"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={confirmDeleteTx}
+        onClose={() => setDeleteConfirmId(null)}
+      />
     </div>
   );
 }

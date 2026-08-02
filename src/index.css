@@ -36,3 +36,10 @@
     scrollbar-color: #e2e8f0 transparent;
   }
 }
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+}
+
