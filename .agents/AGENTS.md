@@ -17,6 +17,10 @@
 
 ## Flujo de Trabajo con el Código
 
+### Contexto de Código (Mapa del Proyecto)
+- **Uso:** Antes de comenzar a trabajar en el código, consulta `docs/code_skeleton.md` para conocer las clases, funciones, interfaces y sus ubicaciones en el proyecto sin necesidad de leer todos los archivos.
+- **Mantenimiento:** Si creas un nuevo archivo, renombras/mueves módulos o agregas/modificas estructuras (clases, funciones, interfaces), **ejecuta `npm run code:map` en la terminal** para mantener actualizado `docs/code_skeleton.md`.
+
 ### Cambios Grandes → Plan Primero
 Para cualquier cambio que implique:
 - Múltiples archivos o capas de la arquitectura

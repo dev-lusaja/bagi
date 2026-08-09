@@ -148,3 +148,5 @@ venv/
 ENV/
 env/
 python_venv/
+
+codeql-db-js/
