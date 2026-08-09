@@ -337,6 +337,20 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     });
   };
 
+  const payInCash = (item: any) => {
+    showConfirm(
+      'Pagar en Efectivo',
+      `¿Confirmas que ya pagaste ${item.name} en efectivo? Esto marcará la obligación como cumplida sin descontar dinero de tu cuenta.`,
+      async () => {
+        await service.updateBudgetObligation(item.id, {
+          ...item,
+          paid_in_cash: 1
+        });
+        fetchDashboardData();
+      }
+    );
+  };
+
   const updateObligationAmount = (item: any) => {
     setPromptConfig({
       isOpen: true,
@@ -595,8 +609,8 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
 
   const obligationsStatus = filteredRecurring.map(item => {
     const linkedTx = (transactions as any[]).find((t: any) => t.budget_obligation_id === item.id);
-    const isPaid = !!linkedTx;
-    const paidAmount = linkedTx ? linkedTx.amount : 0;
+    const isPaid = !!linkedTx || !!item.paid_in_cash;
+    const paidAmount = linkedTx ? linkedTx.amount : (item.paid_in_cash ? item.amount : 0);
     const isPastDue = !isPaid && item.due_day < new Date().getDate();
 
     const itemSourceAcc = (accounts as any[]).find((a: any) => a.id === item.account_id);
@@ -1001,13 +1015,22 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                       </div>
 
                       {!item.isPaid && !isPastMonth ? (
-                        <button
-                          onClick={() => payRecurring(item)}
-                          className="w-full flex items-center justify-center gap-3 py-4 bg-gray-900 text-white rounded-[1.5rem] hover:bg-indigo-600 transition-all shadow-xl shadow-gray-200 active:scale-95 font-black text-xs uppercase tracking-[0.2em]"
-                        >
-                          <span>REGISTRAR PAGO</span>
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                        </button>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => payRecurring(item)}
+                            className="w-full flex items-center justify-center gap-3 py-4 bg-gray-900 text-white rounded-[1.5rem] hover:bg-indigo-600 transition-all shadow-xl shadow-gray-200 active:scale-95 font-black text-xs uppercase tracking-[0.2em]"
+                          >
+                            <span>REGISTRAR PAGO</span>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                          </button>
+                          <button
+                            onClick={() => payInCash(item)}
+                            className="w-full flex items-center justify-center gap-3 py-3 bg-emerald-100 text-emerald-700 rounded-[1.5rem] hover:bg-emerald-200 transition-all shadow-sm active:scale-95 font-black text-[10px] uppercase tracking-[0.2em]"
+                          >
+                            <span>PAGAR CON EFECTIVO</span>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          </button>
+                        </div>
                       ) : !item.isPaid && isPastMonth ? (
                         <div className="flex items-center justify-center gap-2 py-3 bg-gray-50 text-gray-400 rounded-2xl border border-gray-100 font-black text-[10px] uppercase tracking-[0.2em]">
                           <span>NO DISPONIBLE</span>

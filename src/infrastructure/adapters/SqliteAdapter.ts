@@ -102,6 +102,7 @@ const createSchema = (db: Database) => {
             card_id INTEGER,
             recurring_item_id INTEGER,
             user_id INTEGER,
+            paid_in_cash INTEGER DEFAULT 0,
             FOREIGN KEY(category_id) REFERENCES categories(id),
             FOREIGN KEY(account_id) REFERENCES accounts(id),
             FOREIGN KEY(card_id) REFERENCES cards(id),

@@ -70,10 +70,11 @@ export interface BudgetObligation {
     due_day: number;
     notes?: string;
     category_id: number;
-    account_id?: number;
-    card_id?: number;
+    account_id?: number | null; // Nullable
+    card_id?: number | null;    // Nullable
     recurring_item_id?: number;
     user_id: number;
+    paid_in_cash?: number; // 0 or 1
 }
 
 export interface GlobalBudget {

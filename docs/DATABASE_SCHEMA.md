@@ -177,6 +177,7 @@ Instancias mensuales fotográficas de los `recurring_items`. Se crean al inicio 
 | `card_id` | INTEGER | FK → `cards.id`, nullable | Tarjeta asociada |
 | `recurring_item_id` | INTEGER | FK → `recurring_items.id`, nullable | Plantilla origen |
 | `user_id` | INTEGER | FK → `users.id` | Propietario |
+| `paid_in_cash` | INTEGER | DEFAULT 0 | 1 si fue pagado en efectivo, evita generar transacción contable |
 
 > **Regla de negocio clave**: Un `recurring_item` solo genera una `budget_obligation` por período. Si ya existe una obligación con ese `recurring_item_id` para el mismo `year`/`month`, no se re-instancia. Esto permite modificar el precio del `recurring_item` sin alterar el historial de obligaciones pasadas.
 
