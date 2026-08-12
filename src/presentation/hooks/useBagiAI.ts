@@ -28,6 +28,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
   const [apiKey, setApiKey] = useState<string>('');
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [error, setError] = useState<BagiAIErrorType>(null);
   const [transcript, setTranscript] = useState('');
   const [lang, setLang] = useState('es-CO'); // Default
@@ -155,9 +156,19 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         cards
       });
 
-      if (parsed.error === 'OFF_TOPIC') {
+      if (parsed.error === 'OFF_TOPIC' || parsed.intent === 'OFF_TOPIC') {
         setError('OFF_TOPIC');
         setIsProcessing(false);
+        return;
+      }
+
+      if (parsed.intent === 'CAPABILITIES_QUERY') {
+        setIsProcessing(false);
+        setIsSpeaking(true);
+        const capabilitiesText = lang.startsWith('en')
+          ? "Right now I can help you record your daily expenses, incomes, and transfers. Just tell me what you spent or received."
+          : "Actualmente puedo ayudarte a registrar tus gastos, ingresos y transferencias diarios. Solo dime qué gastaste o recibiste, y yo lo anotaré por ti.";
+        voiceService.speak(capabilitiesText, lang, () => setIsSpeaking(false));
         return;
       }
 
@@ -259,6 +270,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     apiKey,
     isRecording,
     isProcessing,
+    isSpeaking,
     error,
     transcript,
     parsedTx,

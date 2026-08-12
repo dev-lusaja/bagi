@@ -4,12 +4,10 @@ import { voiceService } from '../../services/VoiceService';
 import BagiActionModal from '../components/BagiActionModal';
 import TransactionConfirmForm from '../components/TransactionConfirmForm';
 import GeminiKeyModal from '../components/GeminiKeyModal';
+import BagiIARing from '../components/BagiIARing';
 import {
-  Mic,
-  MicOff,
   Sparkles,
   AlertCircle,
-  RefreshCw,
   Globe,
   Key,
   Info,
@@ -26,6 +24,7 @@ export default function Intelligence() {
     apiKey,
     isRecording,
     isProcessing,
+    isSpeaking,
     error,
     transcript,
     parsedTx,
@@ -47,6 +46,7 @@ export default function Intelligence() {
   const [editedTx, setEditedTx] = useState<MappedTransaction | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaveSuccess, setIsSaveSuccess] = useState(false);
+  const [isConfirmSpeaking, setIsConfirmSpeaking] = useState(false);
 
   // Abre el modal en cuanto Gemini retorna una transacción parseada
   useEffect(() => {
@@ -78,7 +78,9 @@ export default function Intelligence() {
       const speechText = lang.startsWith('en')
         ? `Done. I registered: ${editedTx.description}.`
         : `Listo. Registré: ${editedTx.description}.`;
-      voiceService.speak(speechText, lang);
+      
+      setIsConfirmSpeaking(true);
+      voiceService.speak(speechText, lang, () => setIsConfirmSpeaking(false));
 
       // El modal se auto-cierra solo (via BagiActionModal.successAutoCloseMs)
       // y llama a handleModalClose para limpiar el estado.
@@ -184,47 +186,28 @@ export default function Intelligence() {
             </div>
           )}
 
-          {/* Botón de micrófono principal */}
+          {/* Botón de micrófono principal / Aro */}
           <div className="flex flex-col items-center justify-center space-y-4 py-8">
-            <div className="relative flex items-center justify-center">
-              {isRecording && (
-                <>
-                  <div className="absolute w-44 h-44 rounded-full bg-indigo-500/10 animate-ping duration-1000" />
-                  <div className="absolute w-36 h-36 rounded-full bg-indigo-500/20 animate-ping duration-700" />
-                </>
-              )}
-              <button
-                type="button"
-                onClick={isRecording ? stopListening : startListening}
-                disabled={isProcessing || !isSupported}
-                className={`relative z-10 w-28 h-28 rounded-full flex items-center justify-center transition-all shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  isRecording
-                    ? 'bg-rose-500 text-white shadow-rose-200 hover:bg-rose-600'
-                    : isProcessing
-                    ? 'bg-indigo-100 text-indigo-500 shadow-indigo-50'
-                    : 'bg-gradient-to-tr from-indigo-600 to-violet-600 text-white hover:shadow-indigo-200'
-                }`}
-              >
-                {isProcessing ? (
-                  <RefreshCw className="w-10 h-10 animate-spin" />
-                ) : isRecording ? (
-                  <MicOff className="w-10 h-10" />
-                ) : (
-                  <Mic className="w-10 h-10" />
-                )}
-              </button>
-            </div>
+            <BagiIARing 
+              state={(isSpeaking || isConfirmSpeaking) ? 'speaking' : isProcessing ? 'processing' : isRecording ? 'listening' : 'idle'}
+              onClick={isRecording ? stopListening : startListening}
+              disabled={isProcessing || !isSupported || isSpeaking || isConfirmSpeaking}
+            />
 
             <div className="text-center">
               <h3 className="text-lg font-bold text-gray-800">
-                {isRecording
+                {(isSpeaking || isConfirmSpeaking)
+                  ? 'Respondiendo...'
+                  : isRecording
                   ? 'Escuchando tu voz...'
                   : isProcessing
                   ? 'Bagi IA procesando...'
                   : 'Hablar con Bagi IA'}
               </h3>
               <p className="text-xs text-gray-400 mt-1 max-w-[280px]">
-                {isRecording
+                {(isSpeaking || isConfirmSpeaking)
+                  ? 'Escucha la respuesta de Bagi IA.'
+                  : isRecording
                   ? 'Di los detalles y presiona el botón para finalizar.'
                   : isProcessing
                   ? 'Extrayendo datos de la transacción.'

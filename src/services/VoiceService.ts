@@ -65,7 +65,7 @@ export class VoiceService {
    * @param text - The text to read aloud.
    * @param lang - BCP-47 language tag (e.g. 'es-CO', 'en-US').
    */
-  speak(text: string, lang: string = 'es-CO'): void {
+  speak(text: string, lang: string = 'es-CO', onEnd?: () => void): void {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel(); // Stop any ongoing speech first
     const utterance = new SpeechSynthesisUtterance(text);
@@ -73,6 +73,11 @@ export class VoiceService {
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
+    if (onEnd) {
+      utterance.onend = () => {
+        onEnd();
+      };
+    }
     window.speechSynthesis.speak(utterance);
   }
 

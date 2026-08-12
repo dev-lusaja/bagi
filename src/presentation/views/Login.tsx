@@ -33,14 +33,6 @@ export default function Login() {
     }
   };
 
-  const scrollToPrivacy = () => {
-    privacyRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const scrollToAi = () => {
-    aiRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   const scrollToMethodology = () => {
     methodologyRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
