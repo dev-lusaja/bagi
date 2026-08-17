@@ -60,6 +60,18 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     }
   }, [service]);
 
+  // Watchdog para evitar que la UI quede bloqueada si la síntesis de voz falla silenciosamente
+  useEffect(() => {
+    if (!isSpeaking) return;
+
+    const timeoutId = setTimeout(() => {
+      console.warn('[useBagiAI] isSpeaking watchdog triggered - resetting state');
+      setIsSpeaking(false);
+    }, 15000);
+
+    return () => clearTimeout(timeoutId);
+  }, [isSpeaking]);
+
   const saveApiKey = (key: string) => {
     localStorage.setItem('bagi_gemini_api_key', key);
     setApiKey(key);

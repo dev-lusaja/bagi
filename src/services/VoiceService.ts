@@ -66,18 +66,51 @@ export class VoiceService {
    * @param lang - BCP-47 language tag (e.g. 'es-CO', 'en-US').
    */
   speak(text: string, lang: string = 'es-CO', onEnd?: () => void): void {
-    if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel(); // Stop any ongoing speech first
+    if (!('speechSynthesis' in window)) {
+      if (onEnd) onEnd();
+      return;
+    }
+
+    // Solo cancelar si está activamente hablando para evitar bugs con el ciclo de audio en iOS
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    }
+
+    // iOS Safari Fix: Forzar resume para desbloquear el canal de audio tras finalizar SpeechRecognition
+    window.speechSynthesis.resume();
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
-    if (onEnd) {
-      utterance.onend = () => {
-        onEnd();
-      };
-    }
+
+    let ended = false;
+    const safeEnd = () => {
+      if (!ended) {
+        ended = true;
+        if (onEnd) onEnd();
+      }
+    };
+
+    // Estimar el tiempo de lectura (80ms por carácter o mínimo 3 segundos) + margen de seguridad de 2 segundos
+    const estimatedMs = Math.max(text.length * 80, 3000);
+    const timeoutId = setTimeout(() => {
+      console.warn('[VoiceService] speak timeout triggered (fallback)');
+      safeEnd();
+    }, estimatedMs + 2000);
+
+    utterance.onend = () => {
+      clearTimeout(timeoutId);
+      safeEnd();
+    };
+
+    utterance.onerror = (event) => {
+      console.error('[VoiceService] Speech synthesis error', event);
+      clearTimeout(timeoutId);
+      safeEnd();
+    };
+
     window.speechSynthesis.speak(utterance);
   }
 
