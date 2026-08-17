@@ -59,7 +59,9 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     message: string;
     defaultValue: string;
     inputType: 'text' | 'number';
-    onConfirm: (val: string) => void;
+    showCashToggle?: boolean;
+    cashToggleLabel?: string;
+    onConfirm: (val: string, isCash?: boolean) => void;
   }>({
     isOpen: false,
     title: '',
@@ -307,7 +309,19 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
       message: `Confirmar monto para ${item.name}`,
       defaultValue: item.amount.toString(),
       inputType: 'number',
-      onConfirm: async (confirmAmt) => {
+      showCashToggle: true,
+      cashToggleLabel: 'Pagado con efectivo',
+      onConfirm: async (confirmAmt, isCash) => {
+        if (isCash) {
+          await service.updateBudgetObligation(item.id, {
+            ...item,
+            paid_in_cash: 1
+          });
+          setPromptConfig(prev => ({ ...prev, isOpen: false }));
+          fetchDashboardData();
+          return;
+        }
+
         const amount = parseFloat(confirmAmt);
         if (isNaN(amount)) return;
 
@@ -337,19 +351,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     });
   };
 
-  const payInCash = (item: any) => {
-    showConfirm(
-      'Pagar en Efectivo',
-      `¿Confirmas que ya pagaste ${item.name} en efectivo? Esto marcará la obligación como cumplida sin descontar dinero de tu cuenta.`,
-      async () => {
-        await service.updateBudgetObligation(item.id, {
-          ...item,
-          paid_in_cash: 1
-        });
-        fetchDashboardData();
-      }
-    );
-  };
+
 
   const updateObligationAmount = (item: any) => {
     setPromptConfig({
@@ -1023,13 +1025,6 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                             <span>REGISTRAR PAGO</span>
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                           </button>
-                          <button
-                            onClick={() => payInCash(item)}
-                            className="w-full flex items-center justify-center gap-3 py-3 bg-emerald-100 text-emerald-700 rounded-[1.5rem] hover:bg-emerald-200 transition-all shadow-sm active:scale-95 font-black text-[10px] uppercase tracking-[0.2em]"
-                          >
-                            <span>PAGAR CON EFECTIVO</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                          </button>
                         </div>
                       ) : !item.isPaid && isPastMonth ? (
                         <div className="flex items-center justify-center gap-2 py-3 bg-gray-50 text-gray-400 rounded-2xl border border-gray-100 font-black text-[10px] uppercase tracking-[0.2em]">
@@ -1595,8 +1590,10 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
         message={promptConfig.message}
         defaultValue={promptConfig.defaultValue}
         inputType={promptConfig.inputType}
+        showCashToggle={promptConfig.showCashToggle}
+        cashToggleLabel={promptConfig.cashToggleLabel}
         onConfirm={promptConfig.onConfirm}
-        onCancel={() => setPromptConfig({ ...promptConfig, isOpen: false })}
+        onCancel={() => setPromptConfig(prev => ({ ...prev, isOpen: false }))}
       />
 
       <AlertModal
