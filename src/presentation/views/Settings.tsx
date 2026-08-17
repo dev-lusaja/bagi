@@ -834,6 +834,12 @@ export default function SettingsView() {
         onConfirm={confirmConfig.onConfirm}
         onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
       />
+      <div className="pt-8 text-center border-t border-gray-100">
+        <span className="text-[11px] text-gray-400 font-mono">
+          versión: {__APP_COMMIT__}
+        </span>
+      </div>
     </div>
+
   );
 }
