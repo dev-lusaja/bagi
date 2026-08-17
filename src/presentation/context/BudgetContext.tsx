@@ -13,6 +13,7 @@ interface BudgetContextType {
     hasPendingChanges: boolean;
     userInfo: { name: string; picture: string; email: string } | null;
     isAuthenticated: boolean;
+    sessionExpired: boolean;
     login: (provider: 'google' | 'onedrive') => Promise<void>;
     logout: () => Promise<void>;
     sync: () => Promise<void>;
@@ -27,6 +28,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [hasPendingChanges, setHasPendingChanges] = useState(false);
     const [userInfo, setUserInfo] = useState<{ name: string; picture: string; email: string } | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [sessionExpired, setSessionExpired] = useState(false);
 
     useEffect(() => {
         const init = async () => {
@@ -49,7 +51,11 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
                 setIsInitialized(true);
             } catch (error: any) {
-                ErrorLogger.capture(error, { source: 'BudgetContext - init' });
+                if (error.message === 'AUTH_ERROR') {
+                    setSessionExpired(true);
+                } else {
+                    ErrorLogger.capture(error, { source: 'BudgetContext - init' });
+                }
                 await handleAuthError(error);
                 setIsInitialized(true);
             }
@@ -73,6 +79,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (provider === 'google') {
             try {
                 await service.login();
+                setSessionExpired(false);
                 const info = service.getUserInfo();
                 setUserInfo(info);
                 setIsAuthenticated(true);
@@ -111,7 +118,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     return (
-        <BudgetContext.Provider value={{ service, isInitialized, isSyncing, hasPendingChanges, userInfo, isAuthenticated, login, logout, sync }}>
+        <BudgetContext.Provider value={{ service, isInitialized, isSyncing, hasPendingChanges, userInfo, isAuthenticated, sessionExpired, login, logout, sync }}>
             {children}
         </BudgetContext.Provider>
     );

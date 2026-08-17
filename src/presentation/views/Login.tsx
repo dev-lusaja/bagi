@@ -1,4 +1,4 @@
-import { ShieldCheck, Database, ArrowRight, Heart, ChevronDown, Cloud, Lock, Smartphone, Sparkles, Mic, Bot } from 'lucide-react';
+import { ShieldCheck, Database, ArrowRight, Heart, ChevronDown, Cloud, Lock, Smartphone, Sparkles, Mic, Bot, AlertCircle } from 'lucide-react';
 import { useBudget } from '../context/BudgetContext';
 import { useState, useRef } from 'react';
 import { BudgetExplainer } from '../components/BudgetExplainer';
@@ -6,7 +6,7 @@ import AlertModal from '../components/AlertModal';
 import { ErrorLogger } from '../../services/SentryLogger';
 
 export default function Login() {
-  const { login } = useBudget();
+  const { login, sessionExpired } = useBudget();
   const [loading, setLoading] = useState(false);
   const privacyRef = useRef<HTMLDivElement>(null);
   const methodologyRef = useRef<HTMLDivElement>(null);
@@ -64,6 +64,18 @@ export default function Login() {
               <div className="text-center">
                 <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-6">Acceder al Presupuesto</h2>
               </div>
+
+              {sessionExpired && (
+                <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl flex items-start gap-3 text-sm animate-in fade-in slide-in-from-top-2 duration-300 w-full max-w-sm mx-auto">
+                  <AlertCircle className="w-5 h-5 shrink-0 text-amber-500 mt-0.5" />
+                  <div className="text-left">
+                    <p className="font-bold">Tu sesión ha expirado</p>
+                    <p className="text-xs text-amber-700/80 font-medium mt-0.5">
+                      Por seguridad, tu conexión con Google Drive se ha cerrado. Vuelve a iniciar sesión para continuar.
+                    </p>
+                  </div>
+                </div>
+              )}
               
               <button
                 onClick={() => handleLogin('google')}

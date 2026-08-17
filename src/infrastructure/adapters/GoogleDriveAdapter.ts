@@ -101,12 +101,20 @@ export class GoogleDriveAdapter {
         if (gapi?.client) {
             gapi.client.setToken({ access_token: this.accessToken });
         }
-        const info = await this.getUserInfo();
-        if (!info) {
-            this.clearSession();
-            return null;
+        try {
+            const info = await this.getUserInfo();
+            if (!info) {
+                this.clearSession();
+                return null;
+            }
+            return info;
+        } catch (err: any) {
+            if (err.message === 'AUTH_ERROR') {
+                console.info('[Drive] Session restoration failed: Token expired. Clearing session.');
+                this.clearSession();
+            }
+            throw err;
         }
-        return info;
     }
 
     clearSession() {
@@ -245,7 +253,9 @@ export class GoogleDriveAdapter {
                 email: data.email ?? '',
             };
         } catch (err: any) {
-            ErrorLogger.capture(err, { source: 'GoogleDriveAdapter - getUserInfo' });
+            if (err.message !== 'AUTH_ERROR') {
+                ErrorLogger.capture(err, { source: 'GoogleDriveAdapter - getUserInfo' });
+            }
             console.error('[Drive] Error fetching user info:', err);
             if (err.message === 'AUTH_ERROR') throw err;
             return null;
