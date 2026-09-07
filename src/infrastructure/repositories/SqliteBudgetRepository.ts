@@ -285,6 +285,10 @@ export class SqliteBudgetRepository implements IBudgetRepository {
         return res[0];
     }
 
+    async deleteGlobalBudget(id: number): Promise<void> {
+        this.execute('DELETE FROM global_budgets WHERE id = ?', [id]);
+    }
+
     async getCategoryBudgets(year: number, month: number): Promise<CategoryBudget[]> {
         return this.query<CategoryBudget>('SELECT * FROM category_budgets WHERE year = ? AND month = ?', [year, month]);
     }

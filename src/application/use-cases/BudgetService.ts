@@ -181,6 +181,7 @@ export class BudgetService {
     async getGlobalBudgets(y: number, m: number) { return this.repo.getGlobalBudgets(y, m); }
     async addGlobalBudget(b: any) { return this.performOperation(() => this.repo.saveGlobalBudget(b)); }
     async updateGlobalBudget(id: number, b: any) { return this.performOperation(() => this.repo.updateGlobalBudget(id, b)); }
+    async deleteGlobalBudget(id: number) { return this.performOperation(() => this.repo.deleteGlobalBudget(id)); }
 
     async getCategoryBudgets(y: number, m: number) { return this.repo.getCategoryBudgets(y, m); }
     async addCategoryBudget(b: any) { return this.performOperation(() => this.repo.saveCategoryBudget(b)); }

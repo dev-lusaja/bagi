@@ -179,6 +179,19 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     }
   };
 
+  const handleDeleteGlobalBudget = () => {
+    if (!globalBudget) return;
+    showConfirm(
+      'Eliminar Presupuesto del Mes',
+      '¿Estás seguro de que deseas eliminar el presupuesto de este mes? El mes volverá al estado "Sin Presupuesto", pero tus transacciones registradas no se modificarán.',
+      async () => {
+        await service.deleteGlobalBudget(globalBudget.id);
+        setIsEditingGlobal(false);
+        fetchDashboardData();
+      }
+    );
+  };
+
   const updateGlobalBudget = async (e: any) => {
     e.preventDefault();
     if (!globalBudget || !editGlobalAmt || !accountId) return;
@@ -1219,9 +1232,14 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-medium opacity-90">Presupuesto mensual</h3>
                       {!isPastMonth && (
-                        <button onClick={toggleEditGlobal} className="p-1 hover:bg-white/20 rounded-lg transition-colors">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button onClick={toggleEditGlobal} className="p-1 hover:bg-white/20 rounded-lg transition-colors" title="Editar presupuesto">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                          </button>
+                          <button onClick={handleDeleteGlobalBudget} className="p-1 hover:bg-rose-500/30 text-rose-200 hover:text-white rounded-lg transition-colors" title="Eliminar presupuesto del mes">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        </div>
                       )}
                     </div>
                     {isEditingGlobal ? (
@@ -1230,6 +1248,9 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                         <div className="flex gap-2">
                           <button type="submit" className="flex-1 bg-white text-indigo-600 rounded-xl py-2 flex justify-center items-center hover:bg-indigo-50 transition-all shadow-sm" title="Guardar">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                          </button>
+                          <button type="button" onClick={handleDeleteGlobalBudget} className="px-3 py-2 bg-rose-500/20 border border-rose-400/40 rounded-xl text-rose-100 hover:bg-rose-500/40 transition-all flex justify-center items-center" title="Eliminar presupuesto del mes">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                           </button>
                           <button type="button" onClick={() => setIsEditingGlobal(false)} className="px-4 py-2 bg-white/10 border border-white/30 rounded-xl text-white hover:bg-white/20 transition-all flex justify-center items-center" title="Cancelar">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>

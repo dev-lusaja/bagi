@@ -39,6 +39,7 @@ export interface IBudgetRepository {
     getGlobalBudgets(year: number, month: number): Promise<GlobalBudget[]>;
     saveGlobalBudget(budget: Omit<GlobalBudget, 'id'>): Promise<GlobalBudget>;
     updateGlobalBudget(id: number, budget: Partial<GlobalBudget>): Promise<GlobalBudget>;
+    deleteGlobalBudget(id: number): Promise<void>;
 
     getCategoryBudgets(year: number, month: number): Promise<CategoryBudget[]>;
     saveCategoryBudget(budget: Omit<CategoryBudget, 'id'>): Promise<CategoryBudget>;
