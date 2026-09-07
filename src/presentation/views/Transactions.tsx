@@ -82,7 +82,8 @@ export default function Transactions() {
     const isCard = sourceId.startsWith('c-');
     const actualId = parseInt(sourceId.replace('c-', ''));
     
-    let finalDate = new Date().toISOString();
+    const now = new Date();
+    let finalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0).toISOString();
     if (date) {
       const [year, month, day] = date.split('-');
       finalDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0).toISOString();

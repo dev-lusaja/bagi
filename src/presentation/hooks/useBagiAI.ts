@@ -126,10 +126,11 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     }
 
     // 3. Impute Date
-    let finalDate = new Date().toISOString();
+    const now = new Date();
+    let finalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0).toISOString();
     const dateHint = parsed.date_hint?.toLowerCase().trim();
     if (dateHint) {
-      const d = new Date();
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
       if (dateHint.includes('ayer')) {
         d.setDate(d.getDate() - 1);
         finalDate = d.toISOString();
