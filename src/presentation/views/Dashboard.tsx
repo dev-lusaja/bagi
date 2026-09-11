@@ -782,33 +782,39 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
           )}
 
           {/* Tabs Navigation */}
-          <div className="flex space-x-1 mb-6 bg-gray-100/50 p-1 rounded-2xl overflow-x-auto no-scrollbar max-w-full pb-1">
-            <button
-              onClick={() => setActiveTab('diagnostic')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'diagnostic' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
-            >
-              Resumen
-            </button>
-            <button
-              onClick={() => setActiveTab('consumption')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'consumption' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
-            >
-              Consumo por categoría
-            </button>
-            <button
-              onClick={() => setActiveTab('obligations')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'obligations' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
-            >
-              Obligaciones del mes
-            </button>
-            {!isCard && linkedCards.length > 0 && (
+          <div className="relative mb-6 group">
+            <div className="flex space-x-1 bg-gray-100/50 p-1 rounded-2xl overflow-x-auto no-scrollbar max-w-full pb-1 scroll-smooth">
               <button
-                onClick={() => setActiveTab('cards')}
-                className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'cards' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
+                onClick={() => setActiveTab('diagnostic')}
+                className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'diagnostic' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
               >
-                Tarjetas asociadas
+                Resumen
               </button>
-            )}
+              <button
+                onClick={() => setActiveTab('consumption')}
+                className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'consumption' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
+              >
+                Consumo por categoría
+              </button>
+              <button
+                onClick={() => setActiveTab('obligations')}
+                className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'obligations' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
+              >
+                Obligaciones del mes
+              </button>
+              {!isCard && linkedCards.length > 0 && (
+                <button
+                  onClick={() => setActiveTab('cards')}
+                  className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'cards' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
+                >
+                  Tarjetas asociadas
+                </button>
+              )}
+            </div>
+            {/* Visual fade hint on mobile */}
+            <div className="pointer-events-none absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 to-transparent rounded-r-2xl sm:hidden flex items-center justify-end pr-1">
+              <span className="text-gray-400 text-xs font-bold animate-pulse">›</span>
+            </div>
           </div>
 
           {activeTab === 'diagnostic' && (
