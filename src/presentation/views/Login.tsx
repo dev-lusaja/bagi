@@ -126,7 +126,7 @@ export default function Login() {
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div className="text-left">
-                    <p className="font-bold text-purple-950 text-sm">Probar Modo Demo</p>
+                    <p className="font-bold text-purple-950 text-sm">Probar modo demo</p>
                     <p className="text-[9px] text-purple-600 font-bold uppercase tracking-widest mt-0.5">Explorar con datos de prueba</p>
                   </div>
                 </div>

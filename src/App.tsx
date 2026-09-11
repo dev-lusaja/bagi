@@ -65,7 +65,7 @@ export default function App() {
         <div className="w-full bg-purple-600 text-white shrink-0 shadow-sm py-2 px-3.5 text-xs font-bold flex flex-wrap items-center justify-between gap-2 z-50">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <Sparkles className="w-4 h-4 shrink-0 animate-pulse text-purple-200" />
-            <span className="truncate leading-tight">Modo Demo — Datos de prueba (no se guardan en Drive)</span>
+            <span className="truncate leading-tight">Modo Demo — Datos de prueba</span>
           </div>
           <button
             onClick={logout}

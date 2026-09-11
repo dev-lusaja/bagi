@@ -99,7 +99,7 @@ export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ steps 
                     e.stopPropagation();
                     step.action();
                   }}
-                  className="inline-flex items-center justify-center gap-1 w-24 sm:w-28 py-1.5 rounded-full text-[11px] sm:text-xs font-extrabold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all group-hover:shadow-md active:scale-95 min-h-[36px] text-center"
+                  className="inline-flex items-center justify-center w-24 sm:w-28 py-1.5 rounded-full text-[10px] sm:text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all group-hover:shadow-md active:scale-95 text-center"
                 >
                   <span>{step.actionLabel}</span>
                   <ArrowRight className="w-3 h-3" />
@@ -113,7 +113,6 @@ export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ steps 
       {/* Footer bar */}
       <div className="p-3 sm:p-4 bg-gray-50/60 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500 font-medium">
         <span>{totalCount - completedCount > 0 ? `${totalCount - completedCount} pasos pendientes` : '¡Paso a paso configurado!'}</span>
-        <span className="text-[10px] uppercase font-black tracking-widest text-indigo-500">Bagi Guía</span>
       </div>
     </div>
   );
