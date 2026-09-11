@@ -1,4 +1,4 @@
-import { ShieldCheck, Database, ArrowRight, Heart, ChevronDown, Cloud, Lock, Smartphone, Sparkles, Mic, Bot, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Database, ArrowRight, Heart, ChevronDown, Cloud, Lock, Smartphone, Sparkles, Mic, Bot, AlertCircle, FlaskConical } from 'lucide-react';
 import { useBudget } from '../context/BudgetContext';
 import { useState, useRef } from 'react';
 import { BudgetExplainer } from '../components/BudgetExplainer';
@@ -122,9 +122,9 @@ export default function Login() {
                   disabled={loading || demoLoading}
                   className="inline-flex items-center justify-center gap-2 text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors py-2 px-3 rounded-xl hover:bg-purple-50/50 disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-purple-500 group-hover:scale-110 transition-transform" />
+                  <FlaskConical className="w-3.5 h-3.5 text-purple-500 group-hover:scale-110 transition-transform" />
                   <span className="underline decoration-purple-300 underline-offset-4 group-hover:decoration-purple-600">
-                    Probar en modo demo (datos de prueba)
+                    Probar en modo demo
                   </span>
                 </button>
               </div>

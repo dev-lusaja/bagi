@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LayoutDashboard, Receipt, Settings, LogOut, Home as HomeIcon, Loader2, CloudCheck, CloudAlert, User, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Receipt, Settings, LogOut, Home as HomeIcon, Loader2, CloudCheck, CloudAlert, User, Sparkles, FlaskConical } from 'lucide-react';
 import Home from './presentation/views/Home';
 import Dashboard from './presentation/views/Dashboard';
 import Transactions from './presentation/views/Transactions';
@@ -64,14 +64,14 @@ export default function App() {
       {isDemoMode && (
         <div className="w-full bg-purple-600 text-white shrink-0 shadow-sm py-2 px-3.5 text-xs font-bold flex flex-wrap items-center justify-between gap-2 z-50">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <Sparkles className="w-4 h-4 shrink-0 animate-pulse text-purple-200" />
-            <span className="truncate leading-tight">Modo Demo — Datos de prueba</span>
+            <FlaskConical className="w-4 h-4 shrink-0 animate-pulse text-purple-200" />
+            <span className="truncate leading-tight">Modo Demo</span>
           </div>
           <button
             onClick={logout}
             className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors shrink-0 active:scale-95"
           >
-            Salir de Demo
+            Salir
           </button>
         </div>
       )}
