@@ -1,4 +1,4 @@
-import { ShieldCheck, Database, ArrowRight, Heart, ChevronDown, Cloud, Lock, Smartphone, Sparkles, Mic, Bot, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Database, ArrowRight, Heart, ChevronDown, Cloud, Lock, Smartphone, Sparkles, Mic, Bot, AlertCircle, FlaskConical } from 'lucide-react';
 import { useBudget } from '../context/BudgetContext';
 import { useState, useRef } from 'react';
 import { BudgetExplainer } from '../components/BudgetExplainer';
@@ -66,7 +66,7 @@ export default function Login() {
               <img src="/logo_full.png" className="w-20 h-20 sm:w-32 sm:h-32 object-contain" alt="Bagi Logo" />
             </div>
             <p className="text-gray-500 text-base sm:text-lg font-bold max-w-xs mx-auto leading-tight">
-              Finanzas personales, sin servidores. <br/> Tu IA corre en tu dispositivo.
+              Finanzas personales, sin servidores. <br /> Tu IA corre en tu dispositivo.
             </p>
           </div>
 
@@ -87,7 +87,7 @@ export default function Login() {
                   </div>
                 </div>
               )}
-              
+
               <button
                 onClick={() => handleLogin('google')}
                 disabled={loading || demoLoading}
@@ -122,9 +122,9 @@ export default function Login() {
                   disabled={loading || demoLoading}
                   className="inline-flex items-center justify-center gap-2 text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors py-2 px-3 rounded-xl hover:bg-purple-50/50 disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-purple-500 group-hover:scale-110 transition-transform" />
+                  <FlaskConical className="w-3.5 h-3.5 text-purple-500 group-hover:scale-110 transition-transform" />
                   <span className="underline decoration-purple-300 underline-offset-4 group-hover:decoration-purple-600">
-                    Probar en modo demo (datos de prueba)
+                    Probar en modo demo
                   </span>
                 </button>
               </div>
@@ -132,25 +132,25 @@ export default function Login() {
 
             <div className="pt-8 border-t border-gray-50 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div className="space-y-3 p-4 bg-indigo-50/50 rounded-3xl border border-indigo-100/50 hover:bg-indigo-50 transition-colors group">
-                  <div className="flex justify-center text-indigo-600 bg-white w-10 h-10 mx-auto rounded-xl items-center shadow-sm group-hover:scale-110 transition-transform"><ShieldCheck className="w-5 h-5" /></div>
-                  <div>
-                    <p className="text-[10px] font-black text-indigo-900 uppercase tracking-widest mb-1">Privacidad Total</p>
-                    <p className="text-[9px] text-indigo-600/70 font-bold leading-tight">Acceso exclusivo</p>
-                  </div>
+                <div className="flex justify-center text-indigo-600 bg-white w-10 h-10 mx-auto rounded-xl items-center shadow-sm group-hover:scale-110 transition-transform"><ShieldCheck className="w-5 h-5" /></div>
+                <div>
+                  <p className="text-[10px] font-black text-indigo-900 uppercase tracking-widest mb-1">Privacidad Total</p>
+                  <p className="text-[9px] text-indigo-600/70 font-bold leading-tight">Acceso exclusivo</p>
+                </div>
               </div>
               <div className="space-y-3 p-4 bg-emerald-50/50 rounded-3xl border border-emerald-100/50 hover:bg-emerald-50 transition-colors group">
-                  <div className="flex justify-center text-emerald-600 bg-white w-10 h-10 mx-auto rounded-xl items-center shadow-sm group-hover:scale-110 transition-transform"><Database className="w-5 h-5" /></div>
-                  <div>
-                    <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest mb-1">Tus Datos</p>
-                    <p className="text-[9px] text-emerald-600/70 font-bold leading-tight">Sin servidores centrales</p>
-                  </div>
+                <div className="flex justify-center text-emerald-600 bg-white w-10 h-10 mx-auto rounded-xl items-center shadow-sm group-hover:scale-110 transition-transform"><Database className="w-5 h-5" /></div>
+                <div>
+                  <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest mb-1">Tus Datos</p>
+                  <p className="text-[9px] text-emerald-600/70 font-bold leading-tight">Sin servidores centrales</p>
+                </div>
               </div>
               <div className="space-y-3 p-4 bg-purple-50/50 rounded-3xl border border-purple-100/50 hover:bg-purple-50 transition-colors group">
-                  <div className="flex justify-center text-purple-600 bg-white w-10 h-10 mx-auto rounded-xl items-center shadow-sm group-hover:scale-110 transition-transform"><Sparkles className="w-5 h-5" /></div>
-                  <div>
-                    <p className="text-[10px] font-black text-purple-900 uppercase tracking-widest mb-1">Bagi IA</p>
-                    <p className="text-[9px] text-purple-600/70 font-bold leading-tight">Alertas offline + Gemini</p>
-                  </div>
+                <div className="flex justify-center text-purple-600 bg-white w-10 h-10 mx-auto rounded-xl items-center shadow-sm group-hover:scale-110 transition-transform"><Sparkles className="w-5 h-5" /></div>
+                <div>
+                  <p className="text-[10px] font-black text-purple-900 uppercase tracking-widest mb-1">Bagi IA</p>
+                  <p className="text-[9px] text-purple-600/70 font-bold leading-tight">Alertas offline + Gemini</p>
+                </div>
               </div>
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function Login() {
       {/* SECTION 2: BUDGET METHODOLOGY */}
       <section ref={methodologyRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-white shrink-0 relative py-32">
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent" />
-        
+
         <div className="max-w-6xl w-full space-y-16">
           <div className="text-center space-y-4">
             <h2 className="text-sm font-black text-indigo-600 uppercase tracking-[0.4em]">La Metodología</h2>
@@ -178,7 +178,7 @@ export default function Login() {
       {/* SECTION 3: BAGI IA */}
       <section ref={aiRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-gray-50 shrink-0 relative py-32">
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent" />
-        
+
         <div className="max-w-4xl w-full space-y-16">
           <div className="text-center space-y-4">
             <h2 className="text-sm font-black text-purple-600 uppercase tracking-[0.4em]">Conoce a Bagi IA</h2>
@@ -217,7 +217,7 @@ export default function Login() {
       {/* SECTION 4: PRIVACY & SECURITY */}
       <section ref={privacyRef} className="min-h-screen w-full flex flex-col items-center justify-center p-6 py-20 bg-white shrink-0 relative">
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent" />
-        
+
         <div className="max-w-4xl w-full space-y-16">
           <div className="text-center space-y-4">
             <h2 className="text-sm font-black text-indigo-600 uppercase tracking-[0.4em]">Tu Privacidad es Primero</h2>
@@ -284,7 +284,7 @@ export default function Login() {
             <button onClick={scrollToTop} className="text-xs text-gray-400 hover:text-gray-600 transition-colors underline underline-offset-2">
               Volver al inicio
             </button>
-            
+
             <div className="flex items-center justify-center space-x-2 text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
               <span>Hecho con el</span>
               <Heart className="w-3 h-3 text-rose-500 fill-rose-500 animate-pulse" />
