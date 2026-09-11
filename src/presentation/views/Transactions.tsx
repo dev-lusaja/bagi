@@ -1,5 +1,5 @@
 import { useState, useEffect, Fragment } from 'react';
-import { Filter, CreditCard, Wallet, Coins, Tags, Trash2 } from 'lucide-react';
+import { Filter, CreditCard, Wallet, Coins, Tags, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
 import AlertModal from '../components/AlertModal';
@@ -24,6 +24,7 @@ export default function Transactions() {
   const [filterCard, setFilterCard] = useState('');
   
   // New Tx
+  const [isFormExpanded, setIsFormExpanded] = useState(false);
   const [desc, setDesc] = useState('');
   const [amt, setAmt] = useState('');
   const [sourceId, setSourceId] = useState(''); // 'id' for account, 'c-id' for card
@@ -195,11 +196,24 @@ export default function Transactions() {
       </div>
 
       <div className="bg-white p-4 sm:p-6 rounded-3xl shadow-sm border border-gray-100">
-        <h3 className="text-base sm:text-lg font-bold mb-4 sm:mb-5 flex items-center gap-2">
-          <div className="w-2 h-5 sm:h-6 bg-indigo-500 rounded-full"></div>
-          Registrar nuevo movimiento
-        </h3>
-        <form onSubmit={addTx} className="grid grid-cols-1 md:grid-cols-6 gap-3 sm:gap-4">
+        <div
+          onClick={() => setIsFormExpanded(!isFormExpanded)}
+          className="flex items-center justify-between cursor-pointer md:cursor-default select-none mb-0 md:mb-5"
+        >
+          <h3 className="text-base sm:text-lg font-bold flex items-center gap-2 my-1 md:my-0">
+            <div className="w-2 h-5 sm:h-6 bg-indigo-500 rounded-full"></div>
+            Registrar nuevo movimiento
+          </h3>
+          <button
+            type="button"
+            className="md:hidden p-1 text-gray-400 hover:text-gray-600 focus:outline-none"
+            aria-label={isFormExpanded ? "Contraer formulario" : "Expandir formulario"}
+          >
+            {isFormExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          </button>
+        </div>
+
+        <form onSubmit={addTx} className={`${isFormExpanded ? 'block' : 'hidden'} md:grid grid-cols-1 md:grid-cols-6 gap-3 sm:gap-4 mt-3 md:mt-0`}>
            <div className="md:col-span-2 flex flex-col gap-1">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Descripción</label>
              <input className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" placeholder="Ej: Supermercado..." value={desc} onChange={e=>setDesc(e.target.value)} required />
