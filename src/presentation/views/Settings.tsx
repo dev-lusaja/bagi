@@ -392,10 +392,10 @@ export default function SettingsView() {
           </form>
           <div className="grid grid-cols-1 gap-3">
               {accounts.map((a: any) => (
-                  <div key={a.id} className="p-5 bg-indigo-50/40 rounded-2xl border border-indigo-100 flex justify-between items-center group hover:shadow-lg transition-all">
-                      <div>
-                          <p className="font-bold text-indigo-900 text-lg">{a.name}</p>
-                          <div className="flex gap-2 items-center">
+                  <div key={a.id} className="p-4 sm:p-5 bg-indigo-50/40 rounded-2xl border border-indigo-100 flex justify-between items-center group hover:shadow-lg transition-all gap-3">
+                      <div className="min-w-0 flex-1">
+                          <p className="font-bold text-indigo-900 text-base sm:text-lg break-words">{a.name}</p>
+                          <div className="flex gap-2 items-center flex-wrap">
                             <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest">{a.country}</p>
                             <span className="text-[10px] text-indigo-300">•</span>
                             <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest">{a.currency}</p>
@@ -717,33 +717,33 @@ export default function SettingsView() {
                         </div>
                       ) : (
                         <>
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-4">
-                              <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                              <div className="p-2.5 sm:p-3 rounded-2xl bg-indigo-50 text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
+                                   <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                               </div>
-                              <div className="text-sm">
-                                  <p className="font-black text-gray-800 text-base flex items-center gap-2">
+                              <div className="text-sm min-w-0 flex-1">
+                                  <p className="font-black text-gray-800 text-base flex items-center gap-2 break-words">
                                     {r.name}
                                     {r.notes && (
-                                      <span className="p-1 rounded bg-amber-50 text-amber-500" title={r.notes}>
+                                      <span className="p-1 rounded bg-amber-50 text-amber-500 shrink-0" title={r.notes}>
                                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                                       </span>
                                     )}
                                   </p>
-                                  <div className="flex gap-2 items-center mt-0.5">
+                                  <div className="flex gap-2 items-center mt-0.5 flex-wrap">
                                       <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Vence día {r.due_day}</p>
                                       <span className="text-[10px] text-gray-200">•</span>
-                                      <span className="text-[10px] px-2 py-0.5 rounded-lg bg-gray-50 text-gray-500 font-black uppercase border border-gray-100 tracking-tighter shadow-sm">
+                                      <span className="text-[10px] px-2 py-0.5 rounded-lg bg-gray-50 text-gray-500 font-black uppercase border border-gray-100 tracking-tighter shadow-sm truncate max-w-[150px]">
                                           {(accounts as any[]).find(a => a.id === r.account_id)?.name || 
                                           (cards as any[]).find(c => c.id === r.card_id)?.name}
                                       </span>
                                   </div>
                               </div>
                             </div>
-                            <div className="text-right flex items-center gap-4">
+                            <div className="text-right flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
                               <div className="flex flex-col">
-                                  <span className="text-xl font-black text-gray-900 tracking-tighter">
+                                  <span className="text-lg sm:text-xl font-black text-gray-900 tracking-tighter">
                                       {formatCurrency(
                                           r.amount,
                                           (accounts as any[]).find(a => a.id === r.account_id)?.currency || 

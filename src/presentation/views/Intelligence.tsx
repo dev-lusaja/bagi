@@ -160,7 +160,7 @@ export default function Intelligence() {
       )}
 
       {/* ─── Área principal ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-start">
 
         {/* ─ Columna izquierda: Botón de voz ─ */}
         <div className="lg:col-span-7 bg-white p-4 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6 sm:space-y-8 flex flex-col items-center justify-center min-h-[360px] sm:min-h-[480px]">
@@ -286,9 +286,9 @@ export default function Intelligence() {
 
         {/* ─ Columna derecha: Sugerencias (siempre visible) ─ */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
-            <h3 className="text-sm font-black uppercase text-gray-400 tracking-widest flex items-center gap-1.5">
-              <Info className="w-4 h-4 text-indigo-500" /> Ejemplos de uso
+          <div className="bg-white p-4 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+            <h3 className="text-xs sm:text-sm font-black uppercase text-gray-400 tracking-widest flex items-center gap-1.5">
+              <Info className="w-4 h-4 text-indigo-500 shrink-0" /> Ejemplos de uso
             </h3>
             <p className="text-xs text-gray-500 leading-relaxed">
               Presiona cualquier sugerencia para simular el registro de forma instantánea:

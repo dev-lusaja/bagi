@@ -119,12 +119,12 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 pt-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide break-words">
                 <span>Total Gastado:</span>
                 <span className="text-gray-800">{formatCurrency(totalSpent, account.currency)}</span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide break-words">
                 <span>Presupuesto:</span>
                 <span className="text-gray-800">{formatCurrency(budgetLimit, account.currency)}</span>
               </div>
@@ -207,7 +207,7 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
                   return cat?.type === 'EXPENSE' ? acc + t.amount : acc;
                 }, 0);
                 return (
-                  <div key={card.id} className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all">
+                  <div key={card.id} className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all">
                     <div className="flex justify-between items-start mb-6">
                       <div className="p-3 bg-gray-50 text-gray-400 rounded-2xl">
                         <CreditCard className="w-6 h-6" />

@@ -45,22 +45,22 @@ export default function Login() {
   return (
     <div ref={containerRef} className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth scroll-pt-10 bg-gray-50 text-gray-900">
       {/* SECTION 1: HERO & LOGIN */}
-      <section className="min-h-screen w-full flex flex-col items-center justify-center p-6 py-12 md:h-screen md:py-6 relative shrink-0">
+      <section className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 py-8 md:h-screen md:py-6 relative shrink-0">
         {/* Decorative Gradients */}
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/5 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/5 blur-[100px] rounded-full" />
 
         <div className="w-full max-w-lg relative animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          <div className="text-center mb-10 space-y-4">
-            <div className="inline-flex p-2 rounded-[2.5rem] bg-white shadow-xl shadow-indigo-100/50 border border-indigo-50 mb-4 overflow-hidden">
-              <img src="/logo_full.png" className="w-24 h-24 sm:w-32 sm:h-32 object-contain" alt="Bagi Logo" />
+          <div className="text-center mb-6 sm:mb-10 space-y-3 sm:space-y-4">
+            <div className="inline-flex p-2 rounded-[2.5rem] bg-white shadow-xl shadow-indigo-100/50 border border-indigo-50 mb-2 sm:mb-4 overflow-hidden">
+              <img src="/logo_full.png" className="w-20 h-20 sm:w-32 sm:h-32 object-contain" alt="Bagi Logo" />
             </div>
-            <p className="text-gray-500 text-lg font-bold max-w-xs mx-auto leading-tight">
+            <p className="text-gray-500 text-base sm:text-lg font-bold max-w-xs mx-auto leading-tight">
               Finanzas personales, sin servidores. <br/> Tu IA corre en tu dispositivo.
             </p>
           </div>
 
-          <div className="bg-white border border-gray-100 p-8 rounded-[3rem] shadow-2xl shadow-gray-200/50 space-y-8">
+          <div className="bg-white border border-gray-100 p-5 sm:p-8 rounded-2xl sm:rounded-[3rem] shadow-2xl shadow-gray-200/50 space-y-6 sm:space-y-8">
             <div className="space-y-6">
               <div className="text-center">
                 <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-6">Acceder al Presupuesto</h2>
