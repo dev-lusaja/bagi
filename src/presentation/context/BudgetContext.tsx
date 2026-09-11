@@ -14,7 +14,9 @@ interface BudgetContextType {
     userInfo: { name: string; picture: string; email: string } | null;
     isAuthenticated: boolean;
     sessionExpired: boolean;
+    isDemoMode: boolean;
     login: (provider: 'google' | 'onedrive') => Promise<void>;
+    loginDemo: () => Promise<void>;
     logout: () => Promise<void>;
     sync: () => Promise<void>;
 }
@@ -29,6 +31,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [userInfo, setUserInfo] = useState<{ name: string; picture: string; email: string } | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [sessionExpired, setSessionExpired] = useState(false);
+    const [isDemoMode, setIsDemoMode] = useState(false);
 
     useEffect(() => {
         const init = async () => {
@@ -100,11 +103,26 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
     };
 
+    const loginDemo = async () => {
+        try {
+            await service.loadDemoData();
+            setIsDemoMode(true);
+            setSessionExpired(false);
+            const info = service.getUserInfo();
+            setUserInfo(info);
+            setIsAuthenticated(true);
+        } catch (error) {
+            ErrorLogger.capture(error, { source: 'BudgetContext - login demo' });
+            throw error;
+        }
+    };
+
     const logout = async () => {
         await service.logout();
         Sentry.setUser(null);
         AnalyticsService.reset();
         setIsAuthenticated(false);
+        setIsDemoMode(false);
         setUserInfo(null);
     };
 
@@ -118,7 +136,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     return (
-        <BudgetContext.Provider value={{ service, isInitialized, isSyncing, hasPendingChanges, userInfo, isAuthenticated, sessionExpired, login, logout, sync }}>
+        <BudgetContext.Provider value={{ service, isInitialized, isSyncing, hasPendingChanges, userInfo, isAuthenticated, sessionExpired, isDemoMode, login, loginDemo, logout, sync }}>
             {children}
         </BudgetContext.Provider>
     );

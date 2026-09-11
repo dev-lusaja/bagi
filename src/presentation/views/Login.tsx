@@ -6,8 +6,9 @@ import AlertModal from '../components/AlertModal';
 import { ErrorLogger } from '../../services/SentryLogger';
 
 export default function Login() {
-  const { login, sessionExpired } = useBudget();
+  const { login, loginDemo, sessionExpired } = useBudget();
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
   const privacyRef = useRef<HTMLDivElement>(null);
   const methodologyRef = useRef<HTMLDivElement>(null);
   const aiRef = useRef<HTMLDivElement>(null);
@@ -79,7 +80,7 @@ export default function Login() {
               
               <button
                 onClick={() => handleLogin('google')}
-                disabled={loading}
+                disabled={loading || demoLoading}
                 className="group relative flex items-center justify-between p-4 bg-indigo-600 hover:bg-indigo-700 rounded-2xl transition-all duration-500 transform hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full max-w-sm mx-auto"
               >
                 <div className="flex items-center gap-3">
@@ -92,6 +93,34 @@ export default function Login() {
                   </div>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-white group-hover:text-indigo-600 transition-all duration-500">
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </button>
+
+              <button
+                onClick={async () => {
+                  setDemoLoading(true);
+                  try {
+                    await loginDemo();
+                  } catch (e) {
+                    ErrorLogger.capture(e, { source: 'Login - demo' });
+                  } finally {
+                    setDemoLoading(false);
+                  }
+                }}
+                disabled={loading || demoLoading}
+                className="group relative flex items-center justify-between p-4 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full max-w-sm mx-auto min-h-[44px]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 flex items-center justify-center bg-purple-600 text-white rounded-xl shadow-sm">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-purple-950 text-sm">Probar Modo Demo</p>
+                    <p className="text-[9px] text-purple-600 font-bold uppercase tracking-widest mt-0.5">Explorar con datos de prueba</p>
+                  </div>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-purple-200/50 flex items-center justify-center text-purple-700 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </button>

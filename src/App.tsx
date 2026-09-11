@@ -14,7 +14,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const mainRef = useRef<HTMLDivElement>(null);
   const [imgError, setImgError] = useState(false);
-  const { isInitialized, isSyncing, hasPendingChanges, sync, userInfo, isAuthenticated, logout } = useBudget();
+  const { isInitialized, isSyncing, hasPendingChanges, sync, userInfo, isAuthenticated, logout, isDemoMode } = useBudget();
 
   useEffect(() => {
     setImgError(false);
@@ -58,8 +58,23 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-[100dvh] bg-gray-50 font-sans text-gray-900 overflow-hidden">
+    <div className="flex h-[100dvh] bg-gray-50 font-sans text-gray-900 overflow-hidden relative">
       <SavingOverlay isVisible={isSyncing} />
+
+      {isDemoMode && (
+        <div className="fixed top-0 inset-x-0 bg-purple-600 text-white text-xs font-bold py-1.5 px-4 z-[60] flex items-center justify-between shadow-md">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 animate-pulse text-purple-200" />
+            <span>Modo Demo Activo — Los datos son únicamente de prueba y no se guardarán en Google Drive.</span>
+          </div>
+          <button
+            onClick={logout}
+            className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors ml-2"
+          >
+            Salir de Demo
+          </button>
+        </div>
+      )}
 
       {/* Sidebar Navigation (Desktop) */}
       <aside className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col shadow-sm">
@@ -149,7 +164,7 @@ export default function App() {
       </aside>
 
       {/* Main Content Area */}
-      <main ref={mainRef} className="flex-1 overflow-auto scroll-smooth overscroll-contain p-4 md:p-8 pb-24 md:pb-8">
+      <main ref={mainRef} className={`flex-1 overflow-auto scroll-smooth overscroll-contain p-3 sm:p-4 md:p-8 pb-28 md:pb-8 ${isDemoMode ? 'pt-14 sm:pt-12' : ''}`}>
         <div className="max-w-[90rem] mx-auto">
           {activeTab === 'home' && <Home onNavigate={setActiveTab} />}
           {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} />}
@@ -160,26 +175,26 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation (Mobile) */}
-      <nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex items-center justify-around p-3 shadow-lg z-50">
-        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'home' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
-          <HomeIcon className="w-6 h-6" />
-          <span className="text-[10px] font-bold">Inicio</span>
+      <nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex items-center justify-around p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-lg z-50">
+        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'home' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+          <HomeIcon className="w-5 h-5" />
+          <span className="text-[11px] font-bold tracking-tight">Inicio</span>
         </button>
-        <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'dashboard' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
-          <LayoutDashboard className="w-6 h-6" />
-          <span className="text-[10px] font-bold">Resumen</span>
+        <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'dashboard' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+          <LayoutDashboard className="w-5 h-5" />
+          <span className="text-[11px] font-bold tracking-tight">Resumen</span>
         </button>
-        <button onClick={() => setActiveTab('transactions')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'transactions' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
-          <Receipt className="w-6 h-6" />
-          <span className="text-[10px] font-bold">Registro</span>
+        <button onClick={() => setActiveTab('transactions')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'transactions' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+          <Receipt className="w-5 h-5" />
+          <span className="text-[11px] font-bold tracking-tight">Registro</span>
         </button>
-        <button onClick={() => setActiveTab('intelligence')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'intelligence' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
-          <Sparkles className="w-6 h-6" />
-          <span className="text-[10px] font-bold">Bagi IA</span>
+        <button onClick={() => setActiveTab('intelligence')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'intelligence' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+          <Sparkles className="w-5 h-5" />
+          <span className="text-[11px] font-bold tracking-tight">Bagi IA</span>
         </button>
-        <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${activeTab === 'settings' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
-          <Settings className="w-6 h-6" />
-          <span className="text-[10px] font-bold">Ajustes</span>
+        <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'settings' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+          <Settings className="w-5 h-5" />
+          <span className="text-[11px] font-bold tracking-tight">Ajustes</span>
         </button>
       </nav>
     </div>

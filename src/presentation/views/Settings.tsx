@@ -329,14 +329,14 @@ export default function SettingsView() {
             </div>
           )}
 
-          <form onSubmit={addCategory} className="flex gap-2 mb-6">
-            <input className="flex-1 rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Nueva Categoría" value={newCatName} onChange={e => setNewCatName(e.target.value)} required />
-            <select className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none" value={newCatType} onChange={e => setNewCatType(e.target.value)}>
+          <form onSubmit={addCategory} className="flex flex-col sm:flex-row gap-2 mb-6">
+            <input className="flex-1 rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none min-h-[44px]" placeholder="Nueva Categoría" value={newCatName} onChange={e => setNewCatName(e.target.value)} required />
+            <select className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none min-h-[44px]" value={newCatType} onChange={e => setNewCatType(e.target.value)}>
                 <option value="EXPENSE">Gasto</option>
                 <option value="INCOME">Ingreso</option>
                 <option value="TRANSFER">Transferencia</option>
             </select>
-            <button type="submit" className="bg-indigo-600 text-white px-8 py-3 rounded-xl hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95">Agregar</button>
+            <button type="submit" className="bg-indigo-600 text-white px-8 py-3 rounded-xl hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95 min-h-[44px]">Agregar</button>
           </form>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
             {categories.map((c: any) => (
@@ -367,9 +367,9 @@ export default function SettingsView() {
         >
           <p className="text-sm text-gray-500 font-medium mb-6">Registra las cuentas donde recibes tus ingresos y mantienes tu dinero. Son el origen de fondos para todos tus pagos.</p>
           <form onSubmit={addAccount} className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-8">
-              <input className="rounded-xl border-gray-200 shadow-sm p-3 border sm:col-span-2" placeholder="Nombre de la Cuenta" value={accName} onChange={e => setAccName(e.target.value)} required />
+              <input className="rounded-xl border-gray-200 shadow-sm p-3 border sm:col-span-2 min-h-[44px]" placeholder="Nombre de la Cuenta" value={accName} onChange={e => setAccName(e.target.value)} required />
               <select 
-                className="rounded-xl border-gray-200 shadow-sm p-3 border" 
+                className="rounded-xl border-gray-200 shadow-sm p-3 border min-h-[44px]"
                 value={accCountry} 
                 onChange={e => {
                   const country = e.target.value;
@@ -388,7 +388,7 @@ export default function SettingsView() {
                   <option value="Estados Unidos">Estados Unidos (USD)</option>
                   <option value="Europa">Unión Europea (EUR)</option>
               </select>
-              <button type="submit" className="bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 font-bold">Crear</button>
+              <button type="submit" className="bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 font-bold min-h-[44px]">Crear</button>
           </form>
           <div className="grid grid-cols-1 gap-3">
               {accounts.map((a: any) => (
