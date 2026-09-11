@@ -37,6 +37,9 @@ export default function Transactions() {
   // Delete Confirmation
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
+  // Success Alert Modal
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+
   const fetchFilters = async (isLoadMore = false) => {
     if (isLoadMore) setLoadingMore(true);
     
@@ -112,6 +115,7 @@ export default function Transactions() {
         user_id: 1 // Default
     });
     setDesc(''); setAmt(''); setBudgetPeriod(currentPeriod); setOverrideBudgetPeriod(false);
+    setShowSuccessAlert(true);
     fetchFilters(); // Reset to first page
   };
 
@@ -213,16 +217,16 @@ export default function Transactions() {
           </button>
         </div>
 
-        <form onSubmit={addTx} className={`${isFormExpanded ? 'block' : 'hidden'} md:grid grid-cols-1 md:grid-cols-6 gap-3 sm:gap-4 mt-3 md:mt-0`}>
-           <div className="md:col-span-2 flex flex-col gap-1">
+        <form onSubmit={addTx} className={`${isFormExpanded ? 'flex flex-col' : 'hidden'} md:grid grid-cols-1 md:grid-cols-6 gap-4 sm:gap-5 mt-4 md:mt-0`}>
+           <div className="md:col-span-2 flex flex-col gap-2">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Descripción</label>
              <input className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" placeholder="Ej: Supermercado..." value={desc} onChange={e=>setDesc(e.target.value)} required />
            </div>
-           <div className="flex flex-col gap-1">
+           <div className="flex flex-col gap-2">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Monto</label>
              <input type="number" step="0.01" className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-bold min-h-[44px]" placeholder="0.00" value={amt} onChange={e=>setAmt(e.target.value)} required />
            </div>
-           <div className="flex flex-col gap-1">
+           <div className="flex flex-col gap-2">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Origen</label>
              <select className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" value={sourceId} onChange={e=>setSourceId(e.target.value)} required>
                <option value="" disabled>Seleccionar...</option>
@@ -234,7 +238,7 @@ export default function Transactions() {
                </optgroup>
              </select>
            </div>
-           <div className="md:col-span-2 flex flex-col gap-1">
+           <div className="md:col-span-2 flex flex-col gap-2">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Categoría</label>
              <select className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" value={catId} onChange={e=>setCatId(e.target.value)} required>
                <option value="" disabled>Seleccionar...</option>
@@ -250,7 +254,7 @@ export default function Transactions() {
              </select>
            </div>
 
-           <div className="md:col-span-2 flex flex-col gap-1">
+           <div className="md:col-span-2 flex flex-col gap-2">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Fecha de Registro</label>
              <input type="date" className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" value={date} onChange={e => {
                const newDate = e.target.value;
@@ -265,12 +269,12 @@ export default function Transactions() {
                }
              }} />
            </div>
-           <div className="md:col-span-2 flex flex-col gap-1">
+           <div className="md:col-span-2 flex flex-col gap-2">
              <div className="flex items-center justify-between">
                <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Período Presupuestario</label>
              </div>
              <input type="month" className={`rounded-xl border border-gray-100 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px] ${overrideBudgetPeriod ? 'bg-white' : 'bg-gray-50/50 text-gray-400'}`} value={budgetPeriod} onChange={e=>setBudgetPeriod(e.target.value)} disabled={!overrideBudgetPeriod} />
-             <label className="flex items-center gap-1.5 cursor-pointer select-none ml-1 mt-1">
+             <label className="flex items-center gap-1.5 cursor-pointer select-none ml-1">
                <input type="checkbox" className="w-3.5 h-3.5 rounded accent-indigo-600 cursor-pointer" checked={overrideBudgetPeriod} onChange={e => {
                  const checked = e.target.checked;
                  setOverrideBudgetPeriod(checked);
@@ -286,7 +290,7 @@ export default function Transactions() {
                <span className="text-[10px] font-bold text-gray-400">Cambiar período presupuestario</span>
              </label>
            </div>
-           <div className="md:col-span-2 flex flex-col gap-1 justify-end">
+           <div className="md:col-span-2 flex flex-col gap-2 justify-end pt-2 md:pt-0">
              <button type="submit" className="bg-gray-900 text-white py-2.5 rounded-xl hover:bg-gray-800 transition-all font-bold shadow-lg shadow-gray-200 active:scale-[0.98] text-sm min-h-[44px] h-[44px]">
                Guardar Transacción
              </button>
@@ -510,6 +514,15 @@ export default function Transactions() {
         cancelText="Cancelar"
         onConfirm={confirmDeleteTx}
         onClose={() => setDeleteConfirmId(null)}
+      />
+
+      <AlertModal
+        isOpen={showSuccessAlert}
+        title="¡Movimiento registrado!"
+        message="La transacción se ha guardado correctamente en tu presupuesto."
+        type="success"
+        confirmText="Entendido"
+        onClose={() => setShowSuccessAlert(false)}
       />
     </div>
   );
