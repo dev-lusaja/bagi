@@ -107,33 +107,27 @@ export default function Login() {
                 </div>
               </button>
 
-              <button
-                onClick={async () => {
-                  setDemoLoading(true);
-                  try {
-                    await loginDemo();
-                  } catch (e) {
-                    ErrorLogger.capture(e, { source: 'Login - demo' });
-                  } finally {
-                    setDemoLoading(false);
-                  }
-                }}
-                disabled={loading || demoLoading}
-                className="group relative flex items-center justify-between p-4 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full max-w-sm mx-auto min-h-[44px]"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 flex items-center justify-center bg-purple-600 text-white rounded-xl shadow-sm">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-bold text-purple-950 text-sm">Probar modo demo</p>
-                    <p className="text-[9px] text-purple-600 font-bold uppercase tracking-widest mt-0.5">Explorar con datos de prueba</p>
-                  </div>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-purple-200/50 flex items-center justify-center text-purple-700 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </button>
+              <div className="text-center pt-2">
+                <button
+                  onClick={async () => {
+                    setDemoLoading(true);
+                    try {
+                      await loginDemo();
+                    } catch (e) {
+                      ErrorLogger.capture(e, { source: 'Login - demo' });
+                    } finally {
+                      setDemoLoading(false);
+                    }
+                  }}
+                  disabled={loading || demoLoading}
+                  className="inline-flex items-center justify-center gap-2 text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors py-2 px-3 rounded-xl hover:bg-purple-50/50 disabled:opacity-50 disabled:cursor-not-allowed group"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-500 group-hover:scale-110 transition-transform" />
+                  <span className="underline decoration-purple-300 underline-offset-4 group-hover:decoration-purple-600">
+                    Probar en modo demo (datos de prueba)
+                  </span>
+                </button>
+              </div>
             </div>
 
             <div className="pt-8 border-t border-gray-50 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
