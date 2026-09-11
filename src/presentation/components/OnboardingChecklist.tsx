@@ -89,7 +89,7 @@ export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ steps 
             {/* Right: Badge or Action button */}
             <div className="shrink-0">
               {step.completed ? (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-100/80 text-emerald-700 border border-emerald-200/60">
+                <span className="inline-flex items-center justify-center w-24 sm:w-28 py-1.5 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-100/80 text-emerald-700 border border-emerald-200/60 text-center">
                   Completado
                 </span>
               ) : (
@@ -99,7 +99,7 @@ export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ steps 
                     e.stopPropagation();
                     step.action();
                   }}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-extrabold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all group-hover:shadow-md active:scale-95 min-h-[36px]"
+                  className="inline-flex items-center justify-center gap-1 w-24 sm:w-28 py-1.5 rounded-full text-[11px] sm:text-xs font-extrabold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all group-hover:shadow-md active:scale-95 min-h-[36px] text-center"
                 >
                   <span>{step.actionLabel}</span>
                   <ArrowRight className="w-3 h-3" />
