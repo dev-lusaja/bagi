@@ -26,9 +26,19 @@ export default function Login() {
     setLoading(true);
     try {
       await login(provider);
-    } catch (error) {
+    } catch (error: any) {
       ErrorLogger.capture(error, { source: 'Login - handleLogin' });
-      showAlert('Error de acceso', 'No pudimos conectar con tu cuenta. Por favor, intenta de nuevo.', 'error');
+      if (error?.message === 'NO_CLIENT_ID') {
+        showAlert(
+          'Configuración Pendiente',
+          'Las credenciales de Google OAuth (VITE_GOOGLE_CLIENT_ID) no están configuradas en las variables de entorno. Puedes explorar toda la aplicación usando el "Modo Demo".',
+          'info'
+        );
+      } else if (error?.error === 'popup_closed_by_user') {
+        showAlert('Acceso cancelado', 'Has cerrado la ventana de inicio de sesión de Google antes de completar la autorización.', 'info');
+      } else {
+        showAlert('Error de acceso', 'No pudimos conectar con tu cuenta de Google. Verifica tu conexión o intenta con el "Modo Demo".', 'error');
+      }
     } finally {
       setLoading(false);
     }

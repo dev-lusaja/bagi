@@ -85,8 +85,15 @@ export class GoogleDriveAdapter {
     }
 
     async login(): Promise<string> {
-        return new Promise((resolve) => {
+        if (!this.tokenClient) {
+            throw new Error('NO_CLIENT_ID');
+        }
+
+        return new Promise((resolve, reject) => {
             this.tokenClient.callback = (resp: any) => {
+                if (resp.error) {
+                    return reject(resp);
+                }
                 this.accessToken = resp.access_token;
                 if (this.accessToken) {
                     localStorage.setItem(this.STORAGE_KEY, this.accessToken);
