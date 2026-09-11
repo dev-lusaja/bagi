@@ -78,11 +78,11 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
     ];
 
     return (
-      <div key={`acc-${account.id}`} className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col gap-6 group hover:shadow-xl transition-all duration-500 bg-gradient-to-b from-white to-gray-50/20">
+      <div key={`acc-${account.id}`} className="bg-white p-4 sm:p-6 rounded-3xl sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col gap-4 sm:gap-6 group hover:shadow-xl transition-all duration-500 bg-gradient-to-b from-white to-gray-50/20">
         
         {/* Parte Superior: Gráfico Maestro y Título */}
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          <div className="relative w-32 h-32 shrink-0">
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 shrink-0">
             <div style={{ width: '100%', height: '100%', minWidth: 1, minHeight: 1 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <RadialBarChart 
@@ -114,17 +114,17 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
               <div className="flex items-center justify-center sm:justify-start mb-1">
                 <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em]">Saldo Libre</p>
               </div>
-              <p className={`text-1xl sm:text-2xl font-black tracking-tight ${accountAvailable < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+              <p className={`text-xl sm:text-2xl font-black tracking-tight break-all ${accountAvailable < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                 {formatCurrency(accountAvailable, account.currency)}
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 pt-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide break-words">
                 <span>Total Gastado:</span>
                 <span className="text-gray-800">{formatCurrency(totalSpent, account.currency)}</span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide break-words">
                 <span>Presupuesto:</span>
                 <span className="text-gray-800">{formatCurrency(budgetLimit, account.currency)}</span>
               </div>
@@ -147,7 +147,7 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
     { id: 'categories', title: 'Categorías', completed: categories.length > 0, icon: Tag, action: () => onNavigate?.('settings'), actionLabel: 'Ver', description: 'Revisa/crea tus categorías.' },
     { id: 'accounts', title: 'Cuentas', completed: accounts.length > 0, icon: Landmark, action: () => onNavigate?.('settings'), actionLabel: 'Crear', description: 'Registra tu cuenta sueldo.' },
     { id: 'cards', title: 'Tarjetas', completed: cards.length > 0, icon: CreditCard, action: () => onNavigate?.('settings'), actionLabel: 'Asociar', description: 'Configura tus tarjetas de crédito.' },
-    { id: 'recurring', title: 'Recurrentes', completed: recurringItems.length > 0, icon: Repeat, action: () => onNavigate?.('transactions'), actionLabel: 'Agregar', description: 'Registra tus gastos recurrentes.' },
+    { id: 'recurring', title: 'Recurrentes', completed: recurringItems.length > 0, icon: Repeat, action: () => onNavigate?.('settings'), actionLabel: 'Agregar', description: 'Registra tus gastos recurrentes.' },
     { id: 'income', title: 'Ingresos', completed: hasCurrentMonthIncome, icon: DollarSign, action: () => onNavigate?.('transactions'), actionLabel: 'Registrar', description: 'Registra tu salario antes de planificar.' },
     { id: 'budget', title: 'Presupuesto', completed: !!currentGlobalBudget, icon: Wallet, action: () => onNavigate?.('dashboard'), actionLabel: 'Definir', description: 'Asigna tus gastos mensuales.' }
   ];
@@ -156,29 +156,29 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
   const showOnboarding = !onboardingComplete || showOnboardingManual;
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-1000 pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+    <div className="space-y-8 sm:space-y-12 animate-in fade-in duration-1000 pb-20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6">
         <div>
-          <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Inicio</h2>
-          <p className="text-gray-500 mt-1 font-medium">Control unificado de tus cuentas este mes.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Inicio</h2>
+          <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">Control unificado de tus cuentas este mes.</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto justify-between md:justify-end">
           {onboardingComplete && (
             <button 
               onClick={() => setShowOnboardingManual(!showOnboardingManual)}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 font-bold text-xs hover:bg-indigo-100 transition-all shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 font-bold text-xs hover:bg-indigo-100 transition-all shadow-sm min-h-[44px]"
             >
               <HelpCircle className="w-4 h-4" />
               {showOnboardingManual ? 'Ocultar guía' : 'Guía rápida'}
             </button>
           )}
-          <div className="flex items-center gap-3 bg-indigo-50 px-5 py-2.5 rounded-2xl border border-indigo-100 shadow-sm">
+          <div className="flex items-center gap-2.5 bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100 shadow-sm">
              <div className="text-indigo-400">
                <CheckCircle2 className="w-4 h-4" />
              </div>
-             <span className="text-sm font-black text-indigo-700 uppercase tracking-widest leading-none mt-0.5">{new Date().toLocaleString('es-ES', { month: 'long' })}</span>
-             <span className="text-indigo-600 font-black text-lg leading-none">{year}</span>
+             <span className="text-xs sm:text-sm font-black text-indigo-700 uppercase tracking-widest leading-none mt-0.5">{new Date().toLocaleString('es-ES', { month: 'long' })}</span>
+             <span className="text-indigo-600 font-black text-base sm:text-lg leading-none">{year}</span>
           </div>
         </div>
       </div>
@@ -207,7 +207,7 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
                   return cat?.type === 'EXPENSE' ? acc + t.amount : acc;
                 }, 0);
                 return (
-                  <div key={card.id} className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all">
+                  <div key={card.id} className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all">
                     <div className="flex justify-between items-start mb-6">
                       <div className="p-3 bg-gray-50 text-gray-400 rounded-2xl">
                         <CreditCard className="w-6 h-6" />

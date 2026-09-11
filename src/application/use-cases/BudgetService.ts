@@ -41,6 +41,7 @@ export class BudgetService {
     private onSyncStateChange: (isSyncing: boolean) => void = () => {};
     private SYNC_INTERVAL = 8000;
     private userInfo: { name: string; picture: string; email: string } | null = null;
+    private isDemoMode = false;
 
     constructor(repo: IBudgetRepository, drive: GoogleDriveAdapter) {
         this.repo = repo;
@@ -88,9 +89,179 @@ export class BudgetService {
     }
 
     async logout(): Promise<void> {
+        this.isDemoMode = false;
         this.drive.clearSession();
         this.userInfo = null;
     }
+
+    async loadDemoData(): Promise<void> {
+        this.isDemoMode = true;
+        this.userInfo = {
+            name: 'Usuario Demo',
+            email: 'demo@bagi.app',
+            picture: ''
+        };
+
+        await this.repo.initializeDatabase();
+        await this.seedCategories();
+
+        // Seed demo accounts
+        const acc1 = await this.repo.saveAccount({ name: 'Cuenta Sueldo COP', currency: 'COP', country: 'Colombia', user_id: 1 });
+        await this.repo.saveAccount({ name: 'Cuenta Soles PEN', currency: 'PEN', country: 'Perú', user_id: 1 });
+
+        // Seed demo cards
+        const card1 = await this.repo.saveCard({
+            name: 'Visa Crédito',
+            type: 'CREDIT',
+            currency: 'COP',
+            credit_limit: 3000000,
+            payment_account_id: acc1.id,
+            monthly_payment_budget: 0,
+            user_id: 1
+        });
+
+        const categories = await this.repo.getCategories();
+        const catSalary = categories.find(c => c.name === 'Salario')?.id || 1;
+        const catMercado = categories.find(c => c.name === 'Mercado')?.id || 1;
+        const catRestaurantes = categories.find(c => c.name === 'Restaurantes')?.id || 1;
+        const catGasolina = categories.find(c => c.name === 'Gasolina')?.id || 1;
+        const catOtros = categories.find(c => c.name === 'Otros gastos')?.id || 1;
+        const catRecurrente = categories.find(c => c.name === 'Servicios Recurrentes')?.id || 1;
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+
+        // Seed global budget
+        await this.repo.saveGlobalBudget({ year, month, total_amount: 5000000, account_id: acc1.id, user_id: 1 });
+
+        // Seed category budgets
+        await this.repo.saveCategoryBudget({ year, month, amount: 800000, category_id: catMercado, account_id: acc1.id, user_id: 1 });
+        await this.repo.saveCategoryBudget({ year, month, amount: 400000, category_id: catRestaurantes, account_id: acc1.id, user_id: 1 });
+        await this.repo.saveCategoryBudget({ year, month, amount: 250000, category_id: catGasolina, account_id: acc1.id, user_id: 1 });
+
+        // Seed card budget
+        await this.repo.saveCardBudget({ year, month, amount: 1200000, card_id: card1.id, account_id: acc1.id, user_id: 1 });
+
+        // Seed recurring items
+        await this.repo.saveRecurringItem({
+            name: 'Arriendo Apartamento',
+            amount: 1200000,
+            type: 'SERVICE',
+            due_day: 5,
+            category_id: catRecurrente,
+            account_id: acc1.id,
+            card_id: undefined,
+            notes: 'Pago mensual administración e inmobiliaria',
+            start_month: 1,
+            start_year: year,
+            end_month: undefined,
+            end_year: undefined,
+            user_id: 1,
+            is_active: true
+        });
+
+        await this.repo.saveRecurringItem({
+            name: 'Servicio de Internet Fibra',
+            amount: 110000,
+            type: 'SERVICE',
+            due_day: 15,
+            category_id: catRecurrente,
+            account_id: acc1.id,
+            card_id: undefined,
+            notes: 'Claro 300 Megas',
+            start_month: 1,
+            start_year: year,
+            end_month: undefined,
+            end_year: undefined,
+            user_id: 1,
+            is_active: true
+        });
+
+        await this.repo.saveRecurringItem({
+            name: 'Suscripción Netflix / Spotify',
+            amount: 55000,
+            type: 'SERVICE',
+            due_day: 20,
+            category_id: catRecurrente,
+            account_id: undefined,
+            card_id: card1.id,
+            notes: 'Cobro automático a tarjeta',
+            start_month: 1,
+            start_year: year,
+            end_month: undefined,
+            end_year: undefined,
+            user_id: 1,
+            is_active: true
+        });
+
+        // Instantiate obligations
+        await this.instantiateRecurringItems(year, month, acc1.id, 1);
+
+        // Seed transactions
+        const todayStr = now.toISOString();
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString();
+        const firstDayStr = new Date(year, month - 1, 1, 12, 0, 0).toISOString();
+
+        await this.repo.saveTransaction({
+            description: 'Salario Mensual',
+            amount: 5000000,
+            account_id: acc1.id,
+            card_id: undefined,
+            category_id: catSalary,
+            date: firstDayStr,
+            imputation_date: firstDayStr,
+            user_id: 1
+        });
+
+        await this.repo.saveTransaction({
+            description: 'Supermercado Éxito',
+            amount: 320000,
+            account_id: acc1.id,
+            card_id: undefined,
+            category_id: catMercado,
+            date: yesterdayStr,
+            imputation_date: yesterdayStr,
+            user_id: 1
+        });
+
+        await this.repo.saveTransaction({
+            description: 'Cena Restaurante El Cielo',
+            amount: 140000,
+            account_id: acc1.id,
+            card_id: undefined,
+            category_id: catRestaurantes,
+            date: todayStr,
+            imputation_date: todayStr,
+            user_id: 1
+        });
+
+        await this.repo.saveTransaction({
+            description: 'Tanqueo Gasolina Texaco',
+            amount: 90000,
+            account_id: acc1.id,
+            card_id: undefined,
+            category_id: catGasolina,
+            date: todayStr,
+            imputation_date: todayStr,
+            user_id: 1
+        });
+
+        await this.repo.saveTransaction({
+            description: 'Compra Electrónicos Amazon',
+            amount: 380000,
+            account_id: undefined,
+            card_id: card1.id,
+            category_id: catOtros,
+            date: yesterdayStr,
+            imputation_date: yesterdayStr,
+            user_id: 1
+        });
+    }
+
+    getIsDemoMode() { return this.isDemoMode; }
 
     setSyncConfig(strategy: 'immediate' | 'deferred') {
         this.syncStrategy = strategy;
@@ -103,7 +274,7 @@ export class BudgetService {
     }
 
     async syncToDrive() {
-        if (this.isSyncing) return;
+        if (this.isSyncing || this.isDemoMode) return;
         this.onSyncStateChange(true);
         this.isSyncing = true;
         try {

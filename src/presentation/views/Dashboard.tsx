@@ -677,16 +677,16 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6 mb-6 sm:mb-8">
         <div>
-          <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Presupuesto</h2>
-          <p className="text-gray-500 mt-1 font-medium">Controla tus límites y gastos recurrentes.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Presupuesto</h2>
+          <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">Controla tus límites y gastos recurrentes.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-indigo-50 rounded-2xl border border-indigo-100 p-1 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full md:w-auto">
+          <div className="flex items-center justify-between bg-indigo-50 rounded-2xl border border-indigo-100 p-1 shadow-sm min-h-[44px]">
             <select
-              className="bg-transparent text-xs font-black text-indigo-700 uppercase tracking-wider px-3 py-1.5 outline-none cursor-pointer"
+              className="flex-1 bg-transparent text-xs font-black text-indigo-700 uppercase tracking-wider px-3 py-1.5 outline-none cursor-pointer text-center"
               value={year}
               onChange={e => setYear(parseInt(e.target.value))}
             >
@@ -694,7 +694,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
             </select>
             <div className="w-px h-4 bg-indigo-200"></div>
             <select
-              className="bg-transparent text-xs font-black text-indigo-700 uppercase tracking-wider px-3 py-1.5 outline-none cursor-pointer"
+              className="flex-1 bg-transparent text-xs font-black text-indigo-700 uppercase tracking-wider px-3 py-1.5 outline-none cursor-pointer text-center"
               value={month}
               onChange={e => setMonth(parseInt(e.target.value))}
             >
@@ -704,10 +704,10 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
             </select>
           </div>
 
-          <div className="relative group">
+          <div className="relative group w-full sm:w-auto">
             <Filter className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-indigo-500 transition-colors" />
             <select
-              className="pl-9 pr-4 py-2.5 rounded-2xl border border-gray-100 bg-white text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-indigo-100 transition-all appearance-none cursor-pointer shadow-sm shadow-black/5 min-w-[180px]"
+              className="w-full pl-9 pr-4 py-2.5 rounded-2xl border border-gray-100 bg-white text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-indigo-100 transition-all appearance-none cursor-pointer shadow-sm shadow-black/5 min-w-[180px] min-h-[44px]"
               value={accountId}
               onChange={e => setAccountId(e.target.value)}
             >
@@ -782,29 +782,29 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
           )}
 
           {/* Tabs Navigation */}
-          <div className="flex space-x-1 mb-6 bg-gray-100/50 p-1 rounded-2xl w-fit flex-wrap gap-y-1">
+          <div className="flex space-x-1 mb-6 bg-gray-100/50 p-1 rounded-2xl overflow-x-auto no-scrollbar max-w-full pb-1">
             <button
               onClick={() => setActiveTab('diagnostic')}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'diagnostic' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
+              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'diagnostic' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
             >
               Resumen
             </button>
             <button
               onClick={() => setActiveTab('consumption')}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'consumption' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
+              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'consumption' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
             >
               Consumo por categoría
             </button>
             <button
               onClick={() => setActiveTab('obligations')}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'obligations' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
+              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'obligations' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
             >
               Obligaciones del mes
             </button>
             {!isCard && linkedCards.length > 0 && (
               <button
                 onClick={() => setActiveTab('cards')}
-                className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'cards' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
+                className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'cards' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
               >
                 Tarjetas asociadas
               </button>
@@ -1456,8 +1456,8 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
 
       {/* Category Details Modal */}
       {selectedCatDetail && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col border border-white/20">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-white/20">
             <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-white">
               <div>
                 <h3 className="text-xl font-black text-gray-800 tracking-tight">{selectedCatDetail.name}</h3>
@@ -1465,7 +1465,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
               </div>
               <button
                 onClick={() => setSelectedCatDetail(null)}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-300 hover:text-gray-600 active:scale-90"
+                className="p-2 sm:p-3 hover:bg-gray-100 rounded-xl transition-all text-gray-300 hover:text-gray-600 active:scale-90 shrink-0"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -1529,8 +1529,8 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
 
       {/* Obligation Details Modal */}
       {selectedObligationDetail && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-white/20">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col border border-white/20">
             <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <div>
                 <h3 className="text-2xl font-black text-gray-800 tracking-tight">{selectedObligationDetail.name}</h3>
@@ -1538,7 +1538,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
               </div>
               <button
                 onClick={() => setSelectedObligationDetail(null)}
-                className="p-3 hover:bg-gray-200 rounded-2xl transition-all font-bold text-gray-500 bg-gray-100 active:scale-90"
+                className="p-2.5 sm:p-3 hover:bg-gray-200 rounded-2xl transition-all font-bold text-gray-500 bg-gray-100 active:scale-90 shrink-0"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>

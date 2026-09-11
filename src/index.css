@@ -35,6 +35,22 @@
     scrollbar-width: thin;
     scrollbar-color: #e2e8f0 transparent;
   }
+
+  /* Prevent auto-zoom on mobile inputs for iOS */
+  @media (max-width: 640px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Hide scrollbar utility for tab bars */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 

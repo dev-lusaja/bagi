@@ -124,20 +124,20 @@ export default function Intelligence() {
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
 
       {/* ─── Header ─── */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 sm:gap-4">
         <div>
-          <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-800 tracking-tight flex items-center gap-2">
-            <Sparkles className="w-8 h-8 text-indigo-500 animate-pulse" />
+          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-800 tracking-tight flex items-center gap-2">
+            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-500 animate-pulse" />
             Bagi IA
           </h2>
-          <p className="text-gray-500 mt-1 font-medium">Controla tus finanzas hablando con inteligencia artificial.</p>
+          <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">Controla tus finanzas hablando con inteligencia artificial.</p>
         </div>
 
         {apiKey && (
           <button
             type="button"
             onClick={() => setIsKeyModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 hover:border-indigo-100 hover:bg-indigo-50/50 rounded-2xl text-xs font-bold text-gray-500 hover:text-indigo-600 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 hover:border-indigo-100 hover:bg-indigo-50/50 rounded-2xl text-xs font-bold text-gray-500 hover:text-indigo-600 transition-all cursor-pointer min-h-[44px]"
           >
             <Key className="w-3.5 h-3.5" />
             Cambiar API Key
@@ -160,10 +160,10 @@ export default function Intelligence() {
       )}
 
       {/* ─── Área principal ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-start">
 
         {/* ─ Columna izquierda: Botón de voz ─ */}
-        <div className="lg:col-span-7 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-8 flex flex-col items-center justify-center min-h-[480px]">
+        <div className="lg:col-span-7 bg-white p-4 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6 sm:space-y-8 flex flex-col items-center justify-center min-h-[360px] sm:min-h-[480px]">
 
           {/* Controles de idioma */}
           {isSupported && (
@@ -286,9 +286,9 @@ export default function Intelligence() {
 
         {/* ─ Columna derecha: Sugerencias (siempre visible) ─ */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
-            <h3 className="text-sm font-black uppercase text-gray-400 tracking-widest flex items-center gap-1.5">
-              <Info className="w-4 h-4 text-indigo-500" /> Ejemplos de uso
+          <div className="bg-white p-4 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+            <h3 className="text-xs sm:text-sm font-black uppercase text-gray-400 tracking-widest flex items-center gap-1.5">
+              <Info className="w-4 h-4 text-indigo-500 shrink-0" /> Ejemplos de uso
             </h3>
             <p className="text-xs text-gray-500 leading-relaxed">
               Presiona cualquier sugerencia para simular el registro de forma instantánea:
@@ -300,7 +300,7 @@ export default function Intelligence() {
                   type="button"
                   onClick={() => handleSuggestionClick(s.text)}
                   disabled={isRecording || isProcessing}
-                  className="p-3 text-left border border-gray-100 rounded-2xl hover:border-indigo-100 hover:bg-indigo-50/20 transition-all cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-3 text-left border border-gray-100 rounded-2xl hover:border-indigo-100 hover:bg-indigo-50/20 transition-all cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                 >
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] font-bold text-indigo-500 group-hover:text-indigo-600">{s.label}</span>

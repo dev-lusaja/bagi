@@ -22,6 +22,11 @@ export class GoogleDriveAdapter {
     constructor() {}
 
     async init(): Promise<void> {
+        if (!DEFAULT_CONFIG.clientId || !DEFAULT_CONFIG.apiKey) {
+            console.warn('[DriveAdapter] Google credentials not provided in env. Drive features will be bypassed in dev/demo.');
+            return Promise.resolve();
+        }
+
         return new Promise((resolve, reject) => {
             // Load Google Identity Services (GSI)
             const script = document.createElement('script');
@@ -29,55 +34,66 @@ export class GoogleDriveAdapter {
             script.async = true;
             script.defer = true;
             script.onload = () => {
-                const google = (window as any).google;
-                this.tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: DEFAULT_CONFIG.clientId,
-                    scope: DEFAULT_CONFIG.scope,
-                    callback: (resp: any) => {
-                        if (resp.error !== undefined) {
-                            reject(resp);
-                        }
-                        this.accessToken = resp.access_token;
-                        if (this.accessToken) {
-                            localStorage.setItem(this.STORAGE_KEY, this.accessToken);
-                            const gapi = (window as any).gapi;
-                            if (gapi?.client) {
-                                gapi.client.setToken({ access_token: this.accessToken });
+                try {
+                    const google = (window as any).google;
+                    this.tokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: DEFAULT_CONFIG.clientId,
+                        scope: DEFAULT_CONFIG.scope,
+                        callback: (resp: any) => {
+                            if (resp.error !== undefined) {
+                                reject(resp);
                             }
-                        }
-                    },
-                });
-                
-                // Load GAPI
-                const gapiScript = document.createElement('script');
-                gapiScript.src = 'https://apis.google.com/js/api.js';
-                gapiScript.async = true;
-                gapiScript.defer = true;
-                gapiScript.onload = () => {
-                   const gapi = (window as any).gapi;
-                   gapi.load('client', async () => {
-                       try {
-                           await gapi.client.init({
-                               apiKey: DEFAULT_CONFIG.apiKey,
-                               discoveryDocs: DEFAULT_CONFIG.discoveryDocs,
-                           });
-                           resolve();
-                       } catch (err) {
-                           reject(err);
-                       }
-                   });
-                };
-                gapiScript.onerror = () => reject(new Error('Failed to load GAPI script'));
-                document.body.appendChild(gapiScript);
+                            this.accessToken = resp.access_token;
+                            if (this.accessToken) {
+                                localStorage.setItem(this.STORAGE_KEY, this.accessToken);
+                                const gapi = (window as any).gapi;
+                                if (gapi?.client) {
+                                    gapi.client.setToken({ access_token: this.accessToken });
+                                }
+                            }
+                        },
+                    });
+
+                    // Load GAPI
+                    const gapiScript = document.createElement('script');
+                    gapiScript.src = 'https://apis.google.com/js/api.js';
+                    gapiScript.async = true;
+                    gapiScript.defer = true;
+                    gapiScript.onload = () => {
+                       const gapi = (window as any).gapi;
+                       gapi.load('client', async () => {
+                           try {
+                               await gapi.client.init({
+                                   apiKey: DEFAULT_CONFIG.apiKey,
+                                   discoveryDocs: DEFAULT_CONFIG.discoveryDocs,
+                               });
+                               resolve();
+                           } catch (err) {
+                               resolve(); // Graceful fallback
+                           }
+                       });
+                    };
+                    gapiScript.onerror = () => resolve();
+                    document.body.appendChild(gapiScript);
+                } catch (e) {
+                    resolve(); // Graceful fallback
+                }
             };
-            script.onerror = () => reject(new Error('Failed to load GSI script'));
+            script.onerror = () => resolve();
             document.body.appendChild(script);
         });
     }
 
     async login(): Promise<string> {
-        return new Promise((resolve) => {
+        if (!this.tokenClient) {
+            throw new Error('NO_CLIENT_ID');
+        }
+
+        return new Promise((resolve, reject) => {
             this.tokenClient.callback = (resp: any) => {
+                if (resp.error) {
+                    return reject(resp);
+                }
                 this.accessToken = resp.access_token;
                 if (this.accessToken) {
                     localStorage.setItem(this.STORAGE_KEY, this.accessToken);

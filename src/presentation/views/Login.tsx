@@ -6,8 +6,9 @@ import AlertModal from '../components/AlertModal';
 import { ErrorLogger } from '../../services/SentryLogger';
 
 export default function Login() {
-  const { login, sessionExpired } = useBudget();
+  const { login, loginDemo, sessionExpired } = useBudget();
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
   const privacyRef = useRef<HTMLDivElement>(null);
   const methodologyRef = useRef<HTMLDivElement>(null);
   const aiRef = useRef<HTMLDivElement>(null);
@@ -25,9 +26,19 @@ export default function Login() {
     setLoading(true);
     try {
       await login(provider);
-    } catch (error) {
+    } catch (error: any) {
       ErrorLogger.capture(error, { source: 'Login - handleLogin' });
-      showAlert('Error de acceso', 'No pudimos conectar con tu cuenta. Por favor, intenta de nuevo.', 'error');
+      if (error?.message === 'NO_CLIENT_ID') {
+        showAlert(
+          'Configuración Pendiente',
+          'Las credenciales de Google OAuth (VITE_GOOGLE_CLIENT_ID) no están configuradas en las variables de entorno. Puedes explorar toda la aplicación usando el "Modo Demo".',
+          'info'
+        );
+      } else if (error?.error === 'popup_closed_by_user') {
+        showAlert('Acceso cancelado', 'Has cerrado la ventana de inicio de sesión de Google antes de completar la autorización.', 'info');
+      } else {
+        showAlert('Error de acceso', 'No pudimos conectar con tu cuenta de Google. Verifica tu conexión o intenta con el "Modo Demo".', 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -44,22 +55,22 @@ export default function Login() {
   return (
     <div ref={containerRef} className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth scroll-pt-10 bg-gray-50 text-gray-900">
       {/* SECTION 1: HERO & LOGIN */}
-      <section className="min-h-screen w-full flex flex-col items-center justify-center p-6 py-12 md:h-screen md:py-6 relative shrink-0">
+      <section className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 py-8 md:h-screen md:py-6 relative shrink-0">
         {/* Decorative Gradients */}
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/5 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/5 blur-[100px] rounded-full" />
 
         <div className="w-full max-w-lg relative animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          <div className="text-center mb-10 space-y-4">
-            <div className="inline-flex p-2 rounded-[2.5rem] bg-white shadow-xl shadow-indigo-100/50 border border-indigo-50 mb-4 overflow-hidden">
-              <img src="/logo_full.png" className="w-24 h-24 sm:w-32 sm:h-32 object-contain" alt="Bagi Logo" />
+          <div className="text-center mb-6 sm:mb-10 space-y-3 sm:space-y-4">
+            <div className="inline-flex p-2 rounded-[2.5rem] bg-white shadow-xl shadow-indigo-100/50 border border-indigo-50 mb-2 sm:mb-4 overflow-hidden">
+              <img src="/logo_full.png" className="w-20 h-20 sm:w-32 sm:h-32 object-contain" alt="Bagi Logo" />
             </div>
-            <p className="text-gray-500 text-lg font-bold max-w-xs mx-auto leading-tight">
+            <p className="text-gray-500 text-base sm:text-lg font-bold max-w-xs mx-auto leading-tight">
               Finanzas personales, sin servidores. <br/> Tu IA corre en tu dispositivo.
             </p>
           </div>
 
-          <div className="bg-white border border-gray-100 p-8 rounded-[3rem] shadow-2xl shadow-gray-200/50 space-y-8">
+          <div className="bg-white border border-gray-100 p-5 sm:p-8 rounded-2xl sm:rounded-[3rem] shadow-2xl shadow-gray-200/50 space-y-6 sm:space-y-8">
             <div className="space-y-6">
               <div className="text-center">
                 <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-6">Acceder al Presupuesto</h2>
@@ -79,7 +90,7 @@ export default function Login() {
               
               <button
                 onClick={() => handleLogin('google')}
-                disabled={loading}
+                disabled={loading || demoLoading}
                 className="group relative flex items-center justify-between p-4 bg-indigo-600 hover:bg-indigo-700 rounded-2xl transition-all duration-500 transform hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full max-w-sm mx-auto"
               >
                 <div className="flex items-center gap-3">
@@ -92,6 +103,34 @@ export default function Login() {
                   </div>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-white group-hover:text-indigo-600 transition-all duration-500">
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </button>
+
+              <button
+                onClick={async () => {
+                  setDemoLoading(true);
+                  try {
+                    await loginDemo();
+                  } catch (e) {
+                    ErrorLogger.capture(e, { source: 'Login - demo' });
+                  } finally {
+                    setDemoLoading(false);
+                  }
+                }}
+                disabled={loading || demoLoading}
+                className="group relative flex items-center justify-between p-4 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full max-w-sm mx-auto min-h-[44px]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 flex items-center justify-center bg-purple-600 text-white rounded-xl shadow-sm">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-purple-950 text-sm">Probar modo demo</p>
+                    <p className="text-[9px] text-purple-600 font-bold uppercase tracking-widest mt-0.5">Explorar con datos de prueba</p>
+                  </div>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-purple-200/50 flex items-center justify-center text-purple-700 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </button>

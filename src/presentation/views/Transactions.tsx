@@ -182,35 +182,35 @@ export default function Transactions() {
   })();
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex justify-between items-end">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
+      <div className="flex justify-between items-end gap-4">
         <div>
-          <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Transacciones</h2>
-          <p className="text-gray-500 mt-1 font-medium">Controla cada movimiento de tu flujo de caja.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Transacciones</h2>
+          <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">Controla cada movimiento de tu flujo de caja.</p>
         </div>
-        <div className="bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100 text-right">
+        {/* <div className="bg-indigo-50 px-3.5 sm:px-4 py-2 rounded-2xl border border-indigo-100 text-right shrink-0">
           <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">Mostrando</p>
-          <p className="text-xl font-black text-indigo-600 leading-none">{transactions.length}</p>
-        </div>
+          <p className="text-lg sm:text-xl font-black text-indigo-600 leading-none">{transactions.length}</p>
+        </div> */}
       </div>
 
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-        <h3 className="text-lg font-bold mb-5 flex items-center gap-2">
-          <div className="w-2 h-6 bg-indigo-500 rounded-full"></div>
+      <div className="bg-white p-4 sm:p-6 rounded-3xl shadow-sm border border-gray-100">
+        <h3 className="text-base sm:text-lg font-bold mb-4 sm:mb-5 flex items-center gap-2">
+          <div className="w-2 h-5 sm:h-6 bg-indigo-500 rounded-full"></div>
           Registrar nuevo movimiento
         </h3>
-        <form onSubmit={addTx} className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <form onSubmit={addTx} className="grid grid-cols-1 md:grid-cols-6 gap-3 sm:gap-4">
            <div className="md:col-span-2 flex flex-col gap-1">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Descripción</label>
-             <input className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all" placeholder="Ej: Supermercado..." value={desc} onChange={e=>setDesc(e.target.value)} required />
+             <input className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" placeholder="Ej: Supermercado..." value={desc} onChange={e=>setDesc(e.target.value)} required />
            </div>
            <div className="flex flex-col gap-1">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Monto</label>
-             <input type="number" step="0.01" className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-bold" placeholder="0.00" value={amt} onChange={e=>setAmt(e.target.value)} required />
+             <input type="number" step="0.01" className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-bold min-h-[44px]" placeholder="0.00" value={amt} onChange={e=>setAmt(e.target.value)} required />
            </div>
            <div className="flex flex-col gap-1">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Origen</label>
-             <select className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all" value={sourceId} onChange={e=>setSourceId(e.target.value)} required>
+             <select className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" value={sourceId} onChange={e=>setSourceId(e.target.value)} required>
                <option value="" disabled>Seleccionar...</option>
                <optgroup label="Cuentas">
                   {accounts.map((a: any) => <option key={a.id} value={a.id}>{a.name} ({a.currency})</option>)}
@@ -222,7 +222,7 @@ export default function Transactions() {
            </div>
            <div className="md:col-span-2 flex flex-col gap-1">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Categoría</label>
-             <select className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all" value={catId} onChange={e=>setCatId(e.target.value)} required>
+             <select className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" value={catId} onChange={e=>setCatId(e.target.value)} required>
                <option value="" disabled>Seleccionar...</option>
                <optgroup label="Ingresos">
                  {categories.filter((c: any) => c.type === 'INCOME').map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -238,7 +238,7 @@ export default function Transactions() {
 
            <div className="md:col-span-2 flex flex-col gap-1">
              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Fecha de Registro</label>
-             <input type="date" className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all" value={date} onChange={e => {
+             <input type="date" className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" value={date} onChange={e => {
                const newDate = e.target.value;
                setDate(newDate);
                if (!overrideBudgetPeriod) {
@@ -255,7 +255,7 @@ export default function Transactions() {
              <div className="flex items-center justify-between">
                <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Período Presupuestario</label>
              </div>
-             <input type="month" className={`rounded-xl border border-gray-100 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all ${overrideBudgetPeriod ? 'bg-white' : 'bg-gray-50/50 text-gray-400'}`} value={budgetPeriod} onChange={e=>setBudgetPeriod(e.target.value)} disabled={!overrideBudgetPeriod} />
+             <input type="month" className={`rounded-xl border border-gray-100 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px] ${overrideBudgetPeriod ? 'bg-white' : 'bg-gray-50/50 text-gray-400'}`} value={budgetPeriod} onChange={e=>setBudgetPeriod(e.target.value)} disabled={!overrideBudgetPeriod} />
              <label className="flex items-center gap-1.5 cursor-pointer select-none ml-1 mt-1">
                <input type="checkbox" className="w-3.5 h-3.5 rounded accent-indigo-600 cursor-pointer" checked={overrideBudgetPeriod} onChange={e => {
                  const checked = e.target.checked;
@@ -273,7 +273,7 @@ export default function Transactions() {
              </label>
            </div>
            <div className="md:col-span-2 flex flex-col gap-1 justify-end">
-             <button type="submit" className="bg-gray-900 text-white py-2.5 rounded-xl hover:bg-gray-800 transition-all font-bold shadow-lg shadow-gray-200 active:scale-[0.98] text-sm h-[44px]">
+             <button type="submit" className="bg-gray-900 text-white py-2.5 rounded-xl hover:bg-gray-800 transition-all font-bold shadow-lg shadow-gray-200 active:scale-[0.98] text-sm min-h-[44px] h-[44px]">
                Guardar Transacción
              </button>
            </div>
@@ -285,10 +285,10 @@ export default function Transactions() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <h3 className="text-lg font-bold flex items-center gap-2">
               <Filter className="w-5 h-5 text-indigo-500" />
-              Historial de movimientos
+              Historial de movimientos ({transactions.length})
             </h3>
             
-            <div className="grid grid-cols-2 md:flex md:items-center gap-2 w-full md:w-auto">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap md:items-center gap-2 w-full md:w-auto">
                <div className="relative group">
                  <Coins className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-indigo-500 transition-colors" />
                  <select className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-100 bg-white text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-indigo-100 transition-all appearance-none cursor-pointer" value={filterCurrency} onChange={e=>setFilterCurrency(e.target.value)}>
@@ -422,16 +422,16 @@ export default function Transactions() {
                   <div className="flex flex-col">
                     {txs.map((t: any) => (
                       <div key={t.id} className="p-4 flex flex-col gap-2 relative bg-white border-b border-gray-50 last:border-b-0">
-                         <div className="flex justify-between items-start gap-4">
-                            <div className="flex flex-col">
-                               <span className="text-gray-800 font-medium text-sm">{t.description}</span>
+                         <div className="flex justify-between items-start gap-3">
+                            <div className="flex flex-col min-w-0 flex-1">
+                               <span className="text-gray-800 font-medium text-sm break-words">{t.description}</span>
                                {getImputationBadge(t)}
-                               <span className="text-[11px] text-gray-500 font-medium flex items-center gap-1 mt-1">
-                                 {t.card_id ? <CreditCard className="w-3.5 h-3.5 text-indigo-400" /> : <Wallet className="w-3.5 h-3.5 text-emerald-400" />}
-                                 {t.account?.name || t.card?.name}
+                               <span className="text-[11px] text-gray-500 font-medium flex items-center gap-1 mt-1 truncate">
+                                 {t.card_id ? <CreditCard className="w-3.5 h-3.5 text-indigo-400 shrink-0" /> : <Wallet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                                 <span className="truncate">{t.account?.name || t.card?.name}</span>
                                </span>
                             </div>
-                            <div className="flex flex-col items-end">
+                            <div className="flex flex-col items-end shrink-0">
                                <span className={`font-bold text-base ${t.category?.type === 'INCOME' ? 'text-emerald-600' : 'text-gray-800'}`}>
                                  {formatCurrency(t.amount, t.account?.currency || t.card?.currency)}
                                </span>
