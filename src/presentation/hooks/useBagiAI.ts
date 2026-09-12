@@ -215,8 +215,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         setIsProcessing(false);
         setIsSpeaking(true);
         const capabilitiesText = lang.startsWith('en')
-          ? "Right now I can help you record your daily expenses, incomes, and transfers. Just tell me what you spent or received."
-          : "Actualmente puedo ayudarte a registrar tus gastos, ingresos y transferencias diarios. Solo dime qué gastaste o recibiste, y yo lo anotaré por ti.";
+          ? "I can help you record expenses, income, and transfers by voice, answer financial questions as your advisor in the chat, and scan purchase receipt photos."
+          : "Puedo ayudarte a registrar tus gastos, ingresos y transferencias por voz, responder preguntas sobre tus presupuestos como tu asesor en el chat, y escanear fotos de recibos o facturas.";
         voiceService.speak(capabilitiesText, lang, () => setIsSpeaking(false));
         return;
       }
@@ -341,6 +341,12 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       };
 
       setChatMessages((prev) => [...prev, assistantMsg]);
+
+      // Speak capability query answer or extracted transaction confirmation in Chat if needed
+      if (response.intent === 'CAPABILITIES_QUERY') {
+        setIsSpeaking(true);
+        voiceService.speak(response.reply, lang, () => setIsSpeaking(false));
+      }
     } catch (e: any) {
       console.error('[useBagiAI] Error in sendChatMessage:', e);
       if (e.message === 'QUOTA_EXHAUSTED') {
