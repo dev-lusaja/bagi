@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { LayoutDashboard, Receipt, Settings, LogOut, Home as HomeIcon, Loader2, CloudCheck, CloudAlert, User, Sparkles, FlaskConical } from 'lucide-react';
+import { LayoutDashboard, Receipt, Settings, LogOut, Home as HomeIcon, Loader2, CloudCheck, CloudAlert, User, Sparkles, FlaskConical, BarChart3, MoreHorizontal } from 'lucide-react';
 import Home from './presentation/views/Home';
 import Dashboard from './presentation/views/Dashboard';
 import Transactions from './presentation/views/Transactions';
 import SettingsView from './presentation/views/Settings';
 import Intelligence from './presentation/views/Intelligence';
+import Analytics from './presentation/views/Analytics';
+import MoreView from './presentation/views/MoreView';
 import Login from './presentation/views/Login';
 import { useBudget } from './presentation/context/BudgetContext';
 import { SavingOverlay } from './presentation/components/SavingOverlay';
@@ -56,6 +58,8 @@ export default function App() {
   if (!isAuthenticated) {
     return <Login />;
   }
+
+  const isMoreActive = activeTab === 'more' || activeTab === 'analytics' || activeTab === 'settings';
 
   return (
     <div className="flex flex-col h-[100dvh] bg-gray-50 font-sans text-gray-900 overflow-hidden w-full">
@@ -127,6 +131,12 @@ export default function App() {
             <span>Bagi IA</span>
           </button>
           <button
+            onClick={() => setActiveTab('analytics')}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'analytics' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
+            <BarChart3 className="w-5 h-5" />
+            <span>Analítica</span>
+          </button>
+          <button
             onClick={() => setActiveTab('settings')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <Settings className="w-5 h-5" />
@@ -171,6 +181,8 @@ export default function App() {
           {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} />}
           {activeTab === 'transactions' && <Transactions />}
           {activeTab === 'intelligence' && <Intelligence />}
+          {activeTab === 'more' && <MoreView onNavigate={setActiveTab} />}
+          {activeTab === 'analytics' && <Analytics onNavigate={setActiveTab} />}
           {activeTab === 'settings' && <SettingsView />}
         </div>
       </main>
@@ -194,9 +206,9 @@ export default function App() {
           <Sparkles className="w-5 h-5" />
           <span className="text-[11px] font-bold tracking-tight">Bagi IA</span>
         </button>
-        <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'settings' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
-          <Settings className="w-5 h-5" />
-          <span className="text-[11px] font-bold tracking-tight">Ajustes</span>
+        <button onClick={() => setActiveTab('more')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${isMoreActive ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+          <MoreHorizontal className="w-5 h-5" />
+          <span className="text-[11px] font-bold tracking-tight">Más</span>
         </button>
       </nav>
     </div>
