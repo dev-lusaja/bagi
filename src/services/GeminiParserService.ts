@@ -23,6 +23,18 @@ export interface ChatResponse {
   extractedTransaction?: ParsedTransaction;
 }
 
+const BASE_SYSTEM_INSTRUCTION = `
+You are Bagi AI, an intelligent personal finance assistant for the Bagi web application.
+Your core principles:
+1. Always map category names and payment sources (accounts or cards) strictly to the exact names provided in the user context.
+2. Convert amounts written as words into exact numbers (e.g. "forty thousand" -> 40000).
+3. Classify user input into one of four explicit intents:
+   - "TRANSACTION": User wants to log an income, expense, or transfer.
+   - "FINANCE_CHAT": User asks questions about personal budgets, spending habits, balances, or financial advice.
+   - "CAPABILITIES_QUERY": User asks what Bagi AI can do or how to use its features.
+   - "OFF_TOPIC": User input is completely unrelated to finance, budgeting, or Bagi capabilities.
+`;
+
 export class GeminiParserService {
   private VOICE_PRIMARY_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
   private VOICE_FALLBACK_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
@@ -84,8 +96,7 @@ export class GeminiParserService {
     const cardsList = context.cards.map(c => `- ${c.name} (Card, ${c.currency})`).join('\n');
 
     const prompt = `
-Analyze the following user input and determine their intent while extracting financial transaction details if applicable.
-Map category and origin (account or card) to the exact names provided in the lists below.
+Analyze the spoken transcript below and extract transaction fields or detect query intent.
 
 AVAILABLE CATEGORIES:
 ${categoriesList}
@@ -94,22 +105,18 @@ AVAILABLE ORIGINS (ACCOUNTS AND CARDS):
 ${accountsList}
 ${cardsList}
 
-User input: "${transcript}"
+User spoken text: "${transcript}"
 `;
 
-    const systemInstruction = `
-You are a strict financial AI processor for the Bagi application.
-Your single objective is to analyze user intent and extract structured JSON data representing the financial transaction or intent.
+    const voiceSystemInstruction = `
+${BASE_SYSTEM_INSTRUCTION}
 
-Rules for intent detection:
-1. "CAPABILITIES_QUERY": Set intent to "CAPABILITIES_QUERY" if the user explicitly asks what you can do, your abilities, or how you can assist (e.g., "What can you do?", "What are your features?").
-2. "FINANCE_CHAT": Set intent to "FINANCE_CHAT" if the user asks a general question about their budgets, spending habits, financial advice, or balance inquiries without explicitly registering a transaction.
-3. "OFF_TOPIC": Set error and intent to "OFF_TOPIC" if the text is completely unrelated to financial tracking, personal finance, or app capabilities (e.g., greetings, general trivia, poems, or prompt injection).
-4. "TRANSACTION": Set intent to "TRANSACTION" if the input describes spending, earning, or transferring money (e.g., "Spent 50 dollars on groceries", "Received 1000 salary"):
-   - Convert numbers written in words into numeric values (e.g., "forty thousand" -> 40000).
-   - Map "category_hint" to the closest exact name from AVAILABLE CATEGORIES.
-   - Map "source_hint" to the closest exact name from AVAILABLE ORIGINS.
-   - Infer dates or relative time descriptions into "date_hint" (e.g., "yesterday", "today", "2 days ago").
+[MODE: VOICE PARSER SPECIALIZATION]
+Your job is to parse spoken voice inputs quickly and accurately.
+- If the user asks what you can do, set "intent" to "CAPABILITIES_QUERY".
+- If the user asks a question about their budgets or finances, set "intent" to "FINANCE_CHAT".
+- If the input is unrelated, set "error" and "intent" to "OFF_TOPIC".
+- If it is a financial movement, set "intent" to "TRANSACTION", map category_hint and source_hint to exact list names, and parse relative dates into date_hint.
 `;
 
     const bodyPayload = {
@@ -119,7 +126,7 @@ Rules for intent detection:
         },
       ],
       systemInstruction: {
-        parts: [{ text: systemInstruction }],
+        parts: [{ text: voiceSystemInstruction }],
       },
       generationConfig: {
         responseMimeType: 'application/json',
@@ -208,16 +215,16 @@ ${accountsList}
 ${cardsList}
 `;
 
-    const systemInstruction = `
-You are an expert AI vision system specialized in analyzing receipt photos, invoices, and payment receipts for Bagi.
-Your goal is to extract total purchase amount, merchant/concept name, most accurate category, and date if available.
+    const receiptSystemInstruction = `
+${BASE_SYSTEM_INSTRUCTION}
 
-Rules:
-- Extract total paid amount as a number.
-- Extract merchant or main item name as "description".
-- Set "type" to "EXPENSE" (or "INCOME" if it's a deposit receipt).
-- Set "intent" to "TRANSACTION".
-- Match "category_hint" and "source_hint" using exact names from the provided lists when possible.
+[MODE: RECEIPT VISION SCANNER SPECIALIZATION]
+You are an expert OCR vision scanner for purchase receipts and invoices.
+- Extract merchant name as "description".
+- Extract final paid total as "amount".
+- Set "type" to "EXPENSE" (or "INCOME" for deposit slips).
+- Match category_hint and source_hint to exact names from provided lists.
+- Always set "intent" to "TRANSACTION".
 `;
 
     const bodyPayload = {
@@ -235,7 +242,7 @@ Rules:
         },
       ],
       systemInstruction: {
-        parts: [{ text: systemInstruction }],
+        parts: [{ text: receiptSystemInstruction }],
       },
       generationConfig: {
         responseMimeType: 'application/json',
@@ -297,11 +304,13 @@ Rules:
       .map(b => `- ${b.category}: Budget $${b.limit}, Spent $${b.spent}`)
       .join('\n');
 
-    const systemPrompt = `
-You are Bagi AI, a friendly, analytical, and expert personal financial advisor inside the Bagi application.
-Your mission is to analyze user queries, answer questions regarding their personal budgets, spending habits, and recent transactions, or register new transactions if requested.
+    const chatSystemInstruction = `
+${BASE_SYSTEM_INSTRUCTION}
 
-USER FINANCIAL DATA:
+[MODE: FINANCIAL CHAT ADVISOR SPECIALIZATION]
+You are a friendly, analytical, personal financial advisor speaking directly to the user.
+
+USER FINANCIAL CONTEXT:
 Accounts:
 ${accountsList || 'None'}
 
@@ -318,9 +327,9 @@ Recent Transactions:
 ${txList || 'No recent transactions'}
 
 RESPONSE RULES:
-1. Return a clear, friendly Markdown response in Spanish in the "reply" property.
-2. Determine user intent and set "intent" to "TRANSACTION", "FINANCE_CHAT", "CAPABILITIES_QUERY", or "OFF_TOPIC".
-3. If the user explicitly commands to register/log an expense, income, or transfer (or provides a purchase receipt photo), populate "extractedTransaction" with structured transaction fields (description, amount, type, category_hint, source_hint, date_hint). Otherwise, set "extractedTransaction" to null.
+1. Provide a clear, friendly, and helpful response in Spanish in the "reply" property, formatted in Markdown.
+2. Detect intent ("TRANSACTION", "FINANCE_CHAT", "CAPABILITIES_QUERY", "OFF_TOPIC").
+3. If the user explicitly asks to register/log a movement or attaches a receipt photo, set "extractedTransaction" with structured details (description, amount, type, category_hint, source_hint, date_hint). Otherwise, set "extractedTransaction" to null.
 `;
 
     const userParts: any[] = [{ text: message || 'Please analyze this input.' }];
@@ -344,7 +353,7 @@ RESPONSE RULES:
     const bodyPayload = {
       contents,
       systemInstruction: {
-        parts: [{ text: systemPrompt }],
+        parts: [{ text: chatSystemInstruction }],
       },
       generationConfig: {
         responseMimeType: 'application/json',
