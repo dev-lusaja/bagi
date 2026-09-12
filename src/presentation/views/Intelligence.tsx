@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useBagiAI, MappedTransaction } from '../hooks/useBagiAI';
 import { voiceService } from '../../services/VoiceService';
 import BagiActionModal from '../components/BagiActionModal';
@@ -15,10 +15,25 @@ import {
   TrendingDown,
   TrendingUp,
   ArrowLeftRight,
+  Mic,
+  MessageSquare,
+  Send,
+  Camera,
+  Bot,
+  User,
+  Paperclip,
+  X,
+  Loader2,
 } from 'lucide-react';
 
 export default function Intelligence() {
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'voice' | 'chat'>('voice');
+  const [chatInput, setChatInput] = useState('');
+  const [selectedImage, setSelectedImage] = useState<{ base64: string; mimeType: string; previewUrl: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
+
   const {
     isSupported,
     apiKey,
@@ -28,6 +43,7 @@ export default function Intelligence() {
     error,
     transcript,
     parsedTx,
+    chatMessages,
     lang,
     setLang,
     categories,
@@ -36,6 +52,8 @@ export default function Intelligence() {
     startListening,
     stopListening,
     parseTextDirectly,
+    sendChatMessage,
+    processReceiptImage,
     confirmAndSave,
     saveApiKey,
     clearParsedTx,
@@ -47,6 +65,13 @@ export default function Intelligence() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaveSuccess, setIsSaveSuccess] = useState(false);
   const [isConfirmSpeaking, setIsConfirmSpeaking] = useState(false);
+
+  // Auto-scroll en el chat cuando hay nuevos mensajes
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages, activeTab, isProcessing]);
 
   // Abre el modal en cuanto Gemini retorna una transacción parseada
   useEffect(() => {
@@ -93,13 +118,68 @@ export default function Intelligence() {
 
   const handleSuggestionClick = (phrase: string) => {
     if (isRecording || isProcessing) return;
-    parseTextDirectly(phrase);
+    if (activeTab === 'chat') {
+      setChatInput(phrase);
+    } else {
+      parseTextDirectly(phrase);
+    }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        const [header, base64] = dataUrl.split(',');
+        const mimeType = header.match(/:(.*?);/)?.[1] || file.type || 'image/jpeg';
+        setSelectedImage({
+          base64,
+          mimeType,
+          previewUrl: dataUrl,
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSendChat = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if ((!chatInput.trim() && !selectedImage) || isProcessing) return;
+
+    const msgText = chatInput.trim();
+    const imgPayload = selectedImage
+      ? { base64: selectedImage.base64, mimeType: selectedImage.mimeType }
+      : undefined;
+
+    setChatInput('');
+    setSelectedImage(null);
+
+    await sendChatMessage(msgText, imgPayload);
+  };
+
+  const handleDirectReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        const [header, base64] = dataUrl.split(',');
+        const mimeType = header.match(/:(.*?);/)?.[1] || file.type || 'image/jpeg';
+        await processReceiptImage(base64, mimeType);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const suggestions = [
     { label: 'Gasto de Mercado', text: 'Gasté 45 mil en mercado con Visa' },
     { label: 'Salario Recibido', text: 'Ingreso de salario por 2 millones en Bancolombia' },
-    { label: 'Pago de Servicios', text: 'Pagué servicios 120 mil con efectivo' },
+    { label: 'Consulta Presupuesto', text: '¿Cómo van mis presupuestos este mes y cuánto me queda por gastar?' },
     { label: 'Gasto de Gasolina', text: 'Tanqueé el carro con gasolina por 80 mil con efectivo' },
   ];
 
@@ -159,20 +239,65 @@ export default function Intelligence() {
         </div>
       )}
 
+      {/* ─── Selector de Modo (Tabs) ─── */}
+      <div className="flex items-center justify-between bg-gray-100/80 p-1.5 rounded-2xl max-w-md">
+        <button
+          type="button"
+          onClick={() => setActiveTab('voice')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+            activeTab === 'voice'
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-gray-500 hover:text-gray-800'
+          }`}
+        >
+          <Mic className="w-4 h-4" />
+          Comando por Voz
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('chat')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+            activeTab === 'chat'
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-gray-500 hover:text-gray-800'
+          }`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          Chat Asesor Financiero
+        </button>
+      </div>
+
       {/* ─── Área principal ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-start">
 
-        {/* ─ Columna izquierda: Botón de voz ─ */}
-        <div className="lg:col-span-7 bg-white p-4 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6 sm:space-y-8 flex flex-col items-center justify-center min-h-[360px] sm:min-h-[480px]">
+        {/* ─ Columna izquierda: Modo Voz o Modo Chat ─ */}
+        <div className="lg:col-span-7 bg-white p-4 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6 flex flex-col justify-between min-h-[480px]">
 
-          {/* Controles de idioma */}
-          {isSupported && (
-            <div className="w-full flex justify-between items-center px-4 border-b border-gray-50 pb-4">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Bagi IA Online</span>
-              </div>
-              <div className="flex items-center gap-2">
+          {/* Header de controles e indicador de estado */}
+          <div className="w-full flex justify-between items-center px-2 border-b border-gray-50 pb-3">
+            <div className="flex items-center gap-2" title={apiKey ? "API Key configurada" : "API Key no configurada"}>
+              <span className={`w-2.5 h-2.5 rounded-full ${apiKey ? 'bg-emerald-500 animate-ping' : 'bg-rose-500'}`} />
+              <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
+                {apiKey ? 'API Lista' : 'Sin API Key'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Opción de subir foto de recibo directamente */}
+              <label className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100/80 text-indigo-600 rounded-xl text-[11px] font-bold cursor-pointer transition-colors">
+                <Camera className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Escanear Recibo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleDirectReceiptUpload}
+                  disabled={isProcessing}
+                />
+              </label>
+
+              <div className="flex items-center gap-1.5">
                 <Globe className="w-3.5 h-3.5 text-gray-400" />
                 <select
                   className="bg-transparent text-xs font-bold text-gray-600 outline-none cursor-pointer hover:text-indigo-600 transition-colors"
@@ -184,45 +309,163 @@ export default function Intelligence() {
                 </select>
               </div>
             </div>
-          )}
-
-          {/* Botón de micrófono principal / Aro */}
-          <div className="flex flex-col items-center justify-center space-y-4 py-8">
-            <BagiIARing 
-              state={(isSpeaking || isConfirmSpeaking) ? 'speaking' : isProcessing ? 'processing' : isRecording ? 'listening' : 'idle'}
-              onClick={isRecording ? stopListening : startListening}
-              disabled={isProcessing || !isSupported || isSpeaking || isConfirmSpeaking}
-            />
-
-            <div className="text-center">
-              <h3 className="text-lg font-bold text-gray-800">
-                {(isSpeaking || isConfirmSpeaking)
-                  ? 'Respondiendo...'
-                  : isRecording
-                  ? 'Escuchando tu voz...'
-                  : isProcessing
-                  ? 'Bagi IA procesando...'
-                  : 'Hablar con Bagi IA'}
-              </h3>
-              <p className="text-xs text-gray-400 mt-1 max-w-[280px]">
-                {(isSpeaking || isConfirmSpeaking)
-                  ? 'Escucha la respuesta de Bagi IA.'
-                  : isRecording
-                  ? 'Di los detalles y presiona el botón para finalizar.'
-                  : isProcessing
-                  ? 'Extrayendo datos de la transacción.'
-                  : isSupported
-                  ? 'Presiona el botón para iniciar grabación.'
-                  : 'Esta feature requiere micrófono en Chrome/Edge.'}
-              </p>
-            </div>
           </div>
 
-          {/* Preview de transcripción */}
-          {transcript && (
-            <div className="w-full bg-gray-50 border border-gray-100 p-4 rounded-2xl text-center max-w-[480px]">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Transcripción</p>
-              <p className="text-sm font-medium text-gray-600 italic">"{transcript}"</p>
+          {/* VISTA 1: COMANDO POR VOZ */}
+          {activeTab === 'voice' && (
+            <div className="flex flex-col items-center justify-center space-y-6 py-6 flex-1">
+              <BagiIARing
+                state={(isSpeaking || isConfirmSpeaking) ? 'speaking' : isProcessing ? 'processing' : isRecording ? 'listening' : 'idle'}
+                onClick={isRecording ? stopListening : startListening}
+                disabled={isProcessing || !isSupported || isSpeaking || isConfirmSpeaking}
+              />
+
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-gray-800">
+                  {(isSpeaking || isConfirmSpeaking)
+                    ? 'Respondiendo...'
+                    : isRecording
+                    ? 'Escuchando tu voz...'
+                    : isProcessing
+                    ? 'Bagi IA procesando...'
+                    : 'Hablar con Bagi IA'}
+                </h3>
+                <p className="text-xs text-gray-400 mt-1 max-w-[280px]">
+                  {(isSpeaking || isConfirmSpeaking)
+                    ? 'Escucha la respuesta de Bagi IA.'
+                    : isRecording
+                    ? 'Di los detalles y presiona el botón para finalizar.'
+                    : isProcessing
+                    ? 'Extrayendo datos de la transacción.'
+                    : isSupported
+                    ? 'Presiona el botón para iniciar grabación por voz.'
+                    : 'Esta feature requiere micrófono en Chrome/Edge.'}
+                </p>
+              </div>
+
+              {/* Preview de transcripción */}
+              {transcript && (
+                <div className="w-full bg-gray-50 border border-gray-100 p-4 rounded-2xl text-center max-w-[480px]">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Transcripción</p>
+                  <p className="text-sm font-medium text-gray-600 italic">"{transcript}"</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* VISTA 2: CHAT CON ASESOR FINANCIERO */}
+          {activeTab === 'chat' && (
+            <div className="flex flex-col flex-1 justify-between space-y-4">
+              {/* Mensajes del chat */}
+              <div className="flex-1 overflow-y-auto max-h-[360px] space-y-3 pr-1">
+                {chatMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-center py-10 space-y-2 text-gray-400">
+                    <Bot className="w-10 h-10 text-indigo-400 animate-bounce" />
+                    <p className="text-xs font-semibold text-gray-600">¡Hola! Soy tu Asesor Financiero Bagi IA</p>
+                    <p className="text-[11px] max-w-xs text-gray-400 leading-relaxed">
+                      Pregúntame sobre tus presupuestos, tus gastos recientes o sube una foto de tu recibo para analizarlo.
+                    </p>
+                  </div>
+                ) : (
+                  chatMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex items-start gap-2.5 ${
+                        msg.sender === 'user' ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      {msg.sender === 'assistant' && (
+                        <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 mt-1">
+                          <Bot className="w-4 h-4" />
+                        </div>
+                      )}
+                      <div
+                        className={`max-w-[82%] p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
+                          msg.sender === 'user'
+                            ? 'bg-indigo-600 text-white rounded-br-none'
+                            : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                        }`}
+                      >
+                        {msg.imageUrl && (
+                          <img
+                            src={msg.imageUrl}
+                            alt="Adjunto"
+                            className="max-h-40 rounded-xl mb-2 object-cover border border-white/20"
+                          />
+                        )}
+                        <p className="whitespace-pre-wrap">{msg.text}</p>
+                      </div>
+                      {msg.sender === 'user' && (
+                        <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center flex-shrink-0 mt-1">
+                          <User className="w-4 h-4" />
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+                {isProcessing && (
+                  <div className="flex items-center gap-2 text-gray-400 text-xs italic p-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                    Bagi IA está analizando e ingresando tu consulta...
+                  </div>
+                )}
+                <div ref={chatBottomRef} />
+              </div>
+
+              {/* Formulario de envío del chat */}
+              <form onSubmit={handleSendChat} className="space-y-2 pt-2 border-t border-gray-100">
+                {selectedImage && (
+                  <div className="relative inline-block">
+                    <img
+                      src={selectedImage.previewUrl}
+                      alt="Vista previa"
+                      className="h-16 w-16 object-cover rounded-xl border border-indigo-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setSelectedImage(null)}
+                      className="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full p-0.5 hover:bg-rose-600 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageSelect}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer min-h-[44px] flex items-center justify-center"
+                    title="Adjuntar foto de recibo o imagen"
+                  >
+                    <Paperclip className="w-5 h-5" />
+                  </button>
+
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Haz una pregunta o pide registrar un gasto..."
+                    disabled={isProcessing}
+                    className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-gray-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all min-h-[44px]"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={(!chatInput.trim() && !selectedImage) || isProcessing}
+                    className="p-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-200 text-white rounded-xl transition-all cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
             </div>
           )}
 

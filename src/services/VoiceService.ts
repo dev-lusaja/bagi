@@ -60,24 +60,40 @@ export class VoiceService {
   }
 
   /**
+   * iOS Safari Fix: Unlocks speech synthesis audio queue during a user gesture.
+   */
+  unlockAudio(): void {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.resume();
+      // Speak an empty string to initialize audio context on iOS Safari
+      const dummyUtterance = new SpeechSynthesisUtterance('');
+      dummyUtterance.volume = 0;
+      window.speechSynthesis.speak(dummyUtterance);
+    } catch (e) {
+      console.warn('[VoiceService] Audio unlock failed', e);
+    }
+  }
+
+  /**
    * Speaks a given text out loud using the Web Speech Synthesis API.
-   * Compatible with all major browsers including Safari.
+   * Compatible with all major browsers including iOS Safari.
    * @param text - The text to read aloud.
    * @param lang - BCP-47 language tag (e.g. 'es-CO', 'en-US').
+   * @param onEnd - Callback called when speech finishes.
    */
   speak(text: string, lang: string = 'es-CO', onEnd?: () => void): void {
-    if (!('speechSynthesis' in window)) {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       if (onEnd) onEnd();
       return;
     }
 
-    // Solo cancelar si está activamente hablando para evitar bugs con el ciclo de audio en iOS
-    if (window.speechSynthesis.speaking) {
+    try {
       window.speechSynthesis.cancel();
+      window.speechSynthesis.resume();
+    } catch (e) {
+      console.warn('[VoiceService] Error resetting synthesis before speak', e);
     }
-
-    // iOS Safari Fix: Forzar resume para desbloquear el canal de audio tras finalizar SpeechRecognition
-    window.speechSynthesis.resume();
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
@@ -86,7 +102,13 @@ export class VoiceService {
     utterance.volume = 1.0;
 
     let ended = false;
+    let resumeInterval: any = null;
+
     const safeEnd = () => {
+      if (resumeInterval) {
+        clearInterval(resumeInterval);
+        resumeInterval = null;
+      }
       if (!ended) {
         ended = true;
         if (onEnd) onEnd();
@@ -100,6 +122,13 @@ export class VoiceService {
       safeEnd();
     }, estimatedMs + 2000);
 
+    // iOS Safari bug fix: periodic resume prevents iOS Safari speech synthesis from pausing silently
+    resumeInterval = setInterval(() => {
+      if (window.speechSynthesis.speaking && window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+    }, 1000);
+
     utterance.onend = () => {
       clearTimeout(timeoutId);
       safeEnd();
@@ -111,7 +140,14 @@ export class VoiceService {
       safeEnd();
     };
 
-    window.speechSynthesis.speak(utterance);
+    try {
+      window.speechSynthesis.speak(utterance);
+      window.speechSynthesis.resume();
+    } catch (e) {
+      console.error('[VoiceService] Exception during speechSynthesis.speak', e);
+      clearTimeout(timeoutId);
+      safeEnd();
+    }
   }
 
   stopSpeaking(): void {

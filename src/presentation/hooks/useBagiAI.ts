@@ -23,6 +23,15 @@ export interface MappedTransaction {
   date: string;
 }
 
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'assistant';
+  text: string;
+  timestamp: Date;
+  imageUrl?: string;
+  extractedTransaction?: MappedTransaction;
+}
+
 export function useBagiAI(onApiKeyMissing: () => void) {
   const { service } = useBudget();
   const [apiKey, setApiKey] = useState<string>('');
@@ -34,22 +43,49 @@ export function useBagiAI(onApiKeyMissing: () => void) {
   const [lang, setLang] = useState('es-CO'); // Default
   const [parsedTx, setParsedTx] = useState<MappedTransaction | null>(null);
 
-  // Metadata from DB
+  // Metadata from DB & financial summary
   const [categories, setCategories] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [cards, setCards] = useState<any[]>([]);
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [budgets, setBudgets] = useState<any[]>([]);
+
+  // Chat message history
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
-    // Load lists
+    // Load metadata and current budget financial context
     const loadMetadata = async () => {
-      const [accs, crds, cats] = await Promise.all([
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+
+      const [accs, crds, cats, txs, catBudgets] = await Promise.all([
         service.getAccounts(),
         service.getCards(),
-        service.getCategories()
+        service.getCategories(),
+        service.getTransactions(),
+        service.getCategoryBudgets(currentYear, currentMonth)
       ]);
+
       setAccounts(accs as any);
       setCards(crds as any);
       setCategories(cats as any);
+      setRecentTransactions(txs as any);
+
+      // Build budget summary
+      const formattedBudgets = (catBudgets as any[]).map(b => {
+        const cat = (cats as any[]).find(c => c.id === b.category_id);
+        const spent = (txs as any[])
+          .filter(t => t.category_id === b.category_id && t.type === 'EXPENSE')
+          .reduce((sum, t) => sum + (t.amount || 0), 0);
+        return {
+          category: cat?.name || 'Categoría',
+          limit: b.amount,
+          spent
+        };
+      });
+      setBudgets(formattedBudgets);
     };
     loadMetadata();
 
@@ -243,6 +279,124 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     setIsRecording(false);
   };
 
+  /**
+   * Processes a financial advisor chat message (text and optional image).
+   */
+  const sendChatMessage = async (text: string, image?: { base64: string; mimeType: string }) => {
+    if (!apiKey) {
+      setError('NO_API_KEY');
+      onApiKeyMissing();
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+
+    const userMessageId = Date.now().toString();
+    const newUserMsg: ChatMessage = {
+      id: userMessageId,
+      sender: 'user',
+      text,
+      timestamp: new Date(),
+      imageUrl: image ? `data:${image.mimeType};base64,${image.base64}` : undefined,
+    };
+
+    setChatMessages((prev) => [...prev, newUserMsg]);
+
+    try {
+      // Build history payload for Gemini chat
+      const history = chatMessages.map((msg) => ({
+        role: msg.sender === 'user' ? ('user' as const) : ('model' as const),
+        parts: [{ text: msg.text }],
+      }));
+
+      const contextPayload = {
+        categories,
+        accounts,
+        cards,
+        recentTransactions,
+        budgets,
+      };
+
+      const response = await geminiParserService.chatWithAdvisor(
+        text,
+        history,
+        apiKey,
+        contextPayload,
+        image
+      );
+
+      let mapped: MappedTransaction | undefined = undefined;
+      if (response.extractedTransaction) {
+        mapped = mapGeminiOutput(response.extractedTransaction);
+        setParsedTx(mapped);
+      }
+
+      const assistantMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        sender: 'assistant',
+        text: response.reply,
+        timestamp: new Date(),
+        extractedTransaction: mapped,
+      };
+
+      setChatMessages((prev) => [...prev, assistantMsg]);
+    } catch (e: any) {
+      console.error('[useBagiAI] Error in sendChatMessage:', e);
+      if (e.message === 'QUOTA_EXHAUSTED') {
+        setError('QUOTA_EXHAUSTED');
+      } else if (e.message === 'INVALID_API_KEY') {
+        setError('INVALID_API_KEY');
+      } else {
+        setError('GENERIC_ERROR');
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  /**
+   * Processes a receipt photo directly to open transaction confirmation modal.
+   */
+  const processReceiptImage = async (base64: string, mimeType: string) => {
+    if (!apiKey) {
+      setError('NO_API_KEY');
+      onApiKeyMissing();
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+    setParsedTx(null);
+
+    try {
+      const parsed = await geminiParserService.parseImageReceipt(
+        base64,
+        mimeType,
+        apiKey,
+        {
+          categories,
+          accounts,
+          cards,
+        }
+      );
+
+      const mapped = mapGeminiOutput(parsed);
+      setParsedTx(mapped);
+    } catch (e: any) {
+      console.error('[useBagiAI] Error in processReceiptImage:', e);
+      if (e.message === 'QUOTA_EXHAUSTED') {
+        setError('QUOTA_EXHAUSTED');
+      } else if (e.message === 'INVALID_API_KEY') {
+        setError('INVALID_API_KEY');
+      } else {
+        setError('GENERIC_ERROR');
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const confirmAndSave = async (customTx: MappedTransaction) => {
     if (!customTx.category_id || (!customTx.account_id && !customTx.card_id)) {
       throw new Error('MISSING_FIELDS');
@@ -287,6 +441,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     error,
     transcript,
     parsedTx,
+    chatMessages,
     lang,
     setLang,
     categories,
@@ -295,6 +450,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     startListening,
     stopListening,
     parseTextDirectly: parseText,
+    sendChatMessage,
+    processReceiptImage,
     confirmAndSave,
     saveApiKey,
     deleteApiKey,
