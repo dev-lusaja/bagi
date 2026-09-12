@@ -23,8 +23,51 @@ export interface ChatResponse {
 }
 
 export class GeminiParserService {
-  private VOICE_MODEL_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
-  private FLASH_MODEL_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent';
+  private VOICE_PRIMARY_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
+  private VOICE_FALLBACK_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
+
+  private FLASH_PRIMARY_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent';
+  private FLASH_FALLBACK_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+
+  /**
+   * Helper function to execute Gemini fetch with automatic fallback on HTTP 503 or 429
+   */
+  private async fetchWithFallback(
+    primaryUrl: string,
+    fallbackUrl: string,
+    apiKey: string,
+    bodyPayload: any
+  ): Promise<any> {
+    const makeRequest = async (url: string) => {
+      return await fetch(`${url}?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bodyPayload),
+      });
+    };
+
+    let response = await makeRequest(primaryUrl);
+
+    // If 503 Service Unavailable or 429 Rate Limit / Too Many Requests, try fallback model
+    if (response.status === 503 || response.status === 429) {
+      console.warn(`[GeminiParserService] Primary model returned HTTP ${response.status}. Retrying with fallback model...`);
+      const fallbackResponse = await makeRequest(fallbackUrl);
+      if (fallbackResponse.ok) {
+        return await fallbackResponse.json();
+      }
+      response = fallbackResponse; // Use fallback response error status
+    }
+
+    if (!response.ok) {
+      if (response.status === 429) throw new Error('QUOTA_EXHAUSTED');
+      if (response.status === 400) throw new Error('INVALID_API_KEY');
+      throw new Error(`API_ERROR_STATUS_${response.status}`);
+    }
+
+    return await response.json();
+  }
 
   async parse(
     transcript: string,
@@ -68,93 +111,72 @@ Reglas:
 6. Si no se menciona una cuenta/tarjeta pero se infiere por contexto (ej: "tarjeta" y solo tiene una tarjeta), mapéala. Si no, pon "".
 `;
 
-    try {
-      const response = await fetch(`${this.VOICE_MODEL_URL}?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    const bodyPayload = {
+      contents: [
+        {
+          parts: [{ text: prompt }],
         },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt,
-                },
-              ],
+      ],
+      systemInstruction: {
+        parts: [{ text: systemInstruction }],
+      },
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: 'OBJECT',
+          properties: {
+            description: {
+              type: 'STRING',
+              description: 'Descripción breve de la transacción (ej. Mercado, Gasolina, Almuerzo).',
             },
-          ],
-          systemInstruction: {
-            parts: [
-              {
-                text: systemInstruction,
-              },
-            ],
-          },
-          generationConfig: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: 'OBJECT',
-              properties: {
-                description: {
-                  type: 'STRING',
-                  description: 'Descripción breve de la transacción (ej. Mercado, Gasolina, Almuerzo).',
-                },
-                amount: {
-                  type: 'NUMBER',
-                  description: 'Monto total de la transacción.',
-                },
-                type: {
-                  type: 'STRING',
-                  enum: ['INCOME', 'EXPENSE', 'TRANSFER'],
-                  description: 'Tipo de transacción.',
-                },
-                category_hint: {
-                  type: 'STRING',
-                  description: 'Nombre exacto de la categoría mapeada desde la lista provista.',
-                },
-                source_hint: {
-                  type: 'STRING',
-                  description: 'Nombre exacto de la cuenta o tarjeta de origen mapeada desde la lista provista.',
-                },
-                date_hint: {
-                  type: 'STRING',
-                  description: 'Fecha o descripción temporal mencionada (ej: "ayer", "hace 2 días", "hoy"). Nulo si no se menciona.',
-                },
-                error: {
-                  type: 'STRING',
-                  description: 'Debe ser "OFF_TOPIC" si el texto no describe una transacción financiera ni pregunta por capacidades.',
-                },
-                intent: {
-                  type: 'STRING',
-                  enum: ['TRANSACTION', 'CAPABILITIES_QUERY', 'OFF_TOPIC'],
-                  description: 'La intención del usuario. "CAPABILITIES_QUERY" si pregunta qué puedes hacer. "TRANSACTION" si es un movimiento de dinero. "OFF_TOPIC" si no es ninguna.',
-                },
-              },
-              required: ['description', 'amount', 'type', 'category_hint', 'source_hint'],
+            amount: {
+              type: 'NUMBER',
+              description: 'Monto total de la transacción.',
+            },
+            type: {
+              type: 'STRING',
+              enum: ['INCOME', 'EXPENSE', 'TRANSFER'],
+              description: 'Tipo de transacción.',
+            },
+            category_hint: {
+              type: 'STRING',
+              description: 'Nombre exacto de la categoría mapeada desde la lista provista.',
+            },
+            source_hint: {
+              type: 'STRING',
+              description: 'Nombre exacto de la cuenta o tarjeta de origen mapeada desde la lista provista.',
+            },
+            date_hint: {
+              type: 'STRING',
+              description: 'Fecha o descripción temporal mencionada (ej: "ayer", "hace 2 días", "hoy"). Nulo si no se menciona.',
+            },
+            error: {
+              type: 'STRING',
+              description: 'Debe ser "OFF_TOPIC" si el texto no describe una transacción financiera ni pregunta por capacidades.',
+            },
+            intent: {
+              type: 'STRING',
+              enum: ['TRANSACTION', 'CAPABILITIES_QUERY', 'OFF_TOPIC'],
+              description: 'La intención del usuario. "CAPABILITIES_QUERY" si pregunta qué puedes hacer. "TRANSACTION" si es un movimiento de dinero. "OFF_TOPIC" si no es ninguna.',
             },
           },
-        }),
-      });
+          required: ['description', 'amount', 'type', 'category_hint', 'source_hint'],
+        },
+      },
+    };
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error('QUOTA_EXHAUSTED');
-        }
-        if (response.status === 400) {
-          throw new Error('INVALID_API_KEY');
-        }
-        throw new Error(`API_ERROR_STATUS_${response.status}`);
-      }
+    try {
+      const data = await this.fetchWithFallback(
+        this.VOICE_PRIMARY_URL,
+        this.VOICE_FALLBACK_URL,
+        apiKey,
+        bodyPayload
+      );
 
-      const data = await response.json();
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) {
-        throw new Error('NO_RESPONSE_FROM_GEMINI');
-      }
+      if (!text) throw new Error('NO_RESPONSE_FROM_GEMINI');
 
-      const parsed: ParsedTransaction = JSON.parse(text);
-      return parsed;
+      return JSON.parse(text) as ParsedTransaction;
     } catch (e: any) {
       console.error('[GeminiParserService] Error parsing transcript:', e);
       throw e;
@@ -196,54 +218,48 @@ Reglas:
 - Asigna la categoría ("category_hint") y el origen ("source_hint") usando exactamente uno de la lista si es posible.
 `;
 
-    try {
-      const response = await fetch(`${this.FLASH_MODEL_URL}?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [
+    const bodyPayload = {
+      contents: [
+        {
+          parts: [
+            { text: prompt },
             {
-              parts: [
-                { text: prompt },
-                {
-                  inlineData: {
-                    mimeType: mimeType || 'image/jpeg',
-                    data: imageBase64,
-                  },
-                },
-              ],
+              inlineData: {
+                mimeType: mimeType || 'image/jpeg',
+                data: imageBase64,
+              },
             },
           ],
-          systemInstruction: {
-            parts: [{ text: systemInstruction }],
+        },
+      ],
+      systemInstruction: {
+        parts: [{ text: systemInstruction }],
+      },
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: 'OBJECT',
+          properties: {
+            description: { type: 'STRING' },
+            amount: { type: 'NUMBER' },
+            type: { type: 'STRING', enum: ['INCOME', 'EXPENSE', 'TRANSFER'] },
+            category_hint: { type: 'STRING' },
+            source_hint: { type: 'STRING' },
+            date_hint: { type: 'STRING' },
           },
-          generationConfig: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: 'OBJECT',
-              properties: {
-                description: { type: 'STRING' },
-                amount: { type: 'NUMBER' },
-                type: { type: 'STRING', enum: ['INCOME', 'EXPENSE', 'TRANSFER'] },
-                category_hint: { type: 'STRING' },
-                source_hint: { type: 'STRING' },
-                date_hint: { type: 'STRING' },
-              },
-              required: ['description', 'amount', 'type', 'category_hint', 'source_hint'],
-            },
-          },
-        }),
-      });
+          required: ['description', 'amount', 'type', 'category_hint', 'source_hint'],
+        },
+      },
+    };
 
-      if (!response.ok) {
-        if (response.status === 429) throw new Error('QUOTA_EXHAUSTED');
-        if (response.status === 400) throw new Error('INVALID_API_KEY');
-        throw new Error(`API_ERROR_STATUS_${response.status}`);
-      }
+    try {
+      const data = await this.fetchWithFallback(
+        this.FLASH_PRIMARY_URL,
+        this.FLASH_FALLBACK_URL,
+        apiKey,
+        bodyPayload
+      );
 
-      const data = await response.json();
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error('NO_RESPONSE_FROM_GEMINI');
 
@@ -320,53 +336,47 @@ REGLAS DE RESPUESTA:
       },
     ];
 
-    try {
-      const response = await fetch(`${this.FLASH_MODEL_URL}?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents,
-          systemInstruction: {
-            parts: [{ text: systemPrompt }],
-          },
-          generationConfig: {
-            responseMimeType: 'application/json',
-            responseSchema: {
+    const bodyPayload = {
+      contents,
+      systemInstruction: {
+        parts: [{ text: systemPrompt }],
+      },
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: 'OBJECT',
+          properties: {
+            reply: {
+              type: 'STRING',
+              description: 'La respuesta conversacional en formato Markdown del asesor financiero.',
+            },
+            extractedTransaction: {
               type: 'OBJECT',
+              description: 'Transacción extraída si el usuario pidió registrar algo o envió un recibo.',
               properties: {
-                reply: {
-                  type: 'STRING',
-                  description: 'La respuesta conversacional en formato Markdown del asesor financiero.',
-                },
-                extractedTransaction: {
-                  type: 'OBJECT',
-                  description: 'Transacción extraída si el usuario pidió registrar algo o envió un recibo.',
-                  properties: {
-                    description: { type: 'STRING' },
-                    amount: { type: 'NUMBER' },
-                    type: { type: 'STRING', enum: ['INCOME', 'EXPENSE', 'TRANSFER'] },
-                    category_hint: { type: 'STRING' },
-                    source_hint: { type: 'STRING' },
-                    date_hint: { type: 'STRING' },
-                  },
-                  required: ['description', 'amount', 'type', 'category_hint', 'source_hint'],
-                },
+                description: { type: 'STRING' },
+                amount: { type: 'NUMBER' },
+                type: { type: 'STRING', enum: ['INCOME', 'EXPENSE', 'TRANSFER'] },
+                category_hint: { type: 'STRING' },
+                source_hint: { type: 'STRING' },
+                date_hint: { type: 'STRING' },
               },
-              required: ['reply'],
+              required: ['description', 'amount', 'type', 'category_hint', 'source_hint'],
             },
           },
-        }),
-      });
+          required: ['reply'],
+        },
+      },
+    };
 
-      if (!response.ok) {
-        if (response.status === 429) throw new Error('QUOTA_EXHAUSTED');
-        if (response.status === 400) throw new Error('INVALID_API_KEY');
-        throw new Error(`API_ERROR_STATUS_${response.status}`);
-      }
+    try {
+      const data = await this.fetchWithFallback(
+        this.FLASH_PRIMARY_URL,
+        this.FLASH_FALLBACK_URL,
+        apiKey,
+        bodyPayload
+      );
 
-      const data = await response.json();
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error('NO_RESPONSE_FROM_GEMINI');
 
