@@ -23,7 +23,8 @@ export interface ChatResponse {
 }
 
 export class GeminiParserService {
-  private API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+  private VOICE_MODEL_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
+  private FLASH_MODEL_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent';
 
   async parse(
     transcript: string,
@@ -68,7 +69,7 @@ Reglas:
 `;
 
     try {
-      const response = await fetch(`${this.API_URL}?key=${apiKey}`, {
+      const response = await fetch(`${this.VOICE_MODEL_URL}?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -196,7 +197,7 @@ Reglas:
 `;
 
     try {
-      const response = await fetch(`${this.API_URL}?key=${apiKey}`, {
+      const response = await fetch(`${this.FLASH_MODEL_URL}?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -320,7 +321,7 @@ REGLAS DE RESPUESTA:
     ];
 
     try {
-      const response = await fetch(`${this.API_URL}?key=${apiKey}`, {
+      const response = await fetch(`${this.FLASH_MODEL_URL}?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
