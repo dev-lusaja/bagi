@@ -9,8 +9,21 @@ export interface ParsedTransaction {
   error?: 'OFF_TOPIC' | null;
 }
 
+export interface FinancialContext {
+  categories: { name: string; type: string }[];
+  accounts: { name: string; currency: string; balance?: number }[];
+  cards: { name: string; currency: string; credit_limit?: number }[];
+  recentTransactions?: { description: string; amount: number; type: string; date: string; category?: string }[];
+  budgets?: { category: string; limit: number; spent: number }[];
+}
+
+export interface ChatResponse {
+  reply: string;
+  extractedTransaction?: ParsedTransaction;
+}
+
 export class GeminiParserService {
-  private API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent';
+  private API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
   async parse(
     transcript: string,
@@ -143,6 +156,222 @@ Reglas:
       return parsed;
     } catch (e: any) {
       console.error('[GeminiParserService] Error parsing transcript:', e);
+      throw e;
+    }
+  }
+
+  /**
+   * Analyzes an image (e.g. receipt / invoice photo) to extract transaction details.
+   */
+  async parseImageReceipt(
+    imageBase64: string,
+    mimeType: string,
+    apiKey: string,
+    context: FinancialContext
+  ): Promise<ParsedTransaction> {
+    const categoriesList = context.categories.map(c => `- ${c.name} (${c.type})`).join('\n');
+    const accountsList = context.accounts.map(a => `- ${a.name} (Cuenta, ${a.currency})`).join('\n');
+    const cardsList = context.cards.map(c => `- ${c.name} (Tarjeta, ${c.currency})`).join('\n');
+
+    const prompt = `
+Analiza la imagen adjunta (un recibo, factura o comprobante de pago) y extrae los detalles de la transacción.
+
+LISTA DE CATEGORÍAS DISPONIBLES:
+${categoriesList}
+
+LISTA DE ORÍGENES (CUENTAS Y TARJETAS) DISPONIBLES:
+${accountsList}
+${cardsList}
+`;
+
+    const systemInstruction = `
+Eres un asistente de Inteligencia Artificial especializado en analizar recibos de compra y facturas para Bagi.
+Tu objetivo es extraer el total de la compra, el nombre del comercio o concepto principal, la categoría más adecuada y la fecha si está disponible.
+
+Reglas:
+- Extrae el monto total cancelado como un número.
+- Extrae el nombre del establecimiento o ítem principal como "description".
+- Retorna "type" como "EXPENSE" (o "INCOME" si es un comprobante de ingreso).
+- Asigna la categoría ("category_hint") y el origen ("source_hint") usando exactamente uno de la lista si es posible.
+`;
+
+    try {
+      const response = await fetch(`${this.API_URL}?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType: mimeType || 'image/jpeg',
+                    data: imageBase64,
+                  },
+                },
+              ],
+            },
+          ],
+          systemInstruction: {
+            parts: [{ text: systemInstruction }],
+          },
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'OBJECT',
+              properties: {
+                description: { type: 'STRING' },
+                amount: { type: 'NUMBER' },
+                type: { type: 'STRING', enum: ['INCOME', 'EXPENSE', 'TRANSFER'] },
+                category_hint: { type: 'STRING' },
+                source_hint: { type: 'STRING' },
+                date_hint: { type: 'STRING' },
+              },
+              required: ['description', 'amount', 'type', 'category_hint', 'source_hint'],
+            },
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 429) throw new Error('QUOTA_EXHAUSTED');
+        if (response.status === 400) throw new Error('INVALID_API_KEY');
+        throw new Error(`API_ERROR_STATUS_${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error('NO_RESPONSE_FROM_GEMINI');
+
+      return JSON.parse(text) as ParsedTransaction;
+    } catch (e: any) {
+      console.error('[GeminiParserService] Error parsing image receipt:', e);
+      throw e;
+    }
+  }
+
+  /**
+   * Acts as a financial advisor answering questions based on user's financial context and optional images.
+   */
+  async chatWithAdvisor(
+    message: string,
+    history: { role: 'user' | 'model'; parts: { text: string }[] }[],
+    apiKey: string,
+    context: FinancialContext,
+    image?: { base64: string; mimeType: string }
+  ): Promise<ChatResponse> {
+    const categoriesList = context.categories.map(c => `- ${c.name} (${c.type})`).join('\n');
+    const accountsList = context.accounts.map(a => `- ${a.name} (${a.currency})`).join('\n');
+    const cardsList = context.cards.map(c => `- ${c.name} (${c.currency})`).join('\n');
+    const txList = (context.recentTransactions || [])
+      .slice(0, 15)
+      .map(t => `- [${t.date}] ${t.type}: ${t.description} - $${t.amount} (Cat: ${t.category || 'N/A'})`)
+      .join('\n');
+    const budgetList = (context.budgets || [])
+      .map(b => `- ${b.category}: Presupuesto $${b.limit}, Gastado $${b.spent}`)
+      .join('\n');
+
+    const systemPrompt = `
+Eres Bagi IA, un asesor financiero personal amigable, analítico y experto dentro de la aplicación Bagi.
+Tu función es responder preguntas sobre las finanzas personales del usuario, sus presupuestos, transacciones, hábitos de gasto y darle consejos prácticos y claros.
+
+INFORMACIÓN FINANCIERA DEL USUARIO:
+Cuentas:
+${accountsList || 'Ninguna'}
+
+Tarjetas:
+${cardsList || 'Ninguna'}
+
+Categorías disponibles:
+${categoriesList || 'Ninguna'}
+
+Presupuestos y Gastos Actuales:
+${budgetList || 'No hay presupuestos definidos'}
+
+Últimas Transacciones:
+${txList || 'No hay transacciones recientes'}
+
+REGLAS DE RESPUESTA:
+1. Responde de forma amable, clara y concisa en formato JSON.
+2. Basándote en la información financiera arriba provista, responde las dudas del usuario sobre cuánto ha gastado, cuánto le queda, consejos para ahorrar o estado de sus presupuestos.
+3. Si el mensaje del usuario o la imagen enviada incluye una orden de registrar o anotar un gasto/ingreso (por ejemplo "Anota un gasto de 20 mil en café" o un recibo de compra), incluye la propiedad "extractedTransaction" en el JSON con los detalles estructurados (description, amount, type, category_hint, source_hint, date_hint). De lo contrario, deja "extractedTransaction" como null.
+4. Tu respuesta principal debe ir en la propiedad "reply" formateada en Markdown amigable.
+`;
+
+    const userParts: any[] = [{ text: message || 'Por favor analiza esto.' }];
+    if (image) {
+      userParts.push({
+        inlineData: {
+          mimeType: image.mimeType || 'image/jpeg',
+          data: image.base64,
+        },
+      });
+    }
+
+    const contents = [
+      ...history,
+      {
+        role: 'user',
+        parts: userParts,
+      },
+    ];
+
+    try {
+      const response = await fetch(`${this.API_URL}?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents,
+          systemInstruction: {
+            parts: [{ text: systemPrompt }],
+          },
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'OBJECT',
+              properties: {
+                reply: {
+                  type: 'STRING',
+                  description: 'La respuesta conversacional en formato Markdown del asesor financiero.',
+                },
+                extractedTransaction: {
+                  type: 'OBJECT',
+                  description: 'Transacción extraída si el usuario pidió registrar algo o envió un recibo.',
+                  properties: {
+                    description: { type: 'STRING' },
+                    amount: { type: 'NUMBER' },
+                    type: { type: 'STRING', enum: ['INCOME', 'EXPENSE', 'TRANSFER'] },
+                    category_hint: { type: 'STRING' },
+                    source_hint: { type: 'STRING' },
+                    date_hint: { type: 'STRING' },
+                  },
+                  required: ['description', 'amount', 'type', 'category_hint', 'source_hint'],
+                },
+              },
+              required: ['reply'],
+            },
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 429) throw new Error('QUOTA_EXHAUSTED');
+        if (response.status === 400) throw new Error('INVALID_API_KEY');
+        throw new Error(`API_ERROR_STATUS_${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error('NO_RESPONSE_FROM_GEMINI');
+
+      return JSON.parse(text) as ChatResponse;
+    } catch (e: any) {
+      console.error('[GeminiParserService] Error in chatWithAdvisor:', e);
       throw e;
     }
   }
