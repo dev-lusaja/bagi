@@ -103,7 +103,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     const timeoutId = setTimeout(() => {
       console.warn('[useBagiAI] isSpeaking watchdog triggered - resetting state');
       setIsSpeaking(false);
-    }, 15000);
+    }, 30000);
 
     return () => clearTimeout(timeoutId);
   }, [isSpeaking]);
@@ -215,8 +215,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         setIsProcessing(false);
         setIsSpeaking(true);
         const capabilitiesText = lang.startsWith('en')
-          ? "I can help you record expenses, income, and transfers by voice, answer financial questions as your advisor in the chat, and scan purchase receipt photos."
-          : "Puedo ayudarte a registrar tus gastos, ingresos y transferencias por voz, responder preguntas sobre tus presupuestos como tu asesor en el chat, y escanear fotos de recibos o facturas.";
+          ? "Right now I can help you record your daily expenses, incomes, and transfers. Just tell me what you spent or received."
+          : "Actualmente puedo ayudarte a registrar tus gastos, ingresos y transferencias diarios. Solo dime qué gastaste o recibiste, y yo lo anotaré por ti.";
         voiceService.speak(capabilitiesText, lang, () => setIsSpeaking(false));
         return;
       }
@@ -327,8 +327,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       );
 
       let mapped: MappedTransaction | undefined = undefined;
-      // Only set parsedTx (which opens transaction confirmation modal) when intent is explicitly TRANSACTION
-      if (response.intent === 'TRANSACTION' && response.extractedTransaction) {
+      if (response.extractedTransaction) {
         mapped = mapGeminiOutput(response.extractedTransaction);
         setParsedTx(mapped);
       }

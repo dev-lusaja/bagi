@@ -115,12 +115,12 @@ export class VoiceService {
       }
     };
 
-    // Estimar el tiempo de lectura (80ms por carácter o mínimo 3 segundos) + margen de seguridad de 2 segundos
-    const estimatedMs = Math.max(text.length * 80, 3000);
+    // Estimar el tiempo de lectura (150ms por carácter o mínimo 10 segundos) + margen de seguridad de 5 segundos
+    const estimatedMs = Math.max(text.length * 150, 10000);
     const timeoutId = setTimeout(() => {
       console.warn('[VoiceService] speak timeout triggered (fallback)');
       safeEnd();
-    }, estimatedMs + 2000);
+    }, estimatedMs + 5000);
 
     // iOS Safari bug fix: periodic resume prevents iOS Safari speech synthesis from pausing silently
     resumeInterval = setInterval(() => {

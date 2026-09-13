@@ -36,9 +36,6 @@ Your core principles:
 `;
 
 export class GeminiParserService {
-  private VOICE_PRIMARY_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash-lite:generateContent';
-  private VOICE_FALLBACK_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
-
   private FLASH_PRIMARY_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
   private FLASH_FALLBACK_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
 
@@ -184,8 +181,8 @@ Your job is to parse spoken voice inputs quickly and accurately.
 
     try {
       const { data, modelUsed } = await this.fetchWithFallback(
-        this.VOICE_PRIMARY_URL,
-        this.VOICE_FALLBACK_URL,
+        this.FLASH_PRIMARY_URL,
+        this.FLASH_FALLBACK_URL,
         apiKey,
         bodyPayload
       );
@@ -344,7 +341,7 @@ RESPONSE RULES:
 2. Detect user intent ("TRANSACTION", "FINANCE_CHAT", "CAPABILITIES_QUERY", or "OFF_TOPIC").
    - If the user is asking what you can do (e.g. "¿En qué puedes ayudarme?", "What can you do?"), set intent to "CAPABILITIES_QUERY" and set "extractedTransaction" to null.
    - If the user asks a question about budgets, balance, or advice, set intent to "FINANCE_CHAT" and set "extractedTransaction" to null.
-   - ONLY if the user explicitly asks to register/log a new expense, income, or transfer movement (or uploads a receipt photo), set intent to "TRANSACTION" and set "extractedTransaction" with structured details (description, amount, type, category_hint, source_hint, date_hint).
+   - If the user explicitly commands to register/log a new expense, income, or transfer movement (e.g. "Anota un gasto de 20 mil en café", "Gasté 45 mil") or uploads a receipt photo, set intent to "TRANSACTION" AND set "extractedTransaction" with structured details (description, amount, type, category_hint, source_hint, date_hint).
 `;
 
     const userParts: any[] = [{ text: message || 'Please analyze this input.' }];
