@@ -327,7 +327,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       );
 
       let mapped: MappedTransaction | undefined = undefined;
-      if (response.extractedTransaction) {
+      // Only set parsedTx (which opens transaction confirmation modal) when intent is explicitly TRANSACTION
+      if (response.intent === 'TRANSACTION' && response.extractedTransaction) {
         mapped = mapGeminiOutput(response.extractedTransaction);
         setParsedTx(mapped);
       }
@@ -341,12 +342,6 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       };
 
       setChatMessages((prev) => [...prev, assistantMsg]);
-
-      // Speak capability query answer or extracted transaction confirmation in Chat if needed
-      if (response.intent === 'CAPABILITIES_QUERY') {
-        setIsSpeaking(true);
-        voiceService.speak(response.reply, lang, () => setIsSpeaking(false));
-      }
     } catch (e: any) {
       console.error('[useBagiAI] Error in sendChatMessage:', e);
       if (e.message === 'QUOTA_EXHAUSTED') {

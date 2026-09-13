@@ -29,18 +29,18 @@ Your core principles:
 1. Always map category names and payment sources (accounts or cards) strictly to the exact names provided in the user context.
 2. Convert amounts written as words into exact numbers (e.g. "forty thousand" -> 40000).
 3. Classify user input into one of four explicit intents:
-   - "TRANSACTION": User wants to log an income, expense, or transfer.
+   - "TRANSACTION": User explicitly commands to log an income, expense, or transfer.
    - "FINANCE_CHAT": User asks questions about personal budgets, spending habits, balances, or financial advice.
-   - "CAPABILITIES_QUERY": User asks what Bagi AI can do or how to use its features.
+   - "CAPABILITIES_QUERY": User asks what Bagi AI can do or how to use its features (e.g. "What can you do?", "¿En qué puedes ayudarme?", "How do I use this?").
    - "OFF_TOPIC": User input is completely unrelated to finance, budgeting, or Bagi capabilities.
 `;
 
 export class GeminiParserService {
-  private VOICE_PRIMARY_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
-  private VOICE_FALLBACK_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
+  private VOICE_PRIMARY_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash-lite:generateContent';
+  private VOICE_FALLBACK_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
 
-  private FLASH_PRIMARY_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent';
-  private FLASH_FALLBACK_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  private FLASH_PRIMARY_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
+  private FLASH_FALLBACK_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
 
   /**
    * Helper function to execute Gemini fetch with automatic fallback on HTTP 503 or 429
@@ -50,7 +50,12 @@ export class GeminiParserService {
     fallbackUrl: string,
     apiKey: string,
     bodyPayload: any
-  ): Promise<any> {
+  ): Promise<{ data: any; modelUsed: string }> {
+    const extractModelName = (url: string) => {
+      const match = url.match(/models\/(.*?):/);
+      return match ? match[1] : url;
+    };
+
     const makeRequest = async (url: string) => {
       return await fetch(`${url}?key=${apiKey}`, {
         method: 'POST',
@@ -61,14 +66,17 @@ export class GeminiParserService {
       });
     };
 
+    let modelUsed = extractModelName(primaryUrl);
     let response = await makeRequest(primaryUrl);
 
     // If 503 Service Unavailable or 429 Rate Limit / Too Many Requests, try fallback model
     if (response.status === 503 || response.status === 429) {
-      console.warn(`[GeminiParserService] Primary model returned HTTP ${response.status}. Retrying with fallback model...`);
+      console.warn(`[Bagi IA Debug] Primary model (${modelUsed}) returned HTTP ${response.status}. Retrying with fallback model...`);
+      modelUsed = extractModelName(fallbackUrl);
       const fallbackResponse = await makeRequest(fallbackUrl);
       if (fallbackResponse.ok) {
-        return await fallbackResponse.json();
+        const data = await fallbackResponse.json();
+        return { data, modelUsed };
       }
       response = fallbackResponse; // Use fallback response error status
     }
@@ -79,7 +87,8 @@ export class GeminiParserService {
       throw new Error(`API_ERROR_STATUS_${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return { data, modelUsed };
   }
 
   async parse(
@@ -174,7 +183,7 @@ Your job is to parse spoken voice inputs quickly and accurately.
     };
 
     try {
-      const data = await this.fetchWithFallback(
+      const { data, modelUsed } = await this.fetchWithFallback(
         this.VOICE_PRIMARY_URL,
         this.VOICE_FALLBACK_URL,
         apiKey,
@@ -184,7 +193,9 @@ Your job is to parse spoken voice inputs quickly and accurately.
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error('NO_RESPONSE_FROM_GEMINI');
 
-      return JSON.parse(text) as ParsedTransaction;
+      const parsed: ParsedTransaction = JSON.parse(text);
+      console.log('[Bagi IA Debug] Voice Mode:', { modelUsed, intent: parsed.intent, parsed });
+      return parsed;
     } catch (e: any) {
       console.error('[GeminiParserService] Error parsing transcript:', e);
       throw e;
@@ -266,7 +277,7 @@ You are an expert OCR vision scanner for purchase receipts and invoices.
     };
 
     try {
-      const data = await this.fetchWithFallback(
+      const { data, modelUsed } = await this.fetchWithFallback(
         this.FLASH_PRIMARY_URL,
         this.FLASH_FALLBACK_URL,
         apiKey,
@@ -276,7 +287,9 @@ You are an expert OCR vision scanner for purchase receipts and invoices.
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error('NO_RESPONSE_FROM_GEMINI');
 
-      return JSON.parse(text) as ParsedTransaction;
+      const parsed: ParsedTransaction = JSON.parse(text);
+      console.log('[Bagi IA Debug] Image Receipt Mode:', { modelUsed, intent: parsed.intent, parsed });
+      return parsed;
     } catch (e: any) {
       console.error('[GeminiParserService] Error parsing image receipt:', e);
       throw e;
@@ -328,8 +341,10 @@ ${txList || 'No recent transactions'}
 
 RESPONSE RULES:
 1. Provide a clear, friendly, and helpful response in Spanish in the "reply" property, formatted in Markdown.
-2. Detect intent ("TRANSACTION", "FINANCE_CHAT", "CAPABILITIES_QUERY", "OFF_TOPIC").
-3. If the user explicitly asks to register/log a movement or attaches a receipt photo, set "extractedTransaction" with structured details (description, amount, type, category_hint, source_hint, date_hint). Otherwise, set "extractedTransaction" to null.
+2. Detect user intent ("TRANSACTION", "FINANCE_CHAT", "CAPABILITIES_QUERY", or "OFF_TOPIC").
+   - If the user is asking what you can do (e.g. "¿En qué puedes ayudarme?", "What can you do?"), set intent to "CAPABILITIES_QUERY" and set "extractedTransaction" to null.
+   - If the user asks a question about budgets, balance, or advice, set intent to "FINANCE_CHAT" and set "extractedTransaction" to null.
+   - ONLY if the user explicitly asks to register/log a new expense, income, or transfer movement (or uploads a receipt photo), set intent to "TRANSACTION" and set "extractedTransaction" with structured details (description, amount, type, category_hint, source_hint, date_hint).
 `;
 
     const userParts: any[] = [{ text: message || 'Please analyze this input.' }];
@@ -371,7 +386,7 @@ RESPONSE RULES:
             },
             extractedTransaction: {
               type: 'OBJECT',
-              description: 'Extracted transaction details if user requested logging a movement or uploaded a receipt.',
+              description: 'Extracted transaction details ONLY if user explicitly commanded logging a transaction or uploaded a receipt.',
               properties: {
                 description: { type: 'STRING' },
                 amount: { type: 'NUMBER' },
@@ -389,7 +404,7 @@ RESPONSE RULES:
     };
 
     try {
-      const data = await this.fetchWithFallback(
+      const { data, modelUsed } = await this.fetchWithFallback(
         this.FLASH_PRIMARY_URL,
         this.FLASH_FALLBACK_URL,
         apiKey,
@@ -399,7 +414,9 @@ RESPONSE RULES:
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error('NO_RESPONSE_FROM_GEMINI');
 
-      return JSON.parse(text) as ChatResponse;
+      const response: ChatResponse = JSON.parse(text);
+      console.log('[Bagi IA Debug] Chat Advisor Mode:', { modelUsed, intent: response.intent, response });
+      return response;
     } catch (e: any) {
       console.error('[GeminiParserService] Error in chatWithAdvisor:', e);
       throw e;
