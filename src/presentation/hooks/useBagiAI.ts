@@ -279,6 +279,11 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       },
       () => {
         setIsRecording(false);
+      },
+      () => {
+        // Voice recognition active & listening: give quick voice prompt feedback
+        const readyText = lang.startsWith('en') ? "Ready" : "Estoy listo";
+        voiceService.speak(readyText, lang);
       }
     );
   };
@@ -336,11 +341,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       );
 
       let mapped: MappedTransaction | undefined = undefined;
-      // Trigger confirmation modal ONLY if intent is TRANSACTION or an image receipt was sent
-      if (response.intent === 'TRANSACTION' && response.extractedTransaction) {
-        mapped = mapGeminiOutput(response.extractedTransaction);
-        setParsedTx(mapped);
-      } else if (image && response.extractedTransaction) {
+      // Always map and open confirmation modal whenever extractedTransaction is present
+      if (response.extractedTransaction) {
         mapped = mapGeminiOutput(response.extractedTransaction);
         setParsedTx(mapped);
       }

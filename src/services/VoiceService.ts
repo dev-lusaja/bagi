@@ -10,7 +10,8 @@ export class VoiceService {
     lang: string, 
     onResult: (text: string) => void, 
     onError: (error: any) => void, 
-    onEnd: () => void
+    onEnd: () => void,
+    onStart?: () => void
   ) {
     if (!this.isSupported()) {
       onError(new Error('SPEECH_NOT_SUPPORTED'));
@@ -22,6 +23,12 @@ export class VoiceService {
     this.recognition.continuous = false;
     this.recognition.interimResults = false;
     this.recognition.lang = lang;
+
+    if (onStart) {
+      this.recognition.onstart = () => {
+        onStart();
+      };
+    }
 
     this.recognition.onresult = (event: any) => {
       if (event.results && event.results.length > 0) {
@@ -134,8 +141,12 @@ export class VoiceService {
       safeEnd();
     };
 
-    utterance.onerror = (event) => {
-      console.error('[VoiceService] Speech synthesis error', event);
+    utterance.onerror = (event: any) => {
+      if (event.error === 'interrupted' || event.error === 'canceled') {
+        console.debug('[VoiceService] Speech synthesis playback interrupted or canceled', event);
+      } else {
+        console.error('[VoiceService] Speech synthesis error', event);
+      }
       clearTimeout(timeoutId);
       safeEnd();
     };
