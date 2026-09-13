@@ -100,13 +100,15 @@ export default function Intelligence() {
       await confirmAndSave(editedTx);
       setIsSaveSuccess(true);
 
-      // Confirmación por voz (TTS)
-      const speechText = lang.startsWith('en')
-        ? `Done. I registered: ${editedTx.description}.`
-        : `Listo. Registré: ${editedTx.description}.`;
-      
-      setIsConfirmSpeaking(true);
-      voiceService.speak(speechText, lang, () => setIsConfirmSpeaking(false));
+      // Confirmación por voz (TTS) solo si el origen es por voz y no por chat
+      if (editedTx.source !== 'chat') {
+        const speechText = lang.startsWith('en')
+          ? `Done. I registered: ${editedTx.description}.`
+          : `Listo. Registré: ${editedTx.description}.`;
+
+        setIsConfirmSpeaking(true);
+        voiceService.speak(speechText, lang, () => setIsConfirmSpeaking(false));
+      }
 
       // El modal se auto-cierra solo (via BagiActionModal.successAutoCloseMs)
       // y llama a handleModalClose para limpiar el estado.

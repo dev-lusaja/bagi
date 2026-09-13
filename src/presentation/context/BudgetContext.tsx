@@ -37,6 +37,10 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const init = async () => {
             try {
                 service.setOnSyncStateChange(setIsSyncing);
+                service.setOnAuthError(async () => {
+                    setSessionExpired(true);
+                    await logout();
+                });
                 await service.init();
                 
                 const restored = await service.tryRestoreSession();

@@ -41,7 +41,8 @@ export class GeminiParserService {
   private FLASH_FALLBACK_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
 
   /**
-   * Helper function to execute Gemini fetch with automatic fallback on HTTP 503 or 429
+   * Helper function to execute Gemini fetch with retry (exponential backoff with jitter)
+   * and automatic fallback on HTTP 503 or 429.
    */
   private async fetchWithFallback(
     primaryUrl: string,
@@ -54,29 +55,53 @@ export class GeminiParserService {
       return match ? match[1] : url;
     };
 
-    const makeRequest = async (url: string) => {
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    const makeRequestWithRetry = async (url: string, retries = 2, initialDelayMs = 1000): Promise<Response> => {
+      let currentDelay = initialDelayMs;
+      for (let i = 0; i <= retries; i++) {
+        const response = await fetch(`${url}?key=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(bodyPayload),
+        });
+
+        if (response.status !== 429 && response.status !== 503) {
+          return response;
+        }
+
+        if (i < retries) {
+          const jitter = Math.random() * 200;
+          const sleepTime = currentDelay + jitter;
+          console.warn(`[Bagi IA Debug] Model (${extractModelName(url)}) returned HTTP ${response.status}. Retrying in ${Math.round(sleepTime)}ms (Attempt ${i + 1}/${retries})...`);
+          await delay(sleepTime);
+          currentDelay *= 2;
+        } else {
+          return response;
+        }
+      }
       return await fetch(`${url}?key=${apiKey}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyPayload),
       });
     };
 
     let modelUsed = extractModelName(primaryUrl);
-    let response = await makeRequest(primaryUrl);
+    let response = await makeRequestWithRetry(primaryUrl, 2, 1000);
 
-    // If 503 Service Unavailable or 429 Rate Limit / Too Many Requests, try fallback model
+    // If still 503 or 429 after retries, try fallback model with retries
     if (response.status === 503 || response.status === 429) {
-      console.warn(`[Bagi IA Debug] Primary model (${modelUsed}) returned HTTP ${response.status}. Retrying with fallback model...`);
+      console.warn(`[Bagi IA Debug] Primary model (${modelUsed}) rate-limited / unavailable after retries (HTTP ${response.status}). Switching to fallback model (${extractModelName(fallbackUrl)})...`);
       modelUsed = extractModelName(fallbackUrl);
-      const fallbackResponse = await makeRequest(fallbackUrl);
+      const fallbackResponse = await makeRequestWithRetry(fallbackUrl, 2, 1000);
       if (fallbackResponse.ok) {
         const data = await fallbackResponse.json();
         return { data, modelUsed };
       }
-      response = fallbackResponse; // Use fallback response error status
+      response = fallbackResponse;
     }
 
     if (!response.ok) {

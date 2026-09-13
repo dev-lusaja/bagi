@@ -21,6 +21,7 @@ export interface MappedTransaction {
   account_id: number | null;
   card_id: number | null;
   date: string;
+  source?: 'voice' | 'chat';
 }
 
 export interface ChatMessage {
@@ -122,7 +123,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
   };
 
   // Maps text strings to database records
-  const mapGeminiOutput = (parsed: ParsedTransaction): MappedTransaction => {
+  const mapGeminiOutput = (parsed: ParsedTransaction, source: 'voice' | 'chat' = 'voice'): MappedTransaction => {
     // 1. Map Category
     let category_id: number | null = null;
     const catHint = parsed.category_hint.toLowerCase().trim();
@@ -193,7 +194,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       category_id,
       account_id,
       card_id,
-      date: finalDate
+      date: finalDate,
+      source
     };
   };
 
@@ -244,7 +246,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         return;
       }
 
-      const mapped = mapGeminiOutput(parsed);
+      const mapped = mapGeminiOutput(parsed, 'voice');
       setParsedTx(mapped);
     } catch (e: any) {
       console.error(e);
@@ -365,7 +367,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         (response.intent === 'TRANSACTION' && response.extractedTransaction) ||
         (response.extractedTransaction && response.extractedTransaction.amount > 0)
       ) {
-        mapped = mapGeminiOutput(response.extractedTransaction);
+        mapped = mapGeminiOutput(response.extractedTransaction, 'chat');
         setParsedTx(mapped);
       }
 
@@ -418,7 +420,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         }
       );
 
-      const mapped = mapGeminiOutput(parsed);
+      const mapped = mapGeminiOutput(parsed, 'voice');
       setParsedTx(mapped);
     } catch (e: any) {
       console.error('[useBagiAI] Error in processReceiptImage:', e);
@@ -463,6 +465,20 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       imputation_date: finalImputationDate,
       user_id: 1 // Default
     });
+
+    if (customTx.source === 'chat') {
+      const confirmMsg: ChatMessage = {
+        id: Date.now().toString(),
+        sender: 'assistant',
+        text: `Transacción registrada: ${customTx.description}`,
+        timestamp: new Date()
+      };
+      setChatMessages((prev) => [...prev, confirmMsg]);
+    }
+
+    // Refresh transactions list
+    const updatedTxs = await service.getTransactions();
+    setRecentTransactions(updatedTxs as any);
 
     // Reset state after saving
     setParsedTx(null);
