@@ -39,6 +39,7 @@ export class BudgetService {
     private isSyncing = false;
     private pendingChanges = false;
     private onSyncStateChange: (isSyncing: boolean) => void = () => {};
+    private onAuthError: () => void = () => {};
     private SYNC_INTERVAL = 8000;
     private userInfo: { name: string; picture: string; email: string } | null = null;
     private isDemoMode = false;
@@ -303,7 +304,10 @@ export class BudgetService {
             this.pendingChanges = false;
         } catch (error: any) {
             ErrorLogger.capture(error, { source: 'BudgetService - syncToDrive' });
-            if (error.message === 'AUTH_ERROR') throw error;
+            if (error.message === 'AUTH_ERROR') {
+                this.onAuthError();
+                throw error;
+            }
         } finally {
             this.isSyncing = false;
             this.onSyncStateChange(false);
@@ -319,8 +323,11 @@ export class BudgetService {
                 this.scheduleSave();
             }
             return result;
-        } catch (err) {
+        } catch (err: any) {
             ErrorLogger.capture(err, { source: 'BudgetService - performOperation' });
+            if (err.message === 'AUTH_ERROR') {
+                this.onAuthError();
+            }
             throw err;
         }
     }
@@ -457,5 +464,9 @@ export class BudgetService {
 
     setOnSyncStateChange(handler: (isSyncing: boolean) => void) {
         this.onSyncStateChange = handler;
+    }
+
+    setOnAuthError(handler: () => void) {
+        this.onAuthError = handler;
     }
 }
