@@ -165,6 +165,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     const now = new Date();
     let finalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0).toISOString();
     const dateHint = parsed.date_hint?.toLowerCase().trim();
+
     if (dateHint) {
       const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
       if (dateHint.includes('ayer')) {
@@ -173,6 +174,14 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       } else if (dateHint.includes('antier') || dateHint.includes('hace 2 dias') || dateHint.includes('hace 2 días')) {
         d.setDate(d.getDate() - 2);
         finalDate = d.toISOString();
+      } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateHint)) {
+        // DD/MM/YYYY
+        const [day, month, year] = dateHint.split('/').map(Number);
+        finalDate = new Date(year, month - 1, day, 12, 0, 0).toISOString();
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateHint)) {
+        // YYYY-MM-DD
+        const [year, month, day] = dateHint.split('-').map(Number);
+        finalDate = new Date(year, month - 1, day, 12, 0, 0).toISOString();
       }
     }
 
@@ -327,7 +336,11 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       );
 
       let mapped: MappedTransaction | undefined = undefined;
-      if (response.extractedTransaction) {
+      // Trigger confirmation modal ONLY if intent is TRANSACTION or an image receipt was sent
+      if (response.intent === 'TRANSACTION' && response.extractedTransaction) {
+        mapped = mapGeminiOutput(response.extractedTransaction);
+        setParsedTx(mapped);
+      } else if (image && response.extractedTransaction) {
         mapped = mapGeminiOutput(response.extractedTransaction);
         setParsedTx(mapped);
       }
