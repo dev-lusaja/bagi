@@ -342,7 +342,8 @@ RESPONSE RULES:
 2. Detect user intent ("TRANSACTION", "FINANCE_CHAT", "CAPABILITIES_QUERY", or "OFF_TOPIC").
    - If the user is asking what you can do (e.g. "¿En qué puedes ayudarme?", "What can you do?"), set intent to "CAPABILITIES_QUERY" and set "extractedTransaction" to null.
    - If the user asks a question about budgets, balance, or advice, set intent to "FINANCE_CHAT" and set "extractedTransaction" to null.
-   - If the user explicitly commands to register/log a new expense, income, or transfer movement (e.g. "Anota un gasto de 20 mil en café", "Gasté 45 mil") or uploads a receipt photo, set intent to "TRANSACTION" AND set "extractedTransaction" with structured details (description, amount, type, category_hint, source_hint, date_hint).
+   - If the user input is off-topic, greeting, or unclear, set intent to "OFF_TOPIC", set "extractedTransaction" to null, and in "reply" explain kindly in Spanish that you didn't understand or can only assist with personal finances and transaction tracking.
+   - If the user explicitly commands to register/log a new expense, income, or transfer movement (e.g. "Anota un gasto de 20 mil en café", "Gasté 45 mil") or uploads a receipt photo, set intent to "TRANSACTION" AND set "extractedTransaction" with structured details (description, amount, type, category_hint, source_hint, date_hint). In "reply", inform the user in Spanish that the transaction details have been prepared for their review and confirmation in the popup modal. Never state that it has already been saved to the database.
 `;
 
     const userParts: any[] = [{ text: message || 'Please analyze this input.' }];

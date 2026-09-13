@@ -218,6 +218,11 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       if (parsed.error === 'OFF_TOPIC' || parsed.intent === 'OFF_TOPIC') {
         setError('OFF_TOPIC');
         setIsProcessing(false);
+        setIsSpeaking(true);
+        const notUnderstoodText = lang.startsWith('en')
+          ? "No pude entenderte. Por favor intenta de nuevo."
+          : "No pude entenderte. Por favor intenta de nuevo.";
+        voiceService.speak(notUnderstoodText, lang, () => setIsSpeaking(false));
         return;
       }
 
@@ -228,6 +233,14 @@ export function useBagiAI(onApiKeyMissing: () => void) {
           ? "Right now I can help you record your daily expenses, incomes, and transfers. Just tell me what you spent or received."
           : "Actualmente puedo ayudarte a registrar tus gastos, ingresos y transferencias diarios. Solo dime qué gastaste o recibiste, y yo lo anotaré por ti.";
         voiceService.speak(capabilitiesText, lang, () => setIsSpeaking(false));
+        return;
+      }
+
+      if (parsed.intent !== 'TRANSACTION' || !parsed.amount) {
+        setError('OFF_TOPIC');
+        setIsProcessing(false);
+        setIsSpeaking(true);
+        voiceService.speak("No pude entenderte. Por favor intenta de nuevo.", lang, () => setIsSpeaking(false));
         return;
       }
 
@@ -347,8 +360,11 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       );
 
       let mapped: MappedTransaction | undefined = undefined;
-      // Always map and open confirmation modal whenever extractedTransaction is present
-      if (response.extractedTransaction) {
+      // Open modal when intent is TRANSACTION or when extractedTransaction is valid with an amount
+      if (
+        (response.intent === 'TRANSACTION' && response.extractedTransaction) ||
+        (response.extractedTransaction && response.extractedTransaction.amount > 0)
+      ) {
         mapped = mapGeminiOutput(response.extractedTransaction);
         setParsedTx(mapped);
       }
