@@ -35,6 +35,7 @@ export interface ChatMessage {
 export function useBagiAI(onApiKeyMissing: () => void) {
   const { service } = useBudget();
   const [apiKey, setApiKey] = useState<string>('');
+  const [isPreparing, setIsPreparing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -261,15 +262,18 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     setError(null);
     setTranscript('');
     setParsedTx(null);
-    setIsRecording(true);
+    setIsPreparing(true);
 
     voiceService.start(
       lang,
       (text) => {
+        setIsPreparing(false);
+        setIsRecording(false);
         setTranscript(text);
         parseText(text);
       },
       (err) => {
+        setIsPreparing(false);
         setIsRecording(false);
         if (err.error === 'no-speech') {
           setError('NO_SPEECH_DETECTED');
@@ -278,18 +282,20 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         }
       },
       () => {
+        setIsPreparing(false);
         setIsRecording(false);
       },
       () => {
-        // Voice recognition active & listening: give quick voice prompt feedback
-        const readyText = lang.startsWith('en') ? "Ready" : "Estoy listo";
-        voiceService.speak(readyText, lang);
+        // Recognition onstart callback: microphone capture is active and ready
+        setIsPreparing(false);
+        setIsRecording(true);
       }
     );
   };
 
   const stopListening = () => {
     voiceService.stop();
+    setIsPreparing(false);
     setIsRecording(false);
   };
 
@@ -450,6 +456,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
   return {
     isSupported: voiceService.isSupported(),
     apiKey,
+    isPreparing,
     isRecording,
     isProcessing,
     isSpeaking,

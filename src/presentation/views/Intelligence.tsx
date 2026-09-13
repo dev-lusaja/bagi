@@ -37,6 +37,7 @@ export default function Intelligence() {
   const {
     isSupported,
     apiKey,
+    isPreparing,
     isRecording,
     isProcessing,
     isSpeaking,
@@ -316,7 +317,7 @@ export default function Intelligence() {
             <div className="flex flex-col items-center justify-center space-y-6 py-6 flex-1">
               <BagiIARing
                 state={(isSpeaking || isConfirmSpeaking) ? 'speaking' : isProcessing ? 'processing' : isRecording ? 'listening' : 'idle'}
-                onClick={isRecording ? stopListening : startListening}
+                onClick={(isRecording || isPreparing) ? stopListening : startListening}
                 disabled={isProcessing || !isSupported || isSpeaking || isConfirmSpeaking}
               />
 
@@ -324,8 +325,10 @@ export default function Intelligence() {
                 <h3 className="text-lg font-bold text-gray-800">
                   {(isSpeaking || isConfirmSpeaking)
                     ? 'Respondiendo...'
+                    : isPreparing
+                    ? 'Preparando micrófono...'
                     : isRecording
-                    ? 'Escuchando tu voz...'
+                    ? '¡Estoy listo! Escuchando tu voz...'
                     : isProcessing
                     ? 'Bagi IA procesando...'
                     : 'Hablar con Bagi IA'}
@@ -333,8 +336,10 @@ export default function Intelligence() {
                 <p className="text-xs text-gray-400 mt-1 max-w-[280px]">
                   {(isSpeaking || isConfirmSpeaking)
                     ? 'Escucha la respuesta de Bagi IA.'
+                    : isPreparing
+                    ? 'Iniciando captura de audio del navegador...'
                     : isRecording
-                    ? 'Di los detalles y presiona el botón para finalizar.'
+                    ? 'Habla ahora. Di los detalles y presiona el botón para finalizar.'
                     : isProcessing
                     ? 'Extrayendo datos de la transacción.'
                     : isSupported
