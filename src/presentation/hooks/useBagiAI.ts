@@ -1,16 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { voiceService } from '../../services/VoiceService';
 import { geminiParserService, ParsedTransaction } from '../../services/GeminiParserService';
 
-export type BagiAIErrorType = 
-  | 'SPEECH_NOT_SUPPORTED' 
-  | 'NO_API_KEY' 
-  | 'QUOTA_EXHAUSTED' 
-  | 'INVALID_API_KEY' 
-  | 'OFF_TOPIC' 
-  | 'NO_SPEECH_DETECTED' 
-  | 'GENERIC_ERROR' 
+export type BagiAIErrorType =
+  | 'SPEECH_NOT_SUPPORTED'
+  | 'NO_API_KEY'
+  | 'QUOTA_EXHAUSTED'
+  | 'INVALID_API_KEY'
+  | 'OFF_TOPIC'
+  | 'NO_SPEECH_DETECTED'
+  | 'MIC_PERMISSION_DENIED'
+  | 'NO_MICROPHONE'
+  | 'TIMEOUT_ERROR'
+  | 'GENERIC_ERROR'
   | null;
 
 export interface MappedTransaction {
@@ -42,6 +45,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [error, setError] = useState<BagiAIErrorType>(null);
   const [transcript, setTranscript] = useState('');
+  const [audioLevel, setAudioLevel] = useState(0);
+  const stopLevelMeterRef = useRef<(() => void) | null>(null);
   const [lang, setLang] = useState('es-CO'); // Default
   const [parsedTx, setParsedTx] = useState<MappedTransaction | null>(null);
 
@@ -109,6 +114,23 @@ export function useBagiAI(onApiKeyMissing: () => void) {
 
     return () => clearTimeout(timeoutId);
   }, [isSpeaking]);
+
+  // Watchdog para evitar que la UI quede colgada si SpeechRecognition nunca dispara
+  // onstart/onresult/onerror/onend (permiso de mic atascado, tab en background, etc.)
+  useEffect(() => {
+    if (!isPreparing && !isRecording) return;
+
+    const timeoutId = setTimeout(() => {
+      console.warn('[useBagiAI] isPreparing/isRecording watchdog triggered - resetting state');
+      voiceService.stop();
+      stopLevelMeter();
+      setIsPreparing(false);
+      setIsRecording(false);
+      setError('GENERIC_ERROR');
+    }, 15000);
+
+    return () => clearTimeout(timeoutId);
+  }, [isPreparing, isRecording]);
 
   const saveApiKey = (key: string) => {
     localStorage.setItem('bagi_gemini_api_key', key);
@@ -217,7 +239,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         cards
       });
 
-      if (parsed.error === 'OFF_TOPIC' || parsed.intent === 'OFF_TOPIC') {
+      if (parsed.intent === 'OFF_TOPIC') {
         setError('OFF_TOPIC');
         setIsProcessing(false);
         setIsSpeaking(true);
@@ -254,12 +276,19 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         setError('QUOTA_EXHAUSTED');
       } else if (e.message === 'INVALID_API_KEY') {
         setError('INVALID_API_KEY');
+      } else if (e.message === 'TIMEOUT') {
+        setError('TIMEOUT_ERROR');
       } else {
         setError('GENERIC_ERROR');
       }
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const stopLevelMeter = () => {
+    stopLevelMeterRef.current?.();
+    stopLevelMeterRef.current = null;
   };
 
   const startListening = () => {
@@ -279,37 +308,59 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     setParsedTx(null);
     setIsPreparing(true);
 
+    // iOS Safari fix: desbloquea el audio context en el mismo gesto del usuario
+    // para que la síntesis de voz posterior no falle en silencio.
+    voiceService.unlockAudio();
+
+    stopLevelMeterRef.current = voiceService.startLevelMeter(setAudioLevel);
+
     voiceService.start(
       lang,
       (text) => {
+        stopLevelMeter();
         setIsPreparing(false);
         setIsRecording(false);
         setTranscript(text);
         parseText(text);
       },
       (err) => {
+        stopLevelMeter();
         setIsPreparing(false);
         setIsRecording(false);
         if (err.error === 'no-speech') {
           setError('NO_SPEECH_DETECTED');
+        } else if (err.error === 'not-allowed') {
+          setError('MIC_PERMISSION_DENIED');
+        } else if (err.error === 'audio-capture') {
+          setError('NO_MICROPHONE');
         } else {
           console.warn('[useBagiAI] Speech recognition error callback', err);
+          setError('GENERIC_ERROR');
         }
       },
       () => {
+        stopLevelMeter();
         setIsPreparing(false);
         setIsRecording(false);
       },
       () => {
-        // Recognition onstart callback: microphone capture is active and ready
-        setIsPreparing(false);
-        setIsRecording(true);
+        // onstart dispara antes de que el engine empiece a capturar audio de verdad
+        // (arranque interno del stream, ~300-500ms). Sin este margen se pierden las
+        // primeras palabras si el usuario habla apenas ve "Escuchando...".
+        setTimeout(() => {
+          setIsPreparing((wasPreparing) => {
+            if (!wasPreparing) return wasPreparing; // ya se canceló (stopListening corrió antes)
+            setIsRecording(true);
+            return false;
+          });
+        }, 500);
       }
     );
   };
 
   const stopListening = () => {
     voiceService.stop();
+    stopLevelMeter();
     setIsPreparing(false);
     setIsRecording(false);
   };
@@ -386,6 +437,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         setError('QUOTA_EXHAUSTED');
       } else if (e.message === 'INVALID_API_KEY') {
         setError('INVALID_API_KEY');
+      } else if (e.message === 'TIMEOUT') {
+        setError('TIMEOUT_ERROR');
       } else {
         setError('GENERIC_ERROR');
       }
@@ -428,6 +481,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         setError('QUOTA_EXHAUSTED');
       } else if (e.message === 'INVALID_API_KEY') {
         setError('INVALID_API_KEY');
+      } else if (e.message === 'TIMEOUT') {
+        setError('TIMEOUT_ERROR');
       } else {
         setError('GENERIC_ERROR');
       }
@@ -494,6 +549,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     isSpeaking,
     error,
     transcript,
+    audioLevel,
     parsedTx,
     chatMessages,
     lang,

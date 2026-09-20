@@ -18,6 +18,10 @@ export class VoiceService {
       return;
     }
 
+    // Evita dos instancias de reconocimiento corriendo en paralelo si el usuario
+    // toca el botón dos veces seguido antes de que termine la sesión anterior.
+    this.stop();
+
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     this.recognition = new SpeechRecognition();
     this.recognition.continuous = false;
@@ -64,6 +68,27 @@ export class VoiceService {
       }
       this.recognition = null;
     }
+  }
+
+  /**
+   * Anima el botón como un ecualizador mientras se escucha. No lee el micrófono real:
+   * abrir un segundo stream de audio en paralelo al que usa SpeechRecognition
+   * internamente causaba conflicto de audio (lag y captura tardía de la voz real).
+   * Devuelve una función para detener la animación.
+   */
+  startLevelMeter(onLevel: (level: number) => void): () => void {
+    let current = 0;
+    const tick = () => {
+      current += (Math.random() - current) * 0.15;
+      onLevel(current);
+      rafId = requestAnimationFrame(tick);
+    };
+    let rafId: number = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      onLevel(0);
+    };
   }
 
   /**

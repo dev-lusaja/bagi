@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useBagiAI, MappedTransaction } from '../hooks/useBagiAI';
 import { voiceService } from '../../services/VoiceService';
 import BagiActionModal from '../components/BagiActionModal';
@@ -43,6 +44,7 @@ export default function Intelligence() {
     isSpeaking,
     error,
     transcript,
+    audioLevel,
     parsedTx,
     chatMessages,
     lang,
@@ -83,13 +85,15 @@ export default function Intelligence() {
     }
   }, [parsedTx]);
 
-  // Cierre limpio del modal (X manual o auto-cierre tras éxito)
+  // Cierre limpio del modal (X manual o auto-cierre tras éxito).
+  // No corta la voz: el modal (2.8s) suele cerrarse antes que termine la
+  // confirmación hablada ("Listo. Registré..."), y cortarla ahí sonaba como si
+  // la voz "se fuera" junto con el modal. Se deja terminar en segundo plano.
   const handleModalClose = useCallback(() => {
     setIsConfirmModalOpen(false);
     setIsSaveSuccess(false);
     setEditedTx(null);
     clearParsedTx();
-    voiceService.stopSpeaking();
   }, [clearParsedTx]);
 
   // Confirmación y guardado con feedback por voz
@@ -318,9 +322,10 @@ export default function Intelligence() {
           {activeTab === 'voice' && (
             <div className="flex flex-col items-center justify-center space-y-6 py-6 flex-1">
               <BagiIARing
-                state={(isSpeaking || isConfirmSpeaking) ? 'speaking' : isProcessing ? 'processing' : isRecording ? 'listening' : 'idle'}
+                state={(isSpeaking || isConfirmSpeaking) ? 'speaking' : isProcessing ? 'processing' : (isRecording || isPreparing) ? 'listening' : 'idle'}
                 onClick={(isRecording || isPreparing) ? stopListening : startListening}
                 disabled={isProcessing || !isSupported || isSpeaking || isConfirmSpeaking}
+                audioLevel={audioLevel}
               />
 
               <div className="text-center">
@@ -400,7 +405,13 @@ export default function Intelligence() {
                             className="max-h-40 rounded-xl mb-2 object-cover border border-white/20"
                           />
                         )}
-                        <p className="whitespace-pre-wrap">{msg.text}</p>
+                        {msg.sender === 'assistant' ? (
+                          <div className="space-y-2 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_a]:underline [&_a]:text-indigo-600">
+                            <ReactMarkdown>{msg.text}</ReactMarkdown>
+                          </div>
+                        ) : (
+                          <p className="whitespace-pre-wrap">{msg.text}</p>
+                        )}
                       </div>
                       {msg.sender === 'user' && (
                         <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center flex-shrink-0 mt-1">
@@ -520,6 +531,24 @@ export default function Intelligence() {
                   <>
                     <h5 className="font-extrabold">No te escuchamos</h5>
                     <p className="text-rose-700/90 mt-0.5">No se detectó audio del micrófono. Por favor, vuelve a intentar.</p>
+                  </>
+                )}
+                {error === 'MIC_PERMISSION_DENIED' && (
+                  <>
+                    <h5 className="font-extrabold">Permiso de micrófono denegado</h5>
+                    <p className="text-rose-700/90 mt-0.5">Habilita el acceso al micrófono en los permisos del navegador e intenta de nuevo.</p>
+                  </>
+                )}
+                {error === 'NO_MICROPHONE' && (
+                  <>
+                    <h5 className="font-extrabold">No se detectó un micrófono</h5>
+                    <p className="text-rose-700/90 mt-0.5">Conecta o habilita un micrófono para usar el registro por voz.</p>
+                  </>
+                )}
+                {error === 'TIMEOUT_ERROR' && (
+                  <>
+                    <h5 className="font-extrabold">La IA tardó demasiado en responder</h5>
+                    <p className="text-rose-700/90 mt-0.5">Revisa tu conexión a internet e intenta de nuevo.</p>
                   </>
                 )}
                 {error === 'GENERIC_ERROR' && (

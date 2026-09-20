@@ -6,7 +6,6 @@ export interface ParsedTransaction {
   source_hint: string;
   date_hint: string | null;
   intent?: 'TRANSACTION' | 'FINANCE_CHAT' | 'CAPABILITIES_QUERY' | 'OFF_TOPIC';
-  error?: 'OFF_TOPIC' | null;
 }
 
 export interface FinancialContext {
@@ -40,6 +39,12 @@ export class GeminiParserService {
   private FLASH_PRIMARY_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
   private FLASH_FALLBACK_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
 
+  /** True if the fetch failed because AbortSignal.timeout() fired (request hung). */
+  private isTimeoutError(e: unknown): boolean {
+    const name = (e as { name?: string })?.name;
+    return name === 'TimeoutError' || name === 'AbortError';
+  }
+
   /**
    * Helper function to execute Gemini fetch with retry (exponential backoff with jitter)
    * and automatic fallback on HTTP 503 or 429.
@@ -66,6 +71,7 @@ export class GeminiParserService {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(bodyPayload),
+          signal: AbortSignal.timeout(20000),
         });
 
         if (response.status !== 429 && response.status !== 503) {
@@ -86,6 +92,7 @@ export class GeminiParserService {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyPayload),
+        signal: AbortSignal.timeout(20000),
       });
     };
 
@@ -147,7 +154,7 @@ ${BASE_SYSTEM_INSTRUCTION}
 Your job is to parse spoken voice inputs quickly and accurately.
 - If the user asks what you can do, set "intent" to "CAPABILITIES_QUERY".
 - If the user asks a question about their budgets or finances, set "intent" to "FINANCE_CHAT".
-- If the input is unrelated, set "error" and "intent" to "OFF_TOPIC".
+- If the input is unrelated, set "intent" to "OFF_TOPIC".
 - If it is a financial movement, set "intent" to "TRANSACTION", map category_hint and source_hint to exact list names, and parse relative dates into date_hint.
 `;
 
@@ -190,10 +197,6 @@ Your job is to parse spoken voice inputs quickly and accurately.
               type: 'STRING',
               description: 'Temporal mention or null if omitted (e.g. "yesterday", "today").',
             },
-            error: {
-              type: 'STRING',
-              description: 'Set to "OFF_TOPIC" if user input is unrelated to finance or capabilities.',
-            },
             intent: {
               type: 'STRING',
               enum: ['TRANSACTION', 'FINANCE_CHAT', 'CAPABILITIES_QUERY', 'OFF_TOPIC'],
@@ -221,7 +224,7 @@ Your job is to parse spoken voice inputs quickly and accurately.
       return parsed;
     } catch (e: any) {
       console.error('[GeminiParserService] Error parsing transcript:', e);
-      throw e;
+      throw this.isTimeoutError(e) ? new Error('TIMEOUT') : e;
     }
   }
 
@@ -315,7 +318,7 @@ You are an expert OCR vision scanner for purchase receipts and invoices.
       return parsed;
     } catch (e: any) {
       console.error('[GeminiParserService] Error parsing image receipt:', e);
-      throw e;
+      throw this.isTimeoutError(e) ? new Error('TIMEOUT') : e;
     }
   }
 
@@ -443,7 +446,7 @@ RESPONSE RULES:
       return response;
     } catch (e: any) {
       console.error('[GeminiParserService] Error in chatWithAdvisor:', e);
-      throw e;
+      throw this.isTimeoutError(e) ? new Error('TIMEOUT') : e;
     }
   }
 }
