@@ -19,6 +19,7 @@ import {
   Bot,
   User,
   Paperclip,
+  Image as ImageIcon,
   X,
   Loader2,
   Volume2,
@@ -29,7 +30,10 @@ export default function Intelligence() {
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [selectedImage, setSelectedImage] = useState<{ base64: string; mimeType: string; previewUrl: string } | null>(null);
+  const [attachError, setAttachError] = useState<string | null>(null);
+  const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -51,7 +55,6 @@ export default function Intelligence() {
     startListening,
     stopListening,
     sendChatMessage,
-    processReceiptImage,
     confirmAndSave,
     saveApiKey,
     clearParsedTx,
@@ -109,7 +112,17 @@ export default function Intelligence() {
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    // Limpia el input para poder volver a seleccionar el mismo archivo si se rechaza.
+    e.target.value = '';
     if (!file) return;
+
+    // El atributo accept="image/*" es solo una sugerencia del navegador (algunos la ignoran
+    // o permiten "todos los archivos"), así que se valida también el mimetype real del archivo.
+    if (!file.type.startsWith('image/')) {
+      setAttachError('Solo se pueden adjuntar imágenes.');
+      return;
+    }
+    setAttachError(null);
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -140,22 +153,6 @@ export default function Intelligence() {
     setSelectedImage(null);
 
     await sendChatMessage(msgText, imgPayload);
-  };
-
-  const handleDirectReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        const [header, base64] = dataUrl.split(',');
-        const mimeType = header.match(/:(.*?);/)?.[1] || file.type || 'image/jpeg';
-        await processReceiptImage(base64, mimeType);
-      }
-    };
-    reader.readAsDataURL(file);
   };
 
   // Contenido del header del modal: resumen visual de la transacción detectada
@@ -242,20 +239,6 @@ export default function Intelligence() {
                 {voiceReplyEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
                 <span className="hidden sm:inline">Leer respuestas</span>
               </button>
-
-              {/* Opción de subir foto de recibo directamente */}
-              <label className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100/80 text-indigo-600 rounded-xl text-[11px] font-bold cursor-pointer transition-colors">
-                <Camera className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Escanear Recibo</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  onChange={handleDirectReceiptUpload}
-                  disabled={isProcessing}
-                />
-              </label>
 
               <div className="flex items-center gap-1.5">
                 <Globe className="w-3.5 h-3.5 text-gray-400" />
@@ -351,6 +334,9 @@ export default function Intelligence() {
 
           {/* Formulario de envío */}
           <form onSubmit={handleSendChat} className="space-y-2 pt-2 border-t border-gray-100">
+            {attachError && (
+              <p className="text-[10px] text-rose-500 font-semibold">{attachError}</p>
+            )}
             {selectedImage && (
               <div className="relative inline-block">
                 <img
@@ -376,14 +362,53 @@ export default function Intelligence() {
                 className="hidden"
                 onChange={handleImageSelect}
               />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer min-h-[44px] flex items-center justify-center"
-                title="Adjuntar foto de recibo o imagen"
-              >
-                <Paperclip className="w-5 h-5" />
-              </button>
+              <input
+                type="file"
+                ref={cameraInputRef}
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleImageSelect}
+              />
+
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsAttachMenuOpen((prev) => !prev)}
+                  className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer min-h-[44px] flex items-center justify-center"
+                  title="Adjuntar imagen"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </button>
+
+                {isAttachMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setIsAttachMenuOpen(false)} />
+                    <div className="absolute bottom-full left-0 mb-2 z-20 bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden min-w-[160px]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          fileInputRef.current?.click();
+                          setIsAttachMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-xs font-semibold text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors cursor-pointer"
+                      >
+                        <ImageIcon className="w-4 h-4" /> Subir foto
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          cameraInputRef.current?.click();
+                          setIsAttachMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-xs font-semibold text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-t border-gray-50 cursor-pointer"
+                      >
+                        <Camera className="w-4 h-4" /> Tomar foto
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
 
               <input
                 type="text"
@@ -391,7 +416,7 @@ export default function Intelligence() {
                 onChange={(e) => setChatInput(e.target.value)}
                 placeholder="Escribe o presiona el micrófono..."
                 disabled={isProcessing}
-                className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-gray-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all min-h-[44px]"
+                className="flex-1 min-w-0 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-gray-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all min-h-[44px]"
               />
 
               {isSupported && (
