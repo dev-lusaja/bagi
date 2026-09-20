@@ -7,9 +7,14 @@ interface BagiIARingProps {
   state: BagiIARingState;
   onClick: () => void;
   disabled?: boolean;
+  /** Nivel de volumen de voz (0-1), solo se usa mientras state === 'listening'. */
+  audioLevel?: number;
 }
 
-export default function BagiIARing({ state, onClick, disabled }: BagiIARingProps) {
+export default function BagiIARing({ state, onClick, disabled, audioLevel = 0 }: BagiIARingProps) {
+  // Destello tipo ecualizador: el aro crece con el volumen de la voz mientras escucha.
+  const listeningScale = state === 'listening' ? 1 + audioLevel * 0.25 : 1;
+
   return (
     <button
       type="button"
@@ -24,19 +29,20 @@ export default function BagiIARing({ state, onClick, disabled }: BagiIARingProps
         state === 'processing' && "bg-amber-50 shadow-[0_0_40px_rgba(245,158,11,0.4)]",
         state === 'speaking' && "bg-violet-50 shadow-[0_0_40px_rgba(124,58,237,0.4)]"
       )}
+      style={{
+        transform: `scale(${listeningScale})`,
+        transition: 'transform 75ms ease-out',
+      }}
     >
       {/* El aro de color (borde animado) */}
       <div
         className={clsx(
-          "absolute inset-0 rounded-full border-[6px] transition-colors duration-500",
-          state === 'idle' && "border-transparent",
+          "absolute inset-0 rounded-full border-[6px]",
+          state === 'idle' && "border-transparent transition-colors duration-500",
           state === 'listening' && "border-cyan-400 border-t-cyan-200 border-r-cyan-200 animate-spin",
-          state === 'processing' && "border-amber-400 border-t-amber-200 border-l-amber-200 animate-[spin_0.5s_linear_infinite]",
-          state === 'speaking' && "border-violet-500 border-opacity-80 animate-pulse"
+          state === 'processing' && "border-amber-400 border-t-amber-200 border-l-amber-200 animate-[spin_0.5s_linear_infinite] transition-colors duration-500",
+          state === 'speaking' && "border-violet-500 border-opacity-80 animate-pulse transition-colors duration-500"
         )}
-        style={{
-          // Custom animation speed/direction adjustment for the spin if needed
-        }}
       />
       
       {/* Icono central */}

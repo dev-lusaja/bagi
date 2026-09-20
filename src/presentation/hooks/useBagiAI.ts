@@ -1,16 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { voiceService } from '../../services/VoiceService';
 import { geminiParserService, ParsedTransaction } from '../../services/GeminiParserService';
 
-export type BagiAIErrorType = 
-  | 'SPEECH_NOT_SUPPORTED' 
-  | 'NO_API_KEY' 
-  | 'QUOTA_EXHAUSTED' 
-  | 'INVALID_API_KEY' 
-  | 'OFF_TOPIC' 
-  | 'NO_SPEECH_DETECTED' 
-  | 'GENERIC_ERROR' 
+export type BagiAIErrorType =
+  | 'SPEECH_NOT_SUPPORTED'
+  | 'NO_API_KEY'
+  | 'QUOTA_EXHAUSTED'
+  | 'INVALID_API_KEY'
+  | 'OFF_TOPIC'
+  | 'NO_SPEECH_DETECTED'
+  | 'MIC_PERMISSION_DENIED'
+  | 'NO_MICROPHONE'
+  | 'TIMEOUT_ERROR'
+  | 'GENERIC_ERROR'
   | null;
 
 export interface MappedTransaction {
@@ -21,6 +24,7 @@ export interface MappedTransaction {
   account_id: number | null;
   card_id: number | null;
   date: string;
+  source?: 'voice' | 'chat';
 }
 
 export interface ChatMessage {
@@ -35,11 +39,14 @@ export interface ChatMessage {
 export function useBagiAI(onApiKeyMissing: () => void) {
   const { service } = useBudget();
   const [apiKey, setApiKey] = useState<string>('');
+  const [isPreparing, setIsPreparing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [error, setError] = useState<BagiAIErrorType>(null);
   const [transcript, setTranscript] = useState('');
+  const [audioLevel, setAudioLevel] = useState(0);
+  const stopLevelMeterRef = useRef<(() => void) | null>(null);
   const [lang, setLang] = useState('es-CO'); // Default
   const [parsedTx, setParsedTx] = useState<MappedTransaction | null>(null);
 
@@ -103,10 +110,27 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     const timeoutId = setTimeout(() => {
       console.warn('[useBagiAI] isSpeaking watchdog triggered - resetting state');
       setIsSpeaking(false);
-    }, 15000);
+    }, 30000);
 
     return () => clearTimeout(timeoutId);
   }, [isSpeaking]);
+
+  // Watchdog para evitar que la UI quede colgada si SpeechRecognition nunca dispara
+  // onstart/onresult/onerror/onend (permiso de mic atascado, tab en background, etc.)
+  useEffect(() => {
+    if (!isPreparing && !isRecording) return;
+
+    const timeoutId = setTimeout(() => {
+      console.warn('[useBagiAI] isPreparing/isRecording watchdog triggered - resetting state');
+      voiceService.stop();
+      stopLevelMeter();
+      setIsPreparing(false);
+      setIsRecording(false);
+      setError('GENERIC_ERROR');
+    }, 15000);
+
+    return () => clearTimeout(timeoutId);
+  }, [isPreparing, isRecording]);
 
   const saveApiKey = (key: string) => {
     localStorage.setItem('bagi_gemini_api_key', key);
@@ -121,7 +145,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
   };
 
   // Maps text strings to database records
-  const mapGeminiOutput = (parsed: ParsedTransaction): MappedTransaction => {
+  const mapGeminiOutput = (parsed: ParsedTransaction, source: 'voice' | 'chat' = 'voice'): MappedTransaction => {
     // 1. Map Category
     let category_id: number | null = null;
     const catHint = parsed.category_hint.toLowerCase().trim();
@@ -165,6 +189,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     const now = new Date();
     let finalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0).toISOString();
     const dateHint = parsed.date_hint?.toLowerCase().trim();
+
     if (dateHint) {
       const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
       if (dateHint.includes('ayer')) {
@@ -173,6 +198,14 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       } else if (dateHint.includes('antier') || dateHint.includes('hace 2 dias') || dateHint.includes('hace 2 días')) {
         d.setDate(d.getDate() - 2);
         finalDate = d.toISOString();
+      } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateHint)) {
+        // DD/MM/YYYY
+        const [day, month, year] = dateHint.split('/').map(Number);
+        finalDate = new Date(year, month - 1, day, 12, 0, 0).toISOString();
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateHint)) {
+        // YYYY-MM-DD
+        const [year, month, day] = dateHint.split('-').map(Number);
+        finalDate = new Date(year, month - 1, day, 12, 0, 0).toISOString();
       }
     }
 
@@ -183,7 +216,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       category_id,
       account_id,
       card_id,
-      date: finalDate
+      date: finalDate,
+      source
     };
   };
 
@@ -205,9 +239,14 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         cards
       });
 
-      if (parsed.error === 'OFF_TOPIC' || parsed.intent === 'OFF_TOPIC') {
+      if (parsed.intent === 'OFF_TOPIC') {
         setError('OFF_TOPIC');
         setIsProcessing(false);
+        setIsSpeaking(true);
+        const notUnderstoodText = lang.startsWith('en')
+          ? "No pude entenderte. Por favor intenta de nuevo."
+          : "No pude entenderte. Por favor intenta de nuevo.";
+        voiceService.speak(notUnderstoodText, lang, () => setIsSpeaking(false));
         return;
       }
 
@@ -221,7 +260,15 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         return;
       }
 
-      const mapped = mapGeminiOutput(parsed);
+      if (parsed.intent !== 'TRANSACTION' || !parsed.amount) {
+        setError('OFF_TOPIC');
+        setIsProcessing(false);
+        setIsSpeaking(true);
+        voiceService.speak("No pude entenderte. Por favor intenta de nuevo.", lang, () => setIsSpeaking(false));
+        return;
+      }
+
+      const mapped = mapGeminiOutput(parsed, 'voice');
       setParsedTx(mapped);
     } catch (e: any) {
       console.error(e);
@@ -229,12 +276,19 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         setError('QUOTA_EXHAUSTED');
       } else if (e.message === 'INVALID_API_KEY') {
         setError('INVALID_API_KEY');
+      } else if (e.message === 'TIMEOUT') {
+        setError('TIMEOUT_ERROR');
       } else {
         setError('GENERIC_ERROR');
       }
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const stopLevelMeter = () => {
+    stopLevelMeterRef.current?.();
+    stopLevelMeterRef.current = null;
   };
 
   const startListening = () => {
@@ -252,30 +306,62 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     setError(null);
     setTranscript('');
     setParsedTx(null);
-    setIsRecording(true);
+    setIsPreparing(true);
+
+    // iOS Safari fix: desbloquea el audio context en el mismo gesto del usuario
+    // para que la síntesis de voz posterior no falle en silencio.
+    voiceService.unlockAudio();
+
+    stopLevelMeterRef.current = voiceService.startLevelMeter(setAudioLevel);
 
     voiceService.start(
       lang,
       (text) => {
+        stopLevelMeter();
+        setIsPreparing(false);
+        setIsRecording(false);
         setTranscript(text);
         parseText(text);
       },
       (err) => {
+        stopLevelMeter();
+        setIsPreparing(false);
         setIsRecording(false);
         if (err.error === 'no-speech') {
           setError('NO_SPEECH_DETECTED');
+        } else if (err.error === 'not-allowed') {
+          setError('MIC_PERMISSION_DENIED');
+        } else if (err.error === 'audio-capture') {
+          setError('NO_MICROPHONE');
         } else {
           console.warn('[useBagiAI] Speech recognition error callback', err);
+          setError('GENERIC_ERROR');
         }
       },
       () => {
+        stopLevelMeter();
+        setIsPreparing(false);
         setIsRecording(false);
+      },
+      () => {
+        // onstart dispara antes de que el engine empiece a capturar audio de verdad
+        // (arranque interno del stream, ~300-500ms). Sin este margen se pierden las
+        // primeras palabras si el usuario habla apenas ve "Escuchando...".
+        setTimeout(() => {
+          setIsPreparing((wasPreparing) => {
+            if (!wasPreparing) return wasPreparing; // ya se canceló (stopListening corrió antes)
+            setIsRecording(true);
+            return false;
+          });
+        }, 500);
       }
     );
   };
 
   const stopListening = () => {
     voiceService.stop();
+    stopLevelMeter();
+    setIsPreparing(false);
     setIsRecording(false);
   };
 
@@ -327,8 +413,12 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       );
 
       let mapped: MappedTransaction | undefined = undefined;
-      if (response.extractedTransaction) {
-        mapped = mapGeminiOutput(response.extractedTransaction);
+      // Open modal when intent is TRANSACTION or when extractedTransaction is valid with an amount
+      if (
+        (response.intent === 'TRANSACTION' && response.extractedTransaction) ||
+        (response.extractedTransaction && response.extractedTransaction.amount > 0)
+      ) {
+        mapped = mapGeminiOutput(response.extractedTransaction, 'chat');
         setParsedTx(mapped);
       }
 
@@ -347,6 +437,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         setError('QUOTA_EXHAUSTED');
       } else if (e.message === 'INVALID_API_KEY') {
         setError('INVALID_API_KEY');
+      } else if (e.message === 'TIMEOUT') {
+        setError('TIMEOUT_ERROR');
       } else {
         setError('GENERIC_ERROR');
       }
@@ -381,7 +473,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         }
       );
 
-      const mapped = mapGeminiOutput(parsed);
+      const mapped = mapGeminiOutput(parsed, 'voice');
       setParsedTx(mapped);
     } catch (e: any) {
       console.error('[useBagiAI] Error in processReceiptImage:', e);
@@ -389,6 +481,8 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         setError('QUOTA_EXHAUSTED');
       } else if (e.message === 'INVALID_API_KEY') {
         setError('INVALID_API_KEY');
+      } else if (e.message === 'TIMEOUT') {
+        setError('TIMEOUT_ERROR');
       } else {
         setError('GENERIC_ERROR');
       }
@@ -427,6 +521,20 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       user_id: 1 // Default
     });
 
+    if (customTx.source === 'chat') {
+      const confirmMsg: ChatMessage = {
+        id: Date.now().toString(),
+        sender: 'assistant',
+        text: `Transacción registrada: ${customTx.description}`,
+        timestamp: new Date()
+      };
+      setChatMessages((prev) => [...prev, confirmMsg]);
+    }
+
+    // Refresh transactions list
+    const updatedTxs = await service.getTransactions();
+    setRecentTransactions(updatedTxs as any);
+
     // Reset state after saving
     setParsedTx(null);
     setTranscript('');
@@ -435,11 +543,13 @@ export function useBagiAI(onApiKeyMissing: () => void) {
   return {
     isSupported: voiceService.isSupported(),
     apiKey,
+    isPreparing,
     isRecording,
     isProcessing,
     isSpeaking,
     error,
     transcript,
+    audioLevel,
     parsedTx,
     chatMessages,
     lang,

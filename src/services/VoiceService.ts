@@ -10,18 +10,29 @@ export class VoiceService {
     lang: string, 
     onResult: (text: string) => void, 
     onError: (error: any) => void, 
-    onEnd: () => void
+    onEnd: () => void,
+    onStart?: () => void
   ) {
     if (!this.isSupported()) {
       onError(new Error('SPEECH_NOT_SUPPORTED'));
       return;
     }
 
+    // Evita dos instancias de reconocimiento corriendo en paralelo si el usuario
+    // toca el botón dos veces seguido antes de que termine la sesión anterior.
+    this.stop();
+
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     this.recognition = new SpeechRecognition();
     this.recognition.continuous = false;
     this.recognition.interimResults = false;
     this.recognition.lang = lang;
+
+    if (onStart) {
+      this.recognition.onstart = () => {
+        onStart();
+      };
+    }
 
     this.recognition.onresult = (event: any) => {
       if (event.results && event.results.length > 0) {
@@ -57,6 +68,27 @@ export class VoiceService {
       }
       this.recognition = null;
     }
+  }
+
+  /**
+   * Anima el botón como un ecualizador mientras se escucha. No lee el micrófono real:
+   * abrir un segundo stream de audio en paralelo al que usa SpeechRecognition
+   * internamente causaba conflicto de audio (lag y captura tardía de la voz real).
+   * Devuelve una función para detener la animación.
+   */
+  startLevelMeter(onLevel: (level: number) => void): () => void {
+    let current = 0;
+    const tick = () => {
+      current += (Math.random() - current) * 0.15;
+      onLevel(current);
+      rafId = requestAnimationFrame(tick);
+    };
+    let rafId: number = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      onLevel(0);
+    };
   }
 
   /**
@@ -115,12 +147,12 @@ export class VoiceService {
       }
     };
 
-    // Estimar el tiempo de lectura (80ms por carácter o mínimo 3 segundos) + margen de seguridad de 2 segundos
-    const estimatedMs = Math.max(text.length * 80, 3000);
+    // Estimar el tiempo de lectura (150ms por carácter o mínimo 10 segundos) + margen de seguridad de 5 segundos
+    const estimatedMs = Math.max(text.length * 150, 10000);
     const timeoutId = setTimeout(() => {
       console.warn('[VoiceService] speak timeout triggered (fallback)');
       safeEnd();
-    }, estimatedMs + 2000);
+    }, estimatedMs + 5000);
 
     // iOS Safari bug fix: periodic resume prevents iOS Safari speech synthesis from pausing silently
     resumeInterval = setInterval(() => {
@@ -134,8 +166,12 @@ export class VoiceService {
       safeEnd();
     };
 
-    utterance.onerror = (event) => {
-      console.error('[VoiceService] Speech synthesis error', event);
+    utterance.onerror = (event: any) => {
+      if (event.error === 'interrupted' || event.error === 'canceled') {
+        console.debug('[VoiceService] Speech synthesis playback interrupted or canceled', event);
+      } else {
+        console.error('[VoiceService] Speech synthesis error', event);
+      }
       clearTimeout(timeoutId);
       safeEnd();
     };

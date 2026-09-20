@@ -12,6 +12,7 @@
     "code:map": "./scripts/code-skeleton.sh"
   },
   "dependencies": {
+    "@huggingface/transformers": "4.0.1",
     "@sentry/react": "^10.60.0",
     "@types/gapi": "^0.0.47",
     "@types/gapi.auth2": "^0.0.61",
@@ -20,10 +21,10 @@
     "lucide-react": "^1.6.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
     "recharts": "^3.8.1",
     "sql.js": "^1.14.1",
-    "vite": "^5.4.10",
-    "@huggingface/transformers": "4.0.1"
+    "vite": "^5.4.10"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
