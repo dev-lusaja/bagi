@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useBagiAI, MappedTransaction } from '../hooks/useBagiAI';
-import { voiceService } from '../../services/VoiceService';
 import BagiActionModal from '../components/BagiActionModal';
 import TransactionConfirmForm from '../components/TransactionConfirmForm';
 import GeminiKeyModal from '../components/GeminiKeyModal';
@@ -12,12 +11,9 @@ import {
   Globe,
   Key,
   Info,
-  ArrowRight,
   TrendingDown,
   TrendingUp,
   ArrowLeftRight,
-  Mic,
-  MessageSquare,
   Send,
   Camera,
   Bot,
@@ -25,11 +21,12 @@ import {
   Paperclip,
   X,
   Loader2,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 
 export default function Intelligence() {
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'voice' | 'chat'>('voice');
   const [chatInput, setChatInput] = useState('');
   const [selectedImage, setSelectedImage] = useState<{ base64: string; mimeType: string; previewUrl: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,7 +40,6 @@ export default function Intelligence() {
     isProcessing,
     isSpeaking,
     error,
-    transcript,
     audioLevel,
     parsedTx,
     chatMessages,
@@ -54,12 +50,13 @@ export default function Intelligence() {
     cards,
     startListening,
     stopListening,
-    parseTextDirectly,
     sendChatMessage,
     processReceiptImage,
     confirmAndSave,
     saveApiKey,
     clearParsedTx,
+    voiceReplyEnabled,
+    toggleVoiceReply,
   } = useBagiAI(() => setIsKeyModalOpen(true));
 
   // ─── Estado del modal de confirmación ───
@@ -67,14 +64,11 @@ export default function Intelligence() {
   const [editedTx, setEditedTx] = useState<MappedTransaction | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaveSuccess, setIsSaveSuccess] = useState(false);
-  const [isConfirmSpeaking, setIsConfirmSpeaking] = useState(false);
 
   // Auto-scroll en el chat cuando hay nuevos mensajes
   useEffect(() => {
-    if (activeTab === 'chat') {
-      chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatMessages, activeTab, isProcessing]);
+    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, isProcessing]);
 
   // Abre el modal en cuanto Gemini retorna una transacción parseada
   useEffect(() => {
@@ -96,39 +90,20 @@ export default function Intelligence() {
     clearParsedTx();
   }, [clearParsedTx]);
 
-  // Confirmación y guardado con feedback por voz
+  // Confirmación y guardado. El feedback por voz (si está activo) se dispara
+  // dentro de confirmAndSave, después de escribir el mensaje en el chat.
   const handleConfirmSave = async () => {
     if (!editedTx) return;
     setIsSaving(true);
     try {
       await confirmAndSave(editedTx);
       setIsSaveSuccess(true);
-
-      // Confirmación por voz (TTS) solo si el origen es por voz y no por chat
-      if (editedTx.source !== 'chat') {
-        const speechText = lang.startsWith('en')
-          ? `Done. I registered: ${editedTx.description}.`
-          : `Listo. Registré: ${editedTx.description}.`;
-
-        setIsConfirmSpeaking(true);
-        voiceService.speak(speechText, lang, () => setIsConfirmSpeaking(false));
-      }
-
       // El modal se auto-cierra solo (via BagiActionModal.successAutoCloseMs)
       // y llama a handleModalClose para limpiar el estado.
     } catch (e) {
       console.error('[Intelligence] Error saving transaction:', e);
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const handleSuggestionClick = (phrase: string) => {
-    if (isRecording || isProcessing) return;
-    if (activeTab === 'chat') {
-      setChatInput(phrase);
-    } else {
-      parseTextDirectly(phrase);
     }
   };
 
@@ -182,13 +157,6 @@ export default function Intelligence() {
     };
     reader.readAsDataURL(file);
   };
-
-  const suggestions = [
-    { label: 'Gasto de Mercado', text: 'Gasté 45 mil en mercado con Visa' },
-    { label: 'Salario Recibido', text: 'Ingreso de salario por 2 millones en Bancolombia' },
-    { label: 'Consulta Presupuesto', text: '¿Cómo van mis presupuestos este mes y cuánto me queda por gastar?' },
-    { label: 'Gasto de Gasolina', text: 'Tanqueé el carro con gasolina por 80 mil con efectivo' },
-  ];
 
   // Contenido del header del modal: resumen visual de la transacción detectada
   const transactionHeaderContent = editedTx ? (
@@ -246,39 +214,9 @@ export default function Intelligence() {
         </div>
       )}
 
-      {/* ─── Selector de Modo (Tabs) ─── */}
-      <div className="flex items-center justify-between bg-gray-100/80 p-1.5 rounded-2xl max-w-md">
-        <button
-          type="button"
-          onClick={() => setActiveTab('voice')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-            activeTab === 'voice'
-              ? 'bg-white text-indigo-600 shadow-sm'
-              : 'text-gray-500 hover:text-gray-800'
-          }`}
-        >
-          <Mic className="w-4 h-4" />
-          Comando por Voz
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('chat')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-            activeTab === 'chat'
-              ? 'bg-white text-indigo-600 shadow-sm'
-              : 'text-gray-500 hover:text-gray-800'
-          }`}
-        >
-          <MessageSquare className="w-4 h-4" />
-          Chat Asesor Financiero
-        </button>
-      </div>
-
-      {/* ─── Área principal ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-start">
-
-        {/* ─ Columna izquierda: Modo Voz o Modo Chat ─ */}
-        <div className="lg:col-span-7 bg-white p-4 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-6 flex flex-col justify-between min-h-[480px]">
+      {/* ─── Panel único: chat + voz unificados ─── */}
+      <div className="max-w-3xl mx-auto w-full">
+        <div className="bg-white p-4 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4 flex flex-col min-h-[520px]">
 
           {/* Header de controles e indicador de estado */}
           <div className="w-full flex justify-between items-center px-2 border-b border-gray-50 pb-3">
@@ -290,6 +228,21 @@ export default function Intelligence() {
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Toggle de respuesta por voz */}
+              <button
+                type="button"
+                onClick={toggleVoiceReply}
+                title={voiceReplyEnabled ? 'Desactivar respuesta por voz' : 'Activar respuesta por voz'}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold cursor-pointer transition-colors ${
+                  voiceReplyEnabled
+                    ? 'bg-violet-600 text-white hover:bg-violet-700'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+              >
+                {voiceReplyEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                <span className="hidden sm:inline">Leer respuestas</span>
+              </button>
+
               {/* Opción de subir foto de recibo directamente */}
               <label className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100/80 text-indigo-600 rounded-xl text-[11px] font-bold cursor-pointer transition-colors">
                 <Camera className="w-3.5 h-3.5" />
@@ -318,178 +271,152 @@ export default function Intelligence() {
             </div>
           </div>
 
-          {/* VISTA 1: COMANDO POR VOZ */}
-          {activeTab === 'voice' && (
-            <div className="flex flex-col items-center justify-center space-y-6 py-6 flex-1">
-              <BagiIARing
-                state={(isSpeaking || isConfirmSpeaking) ? 'speaking' : isProcessing ? 'processing' : (isRecording || isPreparing) ? 'listening' : 'idle'}
-                onClick={(isRecording || isPreparing) ? stopListening : startListening}
-                disabled={isProcessing || !isSupported || isSpeaking || isConfirmSpeaking}
-                audioLevel={audioLevel}
-              />
-
-              <div className="text-center">
-                <h3 className="text-lg font-bold text-gray-800">
-                  {(isSpeaking || isConfirmSpeaking)
-                    ? 'Respondiendo...'
-                    : isPreparing
-                    ? 'Preparando micrófono...'
-                    : isRecording
-                    ? '¡Estoy listo! Escuchando tu voz...'
-                    : isProcessing
-                    ? 'Bagi IA procesando...'
-                    : 'Hablar con Bagi IA'}
-                </h3>
-                <p className="text-xs text-gray-400 mt-1 max-w-[280px]">
-                  {(isSpeaking || isConfirmSpeaking)
-                    ? 'Escucha la respuesta de Bagi IA.'
-                    : isPreparing
-                    ? 'Iniciando captura de audio del navegador...'
-                    : isRecording
-                    ? 'Habla ahora. Di los detalles y presiona el botón para finalizar.'
-                    : isProcessing
-                    ? 'Extrayendo datos de la transacción.'
-                    : isSupported
-                    ? 'Presiona el botón para iniciar grabación por voz.'
-                    : 'Esta feature requiere micrófono en Chrome/Edge.'}
+          {/* Mensajes del chat */}
+          <div className="flex-1 overflow-y-auto max-h-[420px] space-y-3 pr-1">
+            {chatMessages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center text-center py-10 space-y-2 text-gray-400">
+                <Bot className="w-10 h-10 text-indigo-400 animate-bounce" />
+                <p className="text-xs font-semibold text-gray-600">¡Hola! Soy Bagi IA, tu asistente financiero</p>
+                <p className="text-[11px] max-w-xs text-gray-400 leading-relaxed">
+                  Escribe o presiona el micrófono para registrar un gasto, un ingreso, o preguntarme sobre tus presupuestos.
                 </p>
               </div>
-
-              {/* Preview de transcripción */}
-              {transcript && (
-                <div className="w-full bg-gray-50 border border-gray-100 p-4 rounded-2xl text-center max-w-[480px]">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Transcripción</p>
-                  <p className="text-sm font-medium text-gray-600 italic">"{transcript}"</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* VISTA 2: CHAT CON ASESOR FINANCIERO */}
-          {activeTab === 'chat' && (
-            <div className="flex flex-col flex-1 justify-between space-y-4">
-              {/* Mensajes del chat */}
-              <div className="flex-1 overflow-y-auto max-h-[360px] space-y-3 pr-1">
-                {chatMessages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center text-center py-10 space-y-2 text-gray-400">
-                    <Bot className="w-10 h-10 text-indigo-400 animate-bounce" />
-                    <p className="text-xs font-semibold text-gray-600">¡Hola! Soy tu Asesor Financiero Bagi IA</p>
-                    <p className="text-[11px] max-w-xs text-gray-400 leading-relaxed">
-                      Pregúntame sobre tus presupuestos, tus gastos recientes o sube una foto de tu recibo para analizarlo.
-                    </p>
-                  </div>
-                ) : (
-                  chatMessages.map((msg) => (
+            ) : (
+              chatMessages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    {msg.sender === 'assistant' && (
+                      <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 mt-1">
+                        <Bot className="w-4 h-4" />
+                      </div>
+                    )}
                     <div
-                      key={msg.id}
-                      className={`flex items-start gap-2.5 ${
-                        msg.sender === 'user' ? 'justify-end' : 'justify-start'
+                      className={`max-w-[82%] p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
+                        msg.sender === 'user'
+                          ? `bg-indigo-600 text-white rounded-br-none ${msg.failed ? 'ring-2 ring-rose-400' : ''}`
+                          : 'bg-gray-100 text-gray-800 rounded-bl-none'
                       }`}
                     >
-                      {msg.sender === 'assistant' && (
-                        <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 mt-1">
-                          <Bot className="w-4 h-4" />
-                        </div>
+                      {msg.imageUrl && (
+                        <img
+                          src={msg.imageUrl}
+                          alt="Adjunto"
+                          className="max-h-40 rounded-xl mb-2 object-cover border border-white/20"
+                        />
                       )}
-                      <div
-                        className={`max-w-[82%] p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
-                          msg.sender === 'user'
-                            ? 'bg-indigo-600 text-white rounded-br-none'
-                            : 'bg-gray-100 text-gray-800 rounded-bl-none'
-                        }`}
-                      >
-                        {msg.imageUrl && (
-                          <img
-                            src={msg.imageUrl}
-                            alt="Adjunto"
-                            className="max-h-40 rounded-xl mb-2 object-cover border border-white/20"
-                          />
-                        )}
-                        {msg.sender === 'assistant' ? (
-                          <div className="space-y-2 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_a]:underline [&_a]:text-indigo-600">
-                            <ReactMarkdown>{msg.text}</ReactMarkdown>
-                          </div>
-                        ) : (
-                          <p className="whitespace-pre-wrap">{msg.text}</p>
-                        )}
-                      </div>
-                      {msg.sender === 'user' && (
-                        <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center flex-shrink-0 mt-1">
-                          <User className="w-4 h-4" />
+                      {msg.sender === 'assistant' ? (
+                        <div className="space-y-2 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_a]:underline [&_a]:text-indigo-600">
+                          <ReactMarkdown>{msg.text}</ReactMarkdown>
                         </div>
+                      ) : (
+                        <p className="whitespace-pre-wrap">{msg.text}</p>
                       )}
                     </div>
-                  ))
-                )}
-                {isProcessing && (
-                  <div className="flex items-center gap-2 text-gray-400 text-xs italic p-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
-                    Bagi IA está analizando e ingresando tu consulta...
+                    {msg.sender === 'user' && (
+                      <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center flex-shrink-0 mt-1">
+                        <User className="w-4 h-4" />
+                      </div>
+                    )}
                   </div>
-                )}
-                <div ref={chatBottomRef} />
-              </div>
-
-              {/* Formulario de envío del chat */}
-              <form onSubmit={handleSendChat} className="space-y-2 pt-2 border-t border-gray-100">
-                {selectedImage && (
-                  <div className="relative inline-block">
-                    <img
-                      src={selectedImage.previewUrl}
-                      alt="Vista previa"
-                      className="h-16 w-16 object-cover rounded-xl border border-indigo-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setSelectedImage(null)}
-                      className="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full p-0.5 hover:bg-rose-600 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageSelect}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer min-h-[44px] flex items-center justify-center"
-                    title="Adjuntar foto de recibo o imagen"
-                  >
-                    <Paperclip className="w-5 h-5" />
-                  </button>
-
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Haz una pregunta o pide registrar un gasto..."
-                    disabled={isProcessing}
-                    className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-gray-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all min-h-[44px]"
-                  />
-
-                  <button
-                    type="submit"
-                    disabled={(!chatInput.trim() && !selectedImage) || isProcessing}
-                    className="p-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-200 text-white rounded-xl transition-all cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
-                  >
-                    <Send className="w-4 h-4" />
-                  </button>
+                  {msg.failed && (
+                    <p className="text-[10px] text-rose-500 font-semibold mt-1 mr-9">
+                      No se pudo procesar este mensaje. Revisa el error abajo y vuelve a intentar.
+                    </p>
+                  )}
                 </div>
-              </form>
-            </div>
+              ))
+            )}
+            {isProcessing && (
+              <div className="flex items-center gap-2 text-gray-400 text-xs italic p-2">
+                <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                Bagi IA está pensando...
+              </div>
+            )}
+            <div ref={chatBottomRef} />
+          </div>
+
+          {/* Indicador de estado de voz (micrófono / respuesta hablada) */}
+          {(isPreparing || isRecording || isSpeaking) && (
+            <p className="text-center text-[11px] font-semibold text-gray-400">
+              {isSpeaking
+                ? 'Leyendo la respuesta en voz alta...'
+                : isPreparing
+                ? 'Preparando micrófono...'
+                : '¡Estoy escuchando! Presiona el micrófono para finalizar.'}
+            </p>
           )}
+
+          {/* Formulario de envío */}
+          <form onSubmit={handleSendChat} className="space-y-2 pt-2 border-t border-gray-100">
+            {selectedImage && (
+              <div className="relative inline-block">
+                <img
+                  src={selectedImage.previewUrl}
+                  alt="Vista previa"
+                  className="h-16 w-16 object-cover rounded-xl border border-indigo-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => setSelectedImage(null)}
+                  className="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full p-0.5 hover:bg-rose-600 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageSelect}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer min-h-[44px] flex items-center justify-center"
+                title="Adjuntar foto de recibo o imagen"
+              >
+                <Paperclip className="w-5 h-5" />
+              </button>
+
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Escribe o presiona el micrófono..."
+                disabled={isProcessing}
+                className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-gray-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all min-h-[44px]"
+              />
+
+              {isSupported && (
+                <BagiIARing
+                  size="sm"
+                  state={isSpeaking ? 'speaking' : isProcessing ? 'processing' : (isRecording || isPreparing) ? 'listening' : 'idle'}
+                  onClick={(isRecording || isPreparing) ? stopListening : startListening}
+                  disabled={isProcessing || isSpeaking}
+                  audioLevel={audioLevel}
+                />
+              )}
+
+              <button
+                type="submit"
+                disabled={(!chatInput.trim() && !selectedImage) || isProcessing}
+                className="p-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-200 text-white rounded-xl transition-all cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </form>
 
           {/* Banner: API Key no configurada */}
           {!apiKey && (
-            <div className="w-full bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 max-w-[480px] flex items-center justify-between gap-3 text-left">
+            <div className="w-full bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 flex items-center justify-between gap-3 text-left">
               <div className="flex items-center gap-2">
                 <Info className="w-4 h-4 text-indigo-500" />
                 <span className="text-xs font-semibold text-indigo-950">Se requiere API Key para procesar</span>
@@ -506,7 +433,7 @@ export default function Intelligence() {
 
           {/* Alertas de error */}
           {error && (
-            <div className="w-full max-w-[480px] p-4 bg-rose-50 border border-rose-100 text-rose-800 text-xs font-semibold rounded-2xl flex items-start gap-2.5">
+            <div className="w-full p-4 bg-rose-50 border border-rose-100 text-rose-800 text-xs font-semibold rounded-2xl flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
               <div>
                 {error === 'QUOTA_EXHAUSTED' && (
@@ -519,12 +446,6 @@ export default function Intelligence() {
                   <>
                     <h5 className="font-extrabold">API Key Inválida</h5>
                     <p className="text-rose-700/90 mt-0.5">La clave ingresada no es válida. Por favor, re-configúrala.</p>
-                  </>
-                )}
-                {error === 'OFF_TOPIC' && (
-                  <>
-                    <h5 className="font-extrabold">Consulta fuera de tema</h5>
-                    <p className="text-rose-700/90 mt-0.5">Bagi IA solo procesa registros de transacciones financieras.</p>
                   </>
                 )}
                 {error === 'NO_SPEECH_DETECTED' && (
@@ -562,36 +483,6 @@ export default function Intelligence() {
           )}
 
         </div>
-
-        {/* ─ Columna derecha: Sugerencias (siempre visible) ─ */}
-        <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white p-4 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
-            <h3 className="text-xs sm:text-sm font-black uppercase text-gray-400 tracking-widest flex items-center gap-1.5">
-              <Info className="w-4 h-4 text-indigo-500 shrink-0" /> Ejemplos de uso
-            </h3>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Presiona cualquier sugerencia para simular el registro de forma instantánea:
-            </p>
-            <div className="flex flex-col gap-3">
-              {suggestions.map((s, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleSuggestionClick(s.text)}
-                  disabled={isRecording || isProcessing}
-                  className="p-3 text-left border border-gray-100 rounded-2xl hover:border-indigo-100 hover:bg-indigo-50/20 transition-all cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-indigo-500 group-hover:text-indigo-600">{s.label}</span>
-                    <ArrowRight className="w-3 h-3 text-gray-300 group-hover:text-indigo-500 transition-colors" />
-                  </div>
-                  <p className="text-xs font-medium text-gray-600 mt-1 italic">"{s.text}"</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
       </div>
 
       {/* ─── Modal de confirmación de transacción ─── */}

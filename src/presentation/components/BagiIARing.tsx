@@ -9,11 +9,14 @@ interface BagiIARingProps {
   disabled?: boolean;
   /** Nivel de volumen de voz (0-1), solo se usa mientras state === 'listening'. */
   audioLevel?: number;
+  /** 'lg' (default, orb centrado) o 'sm' (botón compacto junto al input de texto). */
+  size?: 'sm' | 'lg';
 }
 
-export default function BagiIARing({ state, onClick, disabled, audioLevel = 0 }: BagiIARingProps) {
+export default function BagiIARing({ state, onClick, disabled, audioLevel = 0, size = 'lg' }: BagiIARingProps) {
   // Destello tipo ecualizador: el aro crece con el volumen de la voz mientras escucha.
   const listeningScale = state === 'listening' ? 1 + audioLevel * 0.25 : 1;
+  const isSmall = size === 'sm';
 
   return (
     <button
@@ -21,7 +24,8 @@ export default function BagiIARing({ state, onClick, disabled, audioLevel = 0 }:
       onClick={onClick}
       disabled={disabled}
       className={clsx(
-        "relative w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300",
+        "relative rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0",
+        isSmall ? "w-12 h-12" : "w-32 h-32",
         "focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed",
         // Glowing box-shadow based on state
         state === 'idle' && "bg-gray-100/50 shadow-none hover:bg-gray-100",
@@ -37,7 +41,8 @@ export default function BagiIARing({ state, onClick, disabled, audioLevel = 0 }:
       {/* El aro de color (borde animado) */}
       <div
         className={clsx(
-          "absolute inset-0 rounded-full border-[6px]",
+          "absolute inset-0 rounded-full",
+          isSmall ? "border-[3px]" : "border-[6px]",
           state === 'idle' && "border-transparent transition-colors duration-500",
           state === 'listening' && "border-cyan-400 border-t-cyan-200 border-r-cyan-200 animate-spin",
           state === 'processing' && "border-amber-400 border-t-amber-200 border-l-amber-200 animate-[spin_0.5s_linear_infinite] transition-colors duration-500",
@@ -54,9 +59,9 @@ export default function BagiIARing({ state, onClick, disabled, audioLevel = 0 }:
         state === 'speaking' && "text-violet-500"
       )}>
         {state === 'processing' ? (
-          <RefreshCw className="w-10 h-10 animate-spin" />
+          <RefreshCw className={clsx(isSmall ? "w-5 h-5" : "w-10 h-10", "animate-spin")} />
         ) : (
-          <Mic className="w-10 h-10" />
+          <Mic className={isSmall ? "w-5 h-5" : "w-10 h-10"} />
         )}
       </div>
     </button>

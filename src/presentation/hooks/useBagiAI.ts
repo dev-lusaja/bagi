@@ -8,7 +8,6 @@ export type BagiAIErrorType =
   | 'NO_API_KEY'
   | 'QUOTA_EXHAUSTED'
   | 'INVALID_API_KEY'
-  | 'OFF_TOPIC'
   | 'NO_SPEECH_DETECTED'
   | 'MIC_PERMISSION_DENIED'
   | 'NO_MICROPHONE'
@@ -24,7 +23,6 @@ export interface MappedTransaction {
   account_id: number | null;
   card_id: number | null;
   date: string;
-  source?: 'voice' | 'chat';
 }
 
 export interface ChatMessage {
@@ -34,7 +32,12 @@ export interface ChatMessage {
   timestamp: Date;
   imageUrl?: string;
   extractedTransaction?: MappedTransaction;
+  /** true si el request a Gemini falló para este mensaje: se excluye del historial de turnos futuros. */
+  failed?: boolean;
 }
+
+// Cantidad máxima de mensajes previos que se reenvían como historial en cada llamada a Gemini.
+const CHAT_HISTORY_LIMIT = 10;
 
 export function useBagiAI(onApiKeyMissing: () => void) {
   const { service } = useBudget();
@@ -59,6 +62,19 @@ export function useBagiAI(onApiKeyMissing: () => void) {
 
   // Chat message history
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
+  // Si está activo, las respuestas del asistente se leen en voz alta después de escribirse en el chat
+  const [voiceReplyEnabled, setVoiceReplyEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('bagi_voice_reply_enabled') === 'true';
+  });
+
+  const toggleVoiceReply = () => {
+    setVoiceReplyEnabled((prev) => {
+      const next = !prev;
+      localStorage.setItem('bagi_voice_reply_enabled', String(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     // Load metadata and current budget financial context
@@ -145,7 +161,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
   };
 
   // Maps text strings to database records
-  const mapGeminiOutput = (parsed: ParsedTransaction, source: 'voice' | 'chat' = 'voice'): MappedTransaction => {
+  const mapGeminiOutput = (parsed: ParsedTransaction): MappedTransaction => {
     // 1. Map Category
     let category_id: number | null = null;
     const catHint = parsed.category_hint.toLowerCase().trim();
@@ -216,74 +232,16 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       category_id,
       account_id,
       card_id,
-      date: finalDate,
-      source
+      date: finalDate
     };
   };
 
-  const parseText = async (text: string) => {
-    if (!apiKey) {
-      setError('NO_API_KEY');
-      onApiKeyMissing();
-      return;
-    }
-
-    setIsProcessing(true);
-    setError(null);
-    setParsedTx(null);
-
-    try {
-      const parsed = await geminiParserService.parse(text, apiKey, {
-        categories,
-        accounts,
-        cards
-      });
-
-      if (parsed.intent === 'OFF_TOPIC') {
-        setError('OFF_TOPIC');
-        setIsProcessing(false);
-        setIsSpeaking(true);
-        const notUnderstoodText = lang.startsWith('en')
-          ? "No pude entenderte. Por favor intenta de nuevo."
-          : "No pude entenderte. Por favor intenta de nuevo.";
-        voiceService.speak(notUnderstoodText, lang, () => setIsSpeaking(false));
-        return;
-      }
-
-      if (parsed.intent === 'CAPABILITIES_QUERY') {
-        setIsProcessing(false);
-        setIsSpeaking(true);
-        const capabilitiesText = lang.startsWith('en')
-          ? "Right now I can help you record your daily expenses, incomes, and transfers. Just tell me what you spent or received."
-          : "Actualmente puedo ayudarte a registrar tus gastos, ingresos y transferencias diarios. Solo dime qué gastaste o recibiste, y yo lo anotaré por ti.";
-        voiceService.speak(capabilitiesText, lang, () => setIsSpeaking(false));
-        return;
-      }
-
-      if (parsed.intent !== 'TRANSACTION' || !parsed.amount) {
-        setError('OFF_TOPIC');
-        setIsProcessing(false);
-        setIsSpeaking(true);
-        voiceService.speak("No pude entenderte. Por favor intenta de nuevo.", lang, () => setIsSpeaking(false));
-        return;
-      }
-
-      const mapped = mapGeminiOutput(parsed, 'voice');
-      setParsedTx(mapped);
-    } catch (e: any) {
-      console.error(e);
-      if (e.message === 'QUOTA_EXHAUSTED') {
-        setError('QUOTA_EXHAUSTED');
-      } else if (e.message === 'INVALID_API_KEY') {
-        setError('INVALID_API_KEY');
-      } else if (e.message === 'TIMEOUT') {
-        setError('TIMEOUT_ERROR');
-      } else {
-        setError('GENERIC_ERROR');
-      }
-    } finally {
-      setIsProcessing(false);
-    }
+  // Elimina marcado Markdown básico antes de pasar un texto al TTS (que lee símbolos literalmente).
+  const stripMarkdown = (text: string): string => {
+    return text
+      .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+      .replace(/[*_#`~]/g, '')
+      .trim();
   };
 
   const stopLevelMeter = () => {
@@ -321,7 +279,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         setIsPreparing(false);
         setIsRecording(false);
         setTranscript(text);
-        parseText(text);
+        sendChatMessage(text);
       },
       (err) => {
         stopLevelMeter();
@@ -390,11 +348,19 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     setChatMessages((prev) => [...prev, newUserMsg]);
 
     try {
-      // Build history payload for Gemini chat
-      const history = chatMessages.map((msg) => ({
-        role: msg.sender === 'user' ? ('user' as const) : ('model' as const),
-        parts: [{ text: msg.text }],
-      }));
+      // Build history payload for Gemini chat.
+      // Se excluyen los mensajes marcados como 'failed': quedaron sin respuesta del modelo,
+      // así que incluirlos rompería la alternancia user/model que espera la API de Gemini
+      // y haría que intentara responder ese turno fallido junto con el mensaje actual.
+      // Se limita a los últimos CHAT_HISTORY_LIMIT mensajes para acotar el costo/latencia
+      // en conversaciones largas (se pierde memoria de lo dicho hace rato, no del uso normal).
+      const history = chatMessages
+        .filter((msg) => !msg.failed)
+        .slice(-CHAT_HISTORY_LIMIT)
+        .map((msg) => ({
+          role: msg.sender === 'user' ? ('user' as const) : ('model' as const),
+          parts: [{ text: msg.text }],
+        }));
 
       const contextPayload = {
         categories,
@@ -413,12 +379,15 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       );
 
       let mapped: MappedTransaction | undefined = undefined;
-      // Open modal when intent is TRANSACTION or when extractedTransaction is valid with an amount
+      // Solo confiar en extractedTransaction cuando el intent es explícitamente TRANSACTION:
+      // Gemini puede rellenar ese campo con datos de ejemplos mencionados en el reply
+      // (p.ej. en la respuesta de CAPABILITIES_QUERY) aunque el usuario no pidió registrar nada.
       if (
-        (response.intent === 'TRANSACTION' && response.extractedTransaction) ||
-        (response.extractedTransaction && response.extractedTransaction.amount > 0)
+        response.intent === 'TRANSACTION' &&
+        response.extractedTransaction &&
+        response.extractedTransaction.amount > 0
       ) {
-        mapped = mapGeminiOutput(response.extractedTransaction, 'chat');
+        mapped = mapGeminiOutput(response.extractedTransaction);
         setParsedTx(mapped);
       }
 
@@ -431,8 +400,16 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       };
 
       setChatMessages((prev) => [...prev, assistantMsg]);
+
+      if (voiceReplyEnabled) {
+        setIsSpeaking(true);
+        voiceService.speak(stripMarkdown(response.reply), lang, () => setIsSpeaking(false));
+      }
     } catch (e: any) {
       console.error('[useBagiAI] Error in sendChatMessage:', e);
+      setChatMessages((prev) =>
+        prev.map((m) => (m.id === userMessageId ? { ...m, failed: true } : m))
+      );
       if (e.message === 'QUOTA_EXHAUSTED') {
         setError('QUOTA_EXHAUSTED');
       } else if (e.message === 'INVALID_API_KEY') {
@@ -473,7 +450,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         }
       );
 
-      const mapped = mapGeminiOutput(parsed, 'voice');
+      const mapped = mapGeminiOutput(parsed);
       setParsedTx(mapped);
     } catch (e: any) {
       console.error('[useBagiAI] Error in processReceiptImage:', e);
@@ -521,14 +498,18 @@ export function useBagiAI(onApiKeyMissing: () => void) {
       user_id: 1 // Default
     });
 
-    if (customTx.source === 'chat') {
-      const confirmMsg: ChatMessage = {
-        id: Date.now().toString(),
-        sender: 'assistant',
-        text: `Transacción registrada: ${customTx.description}`,
-        timestamp: new Date()
-      };
-      setChatMessages((prev) => [...prev, confirmMsg]);
+    const confirmText = `Transacción registrada: ${customTx.description}`;
+    const confirmMsg: ChatMessage = {
+      id: Date.now().toString(),
+      sender: 'assistant',
+      text: confirmText,
+      timestamp: new Date()
+    };
+    setChatMessages((prev) => [...prev, confirmMsg]);
+
+    if (voiceReplyEnabled) {
+      setIsSpeaking(true);
+      voiceService.speak(confirmText, lang, () => setIsSpeaking(false));
     }
 
     // Refresh transactions list
@@ -559,12 +540,13 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     cards,
     startListening,
     stopListening,
-    parseTextDirectly: parseText,
     sendChatMessage,
     processReceiptImage,
     confirmAndSave,
     saveApiKey,
     deleteApiKey,
-    clearParsedTx: () => setParsedTx(null)
+    clearParsedTx: () => setParsedTx(null),
+    voiceReplyEnabled,
+    toggleVoiceReply
   };
 }
