@@ -104,6 +104,12 @@ export class GoogleDriveAdapter {
                 }
                 resolve(this.accessToken!);
             };
+            // GIS calls error_callback (not callback) when the user closes the popup
+            // without finishing the flow, e.g. { type: 'popup_closed' }. Without this,
+            // the promise never settles and callers are stuck in a permanent loading state.
+            this.tokenClient.error_callback = (err: any) => {
+                reject(err);
+            };
             this.tokenClient.requestAccessToken({ prompt: 'consent' });
         });
     }

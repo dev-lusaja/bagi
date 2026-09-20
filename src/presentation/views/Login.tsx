@@ -9,6 +9,7 @@ export default function Login() {
   const { login, loginDemo, sessionExpired } = useBudget();
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
+  const [authIncomplete, setAuthIncomplete] = useState(false);
   const privacyRef = useRef<HTMLDivElement>(null);
   const methodologyRef = useRef<HTMLDivElement>(null);
   const aiRef = useRef<HTMLDivElement>(null);
@@ -24,6 +25,7 @@ export default function Login() {
 
   const handleLogin = async (provider: 'google' | 'onedrive') => {
     setLoading(true);
+    setAuthIncomplete(false);
     try {
       await login(provider);
     } catch (error: any) {
@@ -34,8 +36,8 @@ export default function Login() {
           'Las credenciales de Google OAuth (VITE_GOOGLE_CLIENT_ID) no están configuradas en las variables de entorno. Puedes explorar toda la aplicación usando el "Modo Demo".',
           'info'
         );
-      } else if (error?.error === 'popup_closed_by_user') {
-        showAlert('Acceso cancelado', 'Has cerrado la ventana de inicio de sesión de Google antes de completar la autorización.', 'info');
+      } else if (error?.error === 'popup_closed_by_user' || error?.type === 'popup_closed' || error?.type === 'popup_failed_to_open') {
+        setAuthIncomplete(true);
       } else {
         showAlert('Error de acceso', 'No pudimos conectar con tu cuenta de Google. Verifica tu conexión o intenta con el "Modo Demo".', 'error');
       }
@@ -76,14 +78,25 @@ export default function Login() {
                 <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-6">Acceder al Presupuesto</h2>
               </div>
 
-              {sessionExpired && (
+              {(sessionExpired || authIncomplete) && (
                 <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl flex items-start gap-3 text-sm animate-in fade-in slide-in-from-top-2 duration-300 w-full max-w-sm mx-auto">
                   <AlertCircle className="w-5 h-5 shrink-0 text-amber-500 mt-0.5" />
                   <div className="text-left">
-                    <p className="font-bold">Tu sesión ha expirado</p>
-                    <p className="text-xs text-amber-700/80 font-medium mt-0.5">
-                      Por seguridad, tu conexión con Google Drive se ha cerrado. Vuelve a iniciar sesión para continuar.
-                    </p>
+                    {sessionExpired ? (
+                      <>
+                        <p className="font-bold">Tu sesión ha expirado</p>
+                        <p className="text-xs text-amber-700/80 font-medium mt-0.5">
+                          Por seguridad, tu conexión con Google Drive se ha cerrado. Vuelve a iniciar sesión para continuar.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-bold">Inicio de sesión incompleto</p>
+                        <p className="text-xs text-amber-700/80 font-medium mt-0.5">
+                          Cerraste la ventana de Google antes de terminar. Completa la autenticación con Google para continuar.
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
