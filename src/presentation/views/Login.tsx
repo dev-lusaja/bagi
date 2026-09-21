@@ -68,7 +68,7 @@ export default function Login() {
               <img src="/logo_full.png" className="w-20 h-20 sm:w-32 sm:h-32 object-contain" alt="Bagi Logo" />
             </div>
             <p className="text-gray-500 text-base sm:text-lg font-bold max-w-xs mx-auto leading-tight">
-              Finanzas personales, sin servidores. <br/> Tu IA corre en tu dispositivo.
+              Finanzas personales, sin servidores propios. <br/>
             </p>
           </div>
 
@@ -162,7 +162,7 @@ export default function Login() {
                   <div className="flex justify-center text-purple-600 bg-white w-10 h-10 mx-auto rounded-xl items-center shadow-sm group-hover:scale-110 transition-transform"><Sparkles className="w-5 h-5" /></div>
                   <div>
                     <p className="text-[10px] font-black text-purple-900 uppercase tracking-widest mb-1">Bagi IA</p>
-                    <p className="text-[9px] text-purple-600/70 font-bold leading-tight">Alertas offline + Gemini</p>
+                    <p className="text-[9px] text-purple-600/70 font-bold leading-tight">Alertas locales + voz opcional</p>
                   </div>
               </div>
             </div>
@@ -199,26 +199,32 @@ export default function Login() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:shadow-2xl hover:shadow-purple-100/30 transition-all duration-500 group">
-              <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform">
-                <Mic className="w-7 h-7" />
-              </div>
-              <div className="space-y-3">
-                <h4 className="text-xl font-bold text-gray-800 tracking-tight">Registro por Voz</h4>
-                <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  Conecta tu propia API Key de Gemini de forma gratuita y registra tus transacciones simplemente hablando. <i>"Gasté 45 mil en mercado con Visa"</i>.
-                </p>
-              </div>
-            </div>
-
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:shadow-2xl hover:shadow-indigo-100/30 transition-all duration-500 group">
-              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
-                <Bot className="w-7 h-7" />
+              <div className="flex items-center justify-between">
+                <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
+                  <Bot className="w-7 h-7" />
+                </div>
+                <span className="text-[9px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full uppercase tracking-widest">100% Local</span>
               </div>
               <div className="space-y-3">
                 <h4 className="text-xl font-bold text-gray-800 tracking-tight">Alertas Inteligentes</h4>
                 <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  Un modelo open-source de Hugging Face corre directamente en tu navegador mediante WebAssembly. Analiza tus hábitos y te alerta sobre desvíos sin que tus datos toquen internet.
+                  Un modelo open-source corre directamente en tu navegador mediante WebAssembly. Detecta duplicados, gastos atípicos y vencimientos sin que tus datos toquen internet. Funciona siempre, sin configurar nada.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:shadow-2xl hover:shadow-purple-100/30 transition-all duration-500 group">
+              <div className="flex items-center justify-between">
+                <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform">
+                  <Mic className="w-7 h-7" />
+                </div>
+                <span className="text-[9px] font-black text-purple-700 bg-purple-50 border border-purple-100 px-2.5 py-1 rounded-full uppercase tracking-widest">Requiere proveedor</span>
+              </div>
+              <div className="space-y-3">
+                <h4 className="text-xl font-bold text-gray-800 tracking-tight">Voz y Chat</h4>
+                <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                  Conecta tu propia API Key gratuita de <b>Gemini</b> u <b>OpenRouter</b> y registra transacciones hablando o chateando. <i>"Gasté 45 mil en mercado con Visa"</i>. Tú decides si compartes tus datos: esta función es opcional.
                 </p>
               </div>
             </div>
@@ -269,7 +275,7 @@ export default function Login() {
               <div className="space-y-3">
                 <h4 className="text-xl font-bold text-gray-800 tracking-tight">Control Total</h4>
                 <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  No existen bases de datos centrales. Las alertas inteligentes corren en tu navegador vía WebAssembly — sin internet. Si activas Bagi IA con Gemini, solo tu API Key sale de tu dispositivo, nunca tus datos financieros.
+                  No existen bases de datos centrales. Las alertas inteligentes corren en tu navegador vía WebAssembly — sin internet. La voz y el chat son opcionales: solo si los activas, tu mensaje y el contexto necesario (categorías, cuentas, movimientos recientes) viajan directo a Gemini u OpenRouter con tu propia API Key — nunca pasan por un servidor de Bagi. Tú decides si compartes esos datos.
                 </p>
               </div>
             </div>

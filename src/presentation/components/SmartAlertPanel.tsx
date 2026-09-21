@@ -319,7 +319,21 @@ export default function SmartAlertPanel({
                   </div>
                   <p className="text-xs text-gray-600 leading-relaxed">{alert.message}</p>
                 </div>
-                <div className="flex flex-col gap-1 shrink-0">
+                <div className="flex items-center gap-0.5 shrink-0">
+                  <button
+                    onClick={() => handleFeedback(alert, true)}
+                    className="p-1 rounded text-emerald-400 hover:bg-emerald-50 transition-colors"
+                    title="Esta alerta es útil"
+                  >
+                    <ThumbsUp className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleFeedback(alert, false)}
+                    className="p-1 rounded text-rose-400 hover:bg-rose-50 transition-colors"
+                    title="Esta alerta no es útil"
+                  >
+                    <ThumbsDown className="w-3.5 h-3.5" />
+                  </button>
                   <button
                     onClick={() => dismiss(alert.id)}
                     className="p-1 rounded-lg text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all"
@@ -327,22 +341,6 @@ export default function SmartAlertPanel({
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
-                  <div className="flex gap-0.5 mt-2">
-                    <button
-                      onClick={() => handleFeedback(alert, true)}
-                      className="p-1 rounded text-emerald-400 hover:bg-emerald-50 transition-colors"
-                      title="Esta alerta es útil"
-                    >
-                      <ThumbsUp className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleFeedback(alert, false)}
-                      className="p-1 rounded text-rose-400 hover:bg-rose-50 transition-colors"
-                      title="Esta alerta no es útil"
-                    >
-                      <ThumbsDown className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
                 </div>
               </div>
             );

@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, AlertOctagon, TrendingUp, HelpCircle, AlertCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, AlertOctagon, TrendingUp, HelpCircle, AlertCircle, BarChart3, Home, CreditCard } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 
 interface Props {
@@ -133,7 +133,6 @@ export default function BudgetDiagnosticWidget({
           name: 'Consumo Variable (Límites)',
           diff: variableSpent - variablePlan,
           pct: variablePct,
-          icon: '📊',
         });
       }
       if (obligationsActualPaid > obligationsPlan) {
@@ -141,7 +140,6 @@ export default function BudgetDiagnosticWidget({
           name: 'Obligaciones (Servicios y Deudas)',
           diff: obligationsActualPaid - obligationsPlan,
           pct: obligationsPct,
-          icon: '🏠',
         });
       }
       if (cardsSpent > cardsPlan) {
@@ -149,7 +147,6 @@ export default function BudgetDiagnosticWidget({
           name: 'Tarjetas de Crédito (Reservas)',
           diff: cardsSpent - cardsPlan,
           pct: cardsPct,
-          icon: '💳',
         });
       }
 
@@ -158,7 +155,7 @@ export default function BudgetDiagnosticWidget({
         if (item.name === 'Consumo Variable (Límites)') {
           return (
             <span>
-              📊 Tu <strong className="font-extrabold text-orange-700">Consumo Variable</strong> se excedió en{' '}
+              <BarChart3 className="w-4 h-4 inline -mt-0.5 mr-1" /> Tu <strong className="font-extrabold text-orange-700">Consumo Variable</strong> se excedió en{' '}
               <strong className="font-extrabold">{formatCurrency(item.diff, currency)}</strong> ({item.pct}%).{' '}
               Sugerimos recortar tus límites de consumos variables no esenciales este mes para amortiguar el impacto.
             </span>
@@ -166,7 +163,7 @@ export default function BudgetDiagnosticWidget({
         } else if (item.name === 'Obligaciones (Servicios y Deudas)') {
           return (
             <span>
-              🏠 Tus <strong className="font-extrabold text-orange-700">Obligaciones</strong> se excedieron en{' '}
+              <Home className="w-4 h-4 inline -mt-0.5 mr-1" /> Tus <strong className="font-extrabold text-orange-700">Obligaciones</strong> se excedieron en{' '}
               <strong className="font-extrabold">{formatCurrency(item.diff, currency)}</strong> ({item.pct}%).{' '}
               Al ser gastos fijos, te sugerimos recortar tus límites de consumos variables o ajustar tus reservas de tarjetas para absorber esta diferencia sin salirte de tu presupuesto.
             </span>
@@ -174,7 +171,7 @@ export default function BudgetDiagnosticWidget({
         } else {
           return (
             <span>
-              💳 Tu reserva de <strong className="font-extrabold text-orange-700">Tarjetas</strong> se excedió en{' '}
+              <CreditCard className="w-4 h-4 inline -mt-0.5 mr-1" /> Tu reserva de <strong className="font-extrabold text-orange-700">Tarjetas</strong> se excedió en{' '}
               <strong className="font-extrabold">{formatCurrency(item.diff, currency)}</strong> ({item.pct}%).{' '}
               Te sugerimos suspender nuevas compras con tarjeta y recortar tus límites de consumos variables para destinar esos fondos a cubrir esta reserva.
             </span>
@@ -193,7 +190,7 @@ export default function BudgetDiagnosticWidget({
           .join(' y ');
         return (
           <span>
-            ⚠️ Se detectaron desvíos en tus pilares: <strong className="font-extrabold text-orange-700">{listText}</strong>.{' '}
+            <AlertTriangle className="w-4 h-4 inline -mt-0.5 mr-1" /> Se detectaron desvíos en tus pilares: <strong className="font-extrabold text-orange-700">{listText}</strong>.{' '}
             Para no salirte del presupuesto global, sugerimos recortar inmediatamente tus límites de consumos variables y suspender consumos adicionales con tus tarjetas de crédito.
           </span>
         );
@@ -289,7 +286,7 @@ export default function BudgetDiagnosticWidget({
           {/* Pilar 1: Límites Variables */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-semibold">
-              <span className="text-gray-500">📊 Consumo Variable (Límites)</span>
+              <span className="text-gray-500 flex items-center gap-1"><BarChart3 className="w-3.5 h-3.5" /> Consumo Variable (Límites)</span>
               <span className="text-gray-400 font-bold flex items-center gap-1.5">
                 <span className={variableSpent > variablePlan ? 'text-rose-600 font-black' : 'text-gray-700 font-black'}>
                   {formatCurrency(variableSpent, currency)}
@@ -316,7 +313,7 @@ export default function BudgetDiagnosticWidget({
           {/* Pilar 2: Obligaciones Fijas (Servicios y Deudas) */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-semibold">
-              <span className="text-gray-500">🏠 Obligaciones (Servicios y Deudas)</span>
+              <span className="text-gray-500 flex items-center gap-1"><Home className="w-3.5 h-3.5" /> Obligaciones (Servicios y Deudas)</span>
               <span className="text-gray-400 font-bold flex items-center gap-1.5">
                 <span className={obligationsActualPaid > obligationsPlan ? 'text-rose-600 font-black' : 'text-gray-700 font-black'}>
                   {formatCurrency(obligationsActualPaid, currency)}
@@ -343,7 +340,7 @@ export default function BudgetDiagnosticWidget({
           {/* Pilar 3: Tarjetas de Crédito */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-semibold">
-              <span className="text-gray-500">💳 Tarjetas de Crédito (Reservas)</span>
+              <span className="text-gray-500 flex items-center gap-1"><CreditCard className="w-3.5 h-3.5" /> Tarjetas de Crédito (Reservas)</span>
               <span className="text-gray-400 font-bold flex items-center gap-1.5">
                 <span className={cardsSpent > cardsPlan ? 'text-rose-600 font-black' : 'text-gray-700 font-black'}>
                   {formatCurrency(cardsSpent, currency)}
