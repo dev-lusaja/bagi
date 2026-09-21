@@ -1,27 +1,57 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Key, ExternalLink, Sparkles } from 'lucide-react';
+import { AIProviderId, getProviderApiKeyStorageKey } from '../../services/AIProviderFactory';
 
-interface GeminiKeyModalProps {
+interface ApiKeyModalProps {
   isOpen: boolean;
+  provider: AIProviderId;
   onClose: () => void;
   onSave: (key: string) => void;
 }
 
-export default function GeminiKeyModal({
+const PROVIDER_COPY: Record<AIProviderId, {
+  modelLabel: string;
+  keyLabel: string;
+  placeholder: string;
+  helpUrl: string;
+  helpLabel: string;
+  steps: string[];
+}> = {
+  gemini: {
+    modelLabel: 'Gemini 3.6 Flash',
+    keyLabel: 'Tu Gemini API Key',
+    placeholder: 'AIzaSy...',
+    helpUrl: 'https://aistudio.google.com/',
+    helpLabel: 'Google AI Studio',
+    steps: ['Haz clic en "Create API Key".', 'Copia la clave generada y pégala aquí abajo.'],
+  },
+  openrouter: {
+    modelLabel: 'OpenRouter',
+    keyLabel: 'Tu OpenRouter API Key',
+    placeholder: 'sk-or-v1-...',
+    helpUrl: 'https://openrouter.ai/settings/keys',
+    helpLabel: 'OpenRouter',
+    steps: ['Crea una cuenta gratis (o inicia sesión).', 'Entra a "Keys" y haz clic en "Create Key".', 'Copia la clave generada y pégala aquí abajo.'],
+  },
+};
+
+export default function ApiKeyModal({
   isOpen,
+  provider,
   onClose,
   onSave,
-}: GeminiKeyModalProps) {
+}: ApiKeyModalProps) {
   const [key, setKey] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const copy = PROVIDER_COPY[provider];
 
   useEffect(() => {
     if (isOpen) {
-      const savedKey = localStorage.getItem('bagi_gemini_api_key') || '';
+      const savedKey = localStorage.getItem(getProviderApiKeyStorageKey(provider)) || '';
       setKey(savedKey);
       setTimeout(() => inputRef.current?.focus(), 150);
     }
-  }, [isOpen]);
+  }, [isOpen, provider]);
 
   if (!isOpen) return null;
 
@@ -46,7 +76,7 @@ export default function GeminiKeyModal({
                   Configurar Bagi IA
                 </h3>
                 <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-                  Para registrar transacciones con tu voz, necesitamos conectar con el modelo <strong>Gemini 3.6 Flash</strong> usando tu propia API Key. Es 100% gratuito.
+                  Para registrar transacciones con tu voz, necesitamos conectar con <strong>{copy.modelLabel}</strong> usando tu propia API Key. Es 100% gratuito.
                 </p>
               </div>
             </div>
@@ -55,15 +85,20 @@ export default function GeminiKeyModal({
               <p className="font-bold flex items-center gap-1">
                 <ExternalLink className="w-3.5 h-3.5" /> ¿Cómo conseguirla gratis?
               </p>
+              <p>
+                Ve a{' '}
+                <a href={copy.helpUrl} target="_blank" rel="noreferrer" className="text-indigo-600 hover:text-indigo-800 font-extrabold underline inline-flex items-center gap-0.5">
+                  {copy.helpLabel} <ExternalLink className="w-2.5 h-2.5 inline" />
+                </a>{' '}
+                y sigue estos pasos:
+              </p>
               <ol className="list-decimal pl-4 space-y-1">
-                <li>Ve a <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer" className="text-indigo-600 hover:text-indigo-800 font-extrabold underline inline-flex items-center gap-0.5">Google AI Studio <ExternalLink className="w-2.5 h-2.5 inline" /></a>.</li>
-                <li>Haz clic en <strong>"Create API Key"</strong>.</li>
-                <li>Copia la clave generada y pégala aquí abajo.</li>
+                {copy.steps.map((step, i) => <li key={i}>{step}</li>)}
               </ol>
             </div>
-            
+
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 block">Tú Gemini API Key</label>
+              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 block">{copy.keyLabel}</label>
               <div className="relative">
                 <Key className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -71,14 +106,14 @@ export default function GeminiKeyModal({
                   type="password"
                   value={key}
                   onChange={(e) => setKey(e.target.value)}
-                  placeholder="AIzaSy..."
+                  placeholder={copy.placeholder}
                   className="w-full pl-11 pr-4 bg-gray-50 border border-gray-200 text-gray-900 rounded-2xl py-3.5 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono text-sm placeholder-gray-400"
                   required
                 />
               </div>
             </div>
           </div>
-          
+
           <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
             <button
               type="button"

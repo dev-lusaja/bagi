@@ -3,13 +3,12 @@ import ReactMarkdown from 'react-markdown';
 import { useBagiAI, MappedTransaction } from '../hooks/useBagiAI';
 import BagiActionModal from '../components/BagiActionModal';
 import TransactionConfirmForm from '../components/TransactionConfirmForm';
-import GeminiKeyModal from '../components/GeminiKeyModal';
+import ApiKeyModal from '../components/ApiKeyModal';
 import BagiIARing from '../components/BagiIARing';
 import {
   Sparkles,
   AlertCircle,
   Globe,
-  Key,
   Info,
   TrendingDown,
   TrendingUp,
@@ -26,7 +25,7 @@ import {
   VolumeX,
 } from 'lucide-react';
 
-export default function Intelligence() {
+export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [selectedImage, setSelectedImage] = useState<{ base64: string; mimeType: string; previewUrl: string } | null>(null);
@@ -39,6 +38,7 @@ export default function Intelligence() {
   const {
     isSupported,
     apiKey,
+    activeProvider,
     isPreparing,
     isRecording,
     isProcessing,
@@ -60,7 +60,10 @@ export default function Intelligence() {
     clearParsedTx,
     voiceReplyEnabled,
     toggleVoiceReply,
-  } = useBagiAI(() => setIsKeyModalOpen(true));
+  } = useBagiAI(
+    () => setIsKeyModalOpen(true),
+    () => onNavigate?.('settings')
+  );
 
   // ─── Estado del modal de confirmación ───
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -176,25 +179,12 @@ export default function Intelligence() {
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
 
       {/* ─── Header ─── */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 sm:gap-4">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-800 tracking-tight flex items-center gap-2">
-            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-500 animate-pulse" />
-            Bagi IA
-          </h2>
-          <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">Controla tus finanzas hablando con inteligencia artificial.</p>
-        </div>
-
-        {apiKey && (
-          <button
-            type="button"
-            onClick={() => setIsKeyModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 hover:border-indigo-100 hover:bg-indigo-50/50 rounded-2xl text-xs font-bold text-gray-500 hover:text-indigo-600 transition-all cursor-pointer min-h-[44px]"
-          >
-            <Key className="w-3.5 h-3.5" />
-            Cambiar API Key
-          </button>
-        )}
+      <div>
+        <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-800 tracking-tight flex items-center gap-2">
+          <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-500 animate-pulse" />
+          Bagi IA
+        </h2>
+        <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">Controla tus finanzas hablando con inteligencia artificial.</p>
       </div>
 
       {/* ─── Banner de navegador incompatible ─── */}
@@ -217,10 +207,12 @@ export default function Intelligence() {
 
           {/* Header de controles e indicador de estado */}
           <div className="w-full flex justify-between items-center px-2 border-b border-gray-50 pb-3">
-            <div className="flex items-center gap-2" title={apiKey ? "API Key configurada" : "API Key no configurada"}>
+            <div className="flex items-center gap-2" title={!activeProvider ? "Sin proveedor de IA configurado" : apiKey ? "API Key configurada" : "API Key no configurada"}>
               <span className={`w-2.5 h-2.5 rounded-full ${apiKey ? 'bg-emerald-500 animate-ping' : 'bg-rose-500'}`} />
               <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
-                {apiKey ? 'API Lista' : 'Sin API Key'}
+                {!activeProvider
+                  ? 'Sin proveedor'
+                  : `${activeProvider === 'gemini' ? 'Gemini' : 'OpenRouter'}`}
               </span>
             </div>
 
@@ -439,12 +431,33 @@ export default function Intelligence() {
             </div>
           </form>
 
-          {/* Banner: API Key no configurada */}
-          {!apiKey && (
+          {/* Banner: sin proveedor de IA configurado por default */}
+          {!activeProvider && (
             <div className="w-full bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 flex items-center justify-between gap-3 text-left">
               <div className="flex items-center gap-2">
                 <Info className="w-4 h-4 text-indigo-500" />
-                <span className="text-xs font-semibold text-indigo-950">Se requiere API Key para procesar</span>
+                <span className="text-xs font-semibold text-indigo-950">
+                  No tienes un proveedor de IA configurado por defecto
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate?.('settings')}
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+              >
+                Ir a Configuración
+              </button>
+            </div>
+          )}
+
+          {/* Banner: proveedor activo sin API Key */}
+          {activeProvider && !apiKey && (
+            <div className="w-full bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 flex items-center justify-between gap-3 text-left">
+              <div className="flex items-center gap-2">
+                <Info className="w-4 h-4 text-indigo-500" />
+                <span className="text-xs font-semibold text-indigo-950">
+                  Se requiere tu API Key de {activeProvider === 'gemini' ? 'Gemini' : 'OpenRouter'} para procesar
+                </span>
               </div>
               <button
                 type="button"
@@ -456,8 +469,8 @@ export default function Intelligence() {
             </div>
           )}
 
-          {/* Alertas de error */}
-          {error && (
+          {/* Alertas de error (NO_AI_PROVIDER y NO_API_KEY ya se comunican en los banners de arriba) */}
+          {error && error !== 'NO_AI_PROVIDER' && error !== 'NO_API_KEY' && (
             <div className="w-full p-4 bg-rose-50 border border-rose-100 text-rose-800 text-xs font-semibold rounded-2xl flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
               <div>
@@ -536,15 +549,18 @@ export default function Intelligence() {
         </BagiActionModal>
       )}
 
-      {/* ─── Modal de configuración de API Key ─── */}
-      <GeminiKeyModal
-        isOpen={isKeyModalOpen}
-        onClose={() => setIsKeyModalOpen(false)}
-        onSave={(key) => {
-          saveApiKey(key);
-          setIsKeyModalOpen(false);
-        }}
-      />
+      {/* ─── Modal de configuración de API Key (solo con proveedor activo) ─── */}
+      {activeProvider && (
+        <ApiKeyModal
+          isOpen={isKeyModalOpen}
+          provider={activeProvider}
+          onClose={() => setIsKeyModalOpen(false)}
+          onSave={(key) => {
+            saveApiKey(key);
+            setIsKeyModalOpen(false);
+          }}
+        />
+      )}
 
     </div>
   );

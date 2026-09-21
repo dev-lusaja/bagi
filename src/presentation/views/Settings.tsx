@@ -1,8 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
-import { HelpCircle, ArrowRightLeft, TrendingUp, TrendingDown, User, LogOut, Sparkles } from 'lucide-react';
+import { HelpCircle, ArrowRightLeft, TrendingUp, TrendingDown, User, LogOut, Sparkles, RefreshCw, Camera, Type, AlertTriangle, CheckCircle2, Save, Trash2 } from 'lucide-react';
 import AlertModal from '../components/AlertModal';
+import {
+  AIProviderId,
+  getActiveAIProvider,
+  setActiveAIProvider,
+  getProviderApiKeyStorageKey,
+  getModelStorageKey,
+  getActiveModelIds,
+} from '../../services/AIProviderFactory';
+import { AIModelOption } from '../../services/AIProviderTypes';
+import { GEMINI_MODEL_OPTIONS } from '../../services/GeminiModelCatalog';
+import { fetchFreeVisionAwareModels } from '../../services/OpenRouterModelCatalog';
+
+const PROVIDER_LABELS: Record<AIProviderId, string> = { gemini: 'Gemini', openrouter: 'OpenRouter' };
+const PROVIDER_HELP: Record<AIProviderId, { url: string; label: string }> = {
+  gemini: { url: 'https://aistudio.google.com/', label: 'Google AI Studio' },
+  openrouter: { url: 'https://openrouter.ai/settings/keys', label: 'OpenRouter' },
+};
 
 const Section = ({ id, title, icon, children, openSection, setOpenSection }: any) => {
     const isOpen = openSection === id;
@@ -23,6 +40,24 @@ const Section = ({ id, title, icon, children, openSection, setOpenSection }: any
         {isOpen && <div className="p-6 border-t border-gray-50 bg-white">{children}</div>}
       </div>
     );
+  };
+
+// Todo modelo de chat soporta texto — la imagen es una capacidad adicional que algunos tienen
+// encima, no una alternativa excluyente. Por eso el badge de texto siempre aparece, y el de
+// imagen se suma cuando corresponde (nunca reemplaza al de texto).
+const ModelCapabilityBadge = ({ supportsImage }: { supportsImage: boolean }) => {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="inline-flex items-center gap-1 w-fit px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-500">
+        <Type className="w-3 h-3" /> Texto
+      </span>
+      {supportsImage && (
+        <span className="inline-flex items-center gap-1 w-fit px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide bg-emerald-50 text-emerald-600">
+          <Camera className="w-3 h-3" /> Imagen
+        </span>
+      )}
+    </div>
+  );
   };
 
 export default function SettingsView() {
@@ -68,21 +103,79 @@ export default function SettingsView() {
   const [openSection, setOpenSection] = useState(null); // All closed by default
   const [showCatHelp, setShowCatHelp] = useState(false);
 
-  const [settingsGeminiKey, setSettingsGeminiKey] = useState('');
+  // aiProvider: el proveedor que se está viendo/editando en esta sección (cambia con el <select>).
+  // activeProvider: el que realmente usa Bagi AI hoy (persistido) — solo cambia al presionar "Usar como predeterminado",
+  // para que mirar OpenRouter en el dropdown no active OpenRouter en el resto de la app sin querer.
+  const [aiProvider, setAiProvider] = useState<AIProviderId>('gemini');
+  const [activeProvider, setActiveProvider] = useState<AIProviderId | null>(null);
+  const [settingsApiKey, setSettingsApiKey] = useState('');
   const [hasSavedKey, setHasSavedKey] = useState(false);
+  const [primaryModelId, setPrimaryModelId] = useState('');
+  const [fallbackModelId, setFallbackModelId] = useState('');
+  const [openRouterModels, setOpenRouterModels] = useState<AIModelOption[]>([]);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [modelsError, setModelsError] = useState<string | null>(null);
 
   useEffect(() => {
-    const key = localStorage.getItem('bagi_gemini_api_key') || '';
-    setHasSavedKey(!!key);
+    const current = getActiveAIProvider();
+    setActiveProvider(current);
+    if (current) setAiProvider(current);
   }, []);
+
+  const loadOpenRouterModels = () => {
+    setLoadingModels(true);
+    setModelsError(null);
+    fetchFreeVisionAwareModels()
+      .then(setOpenRouterModels)
+      .catch(() => setModelsError('No se pudo cargar la lista de modelos de OpenRouter.'))
+      .finally(() => setLoadingModels(false));
+  };
+
+  // Recarga key/modelos guardados cada vez que cambia el proveedor activo.
+  useEffect(() => {
+    const key = localStorage.getItem(getProviderApiKeyStorageKey(aiProvider)) || '';
+    setHasSavedKey(!!key);
+    setSettingsApiKey('');
+    const { primary, fallback } = getActiveModelIds(aiProvider);
+    setPrimaryModelId(primary);
+    setFallbackModelId(fallback);
+
+    if (aiProvider === 'openrouter') {
+      loadOpenRouterModels();
+    }
+  }, [aiProvider]);
+
+  const handleProviderChange = (provider: AIProviderId) => {
+    // Solo cambia lo que se está viendo/editando — no activa el proveedor hasta que el usuario lo confirme.
+    setAiProvider(provider);
+  };
+
+  const handleActivateProvider = () => {
+    // Solo se puede activar un proveedor que ya tiene su API Key guardada.
+    if (!hasSavedKey) return;
+    setActiveAIProvider(aiProvider);
+    setActiveProvider(aiProvider);
+    showAlert('Éxito', `${PROVIDER_LABELS[aiProvider]} ahora es tu proveedor de IA activo.`, 'success');
+  };
+
+  const modelOptions: AIModelOption[] = aiProvider === 'gemini' ? GEMINI_MODEL_OPTIONS : openRouterModels;
+  const primaryOption = modelOptions.find(m => m.id === primaryModelId);
+  const fallbackOption = modelOptions.find(m => m.id === fallbackModelId);
+  const noVisionSupport = aiProvider === 'openrouter' && !!primaryOption && !!fallbackOption && !primaryOption.supportsImage && !fallbackOption.supportsImage;
+
+  const handleModelChange = (kind: 'primary' | 'fallback', modelId: string) => {
+    localStorage.setItem(getModelStorageKey(aiProvider, kind), modelId);
+    if (kind === 'primary') setPrimaryModelId(modelId);
+    else setFallbackModelId(modelId);
+  };
 
   const handleSaveSettingsKey = (e: any) => {
     e.preventDefault();
-    if (settingsGeminiKey.trim()) {
-      localStorage.setItem('bagi_gemini_api_key', settingsGeminiKey.trim());
+    if (settingsApiKey.trim()) {
+      localStorage.setItem(getProviderApiKeyStorageKey(aiProvider), settingsApiKey.trim());
       setHasSavedKey(true);
-      setSettingsGeminiKey('');
-      showAlert('Éxito', 'API Key de Gemini guardada correctamente.', 'success');
+      setSettingsApiKey('');
+      showAlert('Éxito', `API Key de ${PROVIDER_LABELS[aiProvider]} guardada correctamente.`, 'success');
     }
   };
 
@@ -91,13 +184,13 @@ export default function SettingsView() {
     setConfirmConfig({
       isOpen: true,
       title: 'Eliminar API Key',
-      message: '¿Estás seguro de borrar tu API Key de Gemini?',
+      message: `¿Estás seguro de borrar tu API Key de ${PROVIDER_LABELS[aiProvider]}?`,
       type: 'error',
       onConfirm: () => {
-        localStorage.removeItem('bagi_gemini_api_key');
+        localStorage.removeItem(getProviderApiKeyStorageKey(aiProvider));
         setHasSavedKey(false);
-        setSettingsGeminiKey('');
-        showAlert('Éxito', 'API Key de Gemini eliminada.', 'success');
+        setSettingsApiKey('');
+        showAlert('Éxito', 'API Key eliminada.', 'success');
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
       }
     });
@@ -781,39 +874,132 @@ export default function SettingsView() {
           setOpenSection={setOpenSection}
           icon={<Sparkles className="w-6 h-6" />}
         >
-          <div className="space-y-4">
+          <div className="space-y-6">
             <p className="text-sm text-gray-500 font-medium">
-              Gestiona tu API Key de Gemini para el registro de transacciones mediante voz.
+              Elige qué proveedor de IA usa Bagi para procesar tu voz, chat y recibos, y con qué modelos.
             </p>
+
+            <div className={`border rounded-2xl p-3 flex items-center gap-2 text-xs font-bold ${activeProvider ? 'bg-indigo-50/60 border-indigo-100 text-indigo-900' : 'bg-amber-50 border-amber-100 text-amber-800'}`}>
+              <span className={`w-2 h-2 rounded-full shrink-0 ${activeProvider ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+              Proveedor activo ahora mismo: {activeProvider ? PROVIDER_LABELS[activeProvider] : 'ninguno configurado'}
+            </div>
+
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Tu Gemini API Key</label>
-              <div className="flex gap-2">
-                <input 
-                  type="password" 
-                  value={settingsGeminiKey} 
-                  onChange={e => setSettingsGeminiKey(e.target.value)} 
-                  placeholder={hasSavedKey ? '••••••••••••••••••••••••' : 'Ingresa tu Gemini API Key...'} 
-                  className="flex-1 rounded-xl border border-gray-200 shadow-sm p-3 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono"
-                />
-                <button 
-                  onClick={handleSaveSettingsKey} 
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-95 text-sm"
+              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Viendo configuración de</label>
+              <div className="flex flex-wrap items-center gap-3">
+                <select
+                  className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold max-w-xs"
+                  value={aiProvider}
+                  onChange={e => handleProviderChange(e.target.value as AIProviderId)}
                 >
-                  Guardar
+                  <option value="gemini">Gemini (Google)</option>
+                  <option value="openrouter">OpenRouter</option>
+                </select>
+                {aiProvider !== activeProvider && (
+                  hasSavedKey ? (
+                    <button
+                      type="button"
+                      onClick={handleActivateProvider}
+                      className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg font-bold transition-all active:scale-95 text-[11px]"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Usar como predeterminado
+                    </button>
+                  ) : (
+                    <span className="text-[11px] text-gray-400 italic">Guarda tu API Key de {PROVIDER_LABELS[aiProvider]} para poder activarlo</span>
+                  )
+                )}
+              </div>
+              <p className="text-[11px] text-gray-400">
+                Cambiar este selector solo te deja ver/editar la key y los modelos de ese proveedor — no lo activa hasta que presiones el botón de arriba, y solo se puede activar un proveedor que ya tiene su API Key guardada.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Tu {PROVIDER_LABELS[aiProvider]} API Key</label>
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  value={settingsApiKey}
+                  onChange={e => setSettingsApiKey(e.target.value)}
+                  placeholder={hasSavedKey ? '••••••••••••••••••••••••' : `Ingresa tu ${PROVIDER_LABELS[aiProvider]} API Key...`}
+                  className="flex-1 min-w-0 rounded-xl border border-gray-200 shadow-sm p-3 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono"
+                />
+                <button
+                  onClick={handleSaveSettingsKey}
+                  title="Guardar API Key"
+                  className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl transition-all active:scale-95"
+                >
+                  <Save className="w-4 h-4" />
                 </button>
                 {hasSavedKey && (
-                  <button 
-                    onClick={handleDeleteSettingsKey} 
-                    className="bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 py-3 rounded-xl font-bold transition-all active:scale-95 text-sm"
+                  <button
+                    onClick={handleDeleteSettingsKey}
+                    title="Borrar API Key"
+                    className="shrink-0 bg-rose-50 hover:bg-rose-100 text-rose-600 p-3 rounded-xl transition-all active:scale-95"
                   >
-                    Borrar
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
+              <p className="text-xs text-gray-400">
+                ¿No tienes una? Consíguela gratis en <a href={PROVIDER_HELP[aiProvider].url} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline font-bold">{PROVIDER_HELP[aiProvider].label}</a>.
+              </p>
             </div>
-            <p className="text-xs text-gray-400">
-              ¿No tienes una? Consíguela gratis en <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline font-bold">Google AI Studio</a>.
-            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Modelo principal</label>
+                <select
+                  className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                  value={primaryModelId}
+                  onChange={e => handleModelChange('primary', e.target.value)}
+                  disabled={aiProvider === 'openrouter' && loadingModels}
+                >
+                  {modelOptions.map(m => (
+                    <option key={m.id} value={m.id}>{m.label}</option>
+                  ))}
+                </select>
+                {aiProvider === 'openrouter' && primaryOption && <ModelCapabilityBadge supportsImage={primaryOption.supportsImage} />}
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Modelo de respaldo (fallback)</label>
+                <select
+                  className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                  value={fallbackModelId}
+                  onChange={e => handleModelChange('fallback', e.target.value)}
+                  disabled={aiProvider === 'openrouter' && loadingModels}
+                >
+                  {modelOptions.map(m => (
+                    <option key={m.id} value={m.id}>{m.label}</option>
+                  ))}
+                </select>
+                {aiProvider === 'openrouter' && fallbackOption && <ModelCapabilityBadge supportsImage={fallbackOption.supportsImage} />}
+              </div>
+            </div>
+
+            {aiProvider === 'openrouter' && (
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] text-gray-400">
+                  {loadingModels
+                    ? 'Cargando modelos gratuitos de OpenRouter...'
+                    : modelsError || `${openRouterModels.length} modelos gratuitos disponibles (con salida estructurada).`}
+                </p>
+                <button
+                  type="button"
+                  onClick={loadOpenRouterModels}
+                  className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider"
+                >
+                  <RefreshCw className="w-3 h-3" /> Actualizar lista
+                </button>
+              </div>
+            )}
+
+            {noVisionSupport && (
+              <div className="bg-amber-50 border border-amber-100 rounded-2xl p-3 text-xs text-amber-800 font-medium flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                Ni el modelo principal ni el de respaldo soportan imágenes — el escaneo de recibos no va a funcionar con esta selección.
+              </div>
+            )}
           </div>
         </Section>
       </div>

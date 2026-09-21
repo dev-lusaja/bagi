@@ -1,10 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { voiceService } from '../../services/VoiceService';
-import { geminiParserService, ParsedTransaction } from '../../services/GeminiParserService';
+import { ParsedTransaction } from '../../services/AIProviderTypes';
+import {
+  AIProviderId,
+  getActiveAIProvider,
+  getProviderService,
+  getActiveApiKey,
+  getActiveModelIds,
+  getProviderApiKeyStorageKey,
+} from '../../services/AIProviderFactory';
 
 export type BagiAIErrorType =
   | 'SPEECH_NOT_SUPPORTED'
+  | 'NO_AI_PROVIDER'
   | 'NO_API_KEY'
   | 'QUOTA_EXHAUSTED'
   | 'INVALID_API_KEY'
@@ -39,9 +48,10 @@ export interface ChatMessage {
 // Cantidad máxima de mensajes previos que se reenvían como historial en cada llamada a Gemini.
 const CHAT_HISTORY_LIMIT = 10;
 
-export function useBagiAI(onApiKeyMissing: () => void) {
+export function useBagiAI(onApiKeyMissing: () => void, onProviderMissing?: () => void) {
   const { service } = useBudget();
   const [apiKey, setApiKey] = useState<string>('');
+  const [activeProvider, setActiveProvider] = useState<AIProviderId | null>(null);
   const [isPreparing, setIsPreparing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -112,10 +122,14 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     };
     loadMetadata();
 
-    // API Key load
-    const savedKey = localStorage.getItem('bagi_gemini_api_key');
-    if (savedKey) {
-      setApiKey(savedKey);
+    // Proveedor de IA activo (null si el usuario nunca configuró uno) + su API Key
+    const provider = getActiveAIProvider();
+    setActiveProvider(provider);
+    if (provider) {
+      const savedKey = getActiveApiKey(provider);
+      if (savedKey) {
+        setApiKey(savedKey);
+      }
     }
   }, [service]);
 
@@ -149,13 +163,15 @@ export function useBagiAI(onApiKeyMissing: () => void) {
   }, [isPreparing, isRecording]);
 
   const saveApiKey = (key: string) => {
-    localStorage.setItem('bagi_gemini_api_key', key);
+    if (!activeProvider) return;
+    localStorage.setItem(getProviderApiKeyStorageKey(activeProvider), key);
     setApiKey(key);
     setError(null);
   };
 
   const deleteApiKey = () => {
-    localStorage.removeItem('bagi_gemini_api_key');
+    if (!activeProvider) return;
+    localStorage.removeItem(getProviderApiKeyStorageKey(activeProvider));
     setApiKey('');
     setParsedTx(null);
   };
@@ -250,6 +266,12 @@ export function useBagiAI(onApiKeyMissing: () => void) {
   };
 
   const startListening = () => {
+    if (!activeProvider) {
+      setError('NO_AI_PROVIDER');
+      (onProviderMissing || onApiKeyMissing)();
+      return;
+    }
+
     if (!apiKey) {
       setError('NO_API_KEY');
       onApiKeyMissing();
@@ -327,6 +349,12 @@ export function useBagiAI(onApiKeyMissing: () => void) {
    * Processes a financial advisor chat message (text and optional image).
    */
   const sendChatMessage = async (text: string, image?: { base64: string; mimeType: string }) => {
+    if (!activeProvider) {
+      setError('NO_AI_PROVIDER');
+      (onProviderMissing || onApiKeyMissing)();
+      return;
+    }
+
     if (!apiKey) {
       setError('NO_API_KEY');
       onApiKeyMissing();
@@ -370,10 +398,13 @@ export function useBagiAI(onApiKeyMissing: () => void) {
         budgets,
       };
 
-      const response = await geminiParserService.chatWithAdvisor(
+      const { primary, fallback } = getActiveModelIds(activeProvider);
+      const response = await getProviderService(activeProvider).chatWithAdvisor(
         text,
         history,
         apiKey,
+        primary,
+        fallback,
         contextPayload,
         image
       );
@@ -428,6 +459,12 @@ export function useBagiAI(onApiKeyMissing: () => void) {
    * Processes a receipt photo directly to open transaction confirmation modal.
    */
   const processReceiptImage = async (base64: string, mimeType: string) => {
+    if (!activeProvider) {
+      setError('NO_AI_PROVIDER');
+      (onProviderMissing || onApiKeyMissing)();
+      return;
+    }
+
     if (!apiKey) {
       setError('NO_API_KEY');
       onApiKeyMissing();
@@ -439,10 +476,13 @@ export function useBagiAI(onApiKeyMissing: () => void) {
     setParsedTx(null);
 
     try {
-      const parsed = await geminiParserService.parseImageReceipt(
+      const { primary, fallback } = getActiveModelIds(activeProvider);
+      const parsed = await getProviderService(activeProvider).parseImageReceipt(
         base64,
         mimeType,
         apiKey,
+        primary,
+        fallback,
         {
           categories,
           accounts,
@@ -524,6 +564,7 @@ export function useBagiAI(onApiKeyMissing: () => void) {
   return {
     isSupported: voiceService.isSupported(),
     apiKey,
+    activeProvider,
     isPreparing,
     isRecording,
     isProcessing,

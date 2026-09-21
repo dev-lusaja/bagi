@@ -180,7 +180,7 @@ export default function App() {
           {activeTab === 'home' && <Home onNavigate={setActiveTab} />}
           {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} />}
           {activeTab === 'transactions' && <Transactions />}
-          {activeTab === 'intelligence' && <Intelligence />}
+          {activeTab === 'intelligence' && <Intelligence onNavigate={setActiveTab} />}
           {activeTab === 'more' && <MoreView onNavigate={setActiveTab} />}
           {activeTab === 'analytics' && <Analytics onNavigate={setActiveTab} />}
           {activeTab === 'settings' && <SettingsView />}

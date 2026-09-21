@@ -39,7 +39,14 @@ src/
 │   ├── EmbeddingService.ts         # Orquesta el Worker y cachea vectores
 │   ├── FeatureExtractor.ts         # Estadísticas por categoría (IQR, percentiles)
 │   ├── AlertScorer.ts              # Regresión logística + gradient descent online
-│   ├── GeminiParserService.ts      # Llama a Gemini API para parsear texto/voz a transacción
+│   ├── AIProviderTypes.ts          # Contrato IAIProviderService compartido entre proveedores de IA
+│   ├── AIPromptBuilder.ts          # Prompts/schemas de Bagi IA (agnósticos de proveedor)
+│   ├── AIHttpRetry.ts              # Retry + fallback genérico (429/503), agnóstico de proveedor
+│   ├── AIProviderFactory.ts        # Resuelve el proveedor de IA activo (Gemini/OpenRouter) desde localStorage
+│   ├── GeminiParserService.ts      # Implementa IAIProviderService contra la API de Gemini
+│   ├── OpenRouterParserService.ts  # Implementa IAIProviderService contra la API de OpenRouter
+│   ├── GeminiModelCatalog.ts       # Lista estática de modelos Gemini seleccionables
+│   ├── OpenRouterModelCatalog.ts   # Trae en vivo los modelos `:free` de OpenRouter con structured_outputs
 │   ├── VoiceService.ts             # Web Speech API: STT + TTS
 │   ├── AnalyticsService.ts         # Google Analytics 4 (gtag.js)
 │   └── SentryLogger.ts             # Captura de errores vía Sentry
@@ -215,29 +222,42 @@ El flujo completo de una mutación:
 
 ---
 
-## Bagi AI — Subsistema de Voz + Gemini
+## Bagi AI — Subsistema de Voz + IA (multi-proveedor)
 
-Feature que permite registrar transacciones hablando al micrófono.
+Feature que permite registrar transacciones hablando al micrófono o por chat. El proveedor de IA
+que interpreta el texto/imagen es intercambiable (Gemini u OpenRouter), elegido por el usuario en
+Settings — el resto del flujo no sabe ni le importa cuál está activo.
 
 ```
 useBagiAI (hook)
-  ├── VoiceService         → Web Speech API (STT): graba voz del usuario
-  ├── GeminiParserService  → Gemini API: interpreta el texto y extrae la transacción
-  └── mapGeminiOutput()    → mapea nombres de categoría/cuenta a IDs de la BD local
+  ├── VoiceService                → Web Speech API (STT): graba voz del usuario, produce texto
+  ├── AIProviderFactory           → resuelve qué IAIProviderService está activo (localStorage)
+  │     ├── GeminiParserService       → Gemini API
+  │     └── OpenRouterParserService   → OpenRouter API (modelos `:free` con structured_outputs)
+  └── mapGeminiOutput()            → mapea nombres de categoría/cuenta a IDs de la BD local
 ```
 
+`GeminiParserService` y `OpenRouterParserService` implementan la misma interfaz
+(`IAIProviderService` en `AIProviderTypes.ts`) y comparten:
+- `AIPromptBuilder.ts` — los prompts y JSON schemas (una sola fuente de verdad; cada proveedor
+  adapta el schema neutral a su forma con `toGeminiSchema()`/`withAdditionalPropertiesFalse()`).
+- `AIHttpRetry.ts` — el mecanismo de reintento + fallback a modelo secundario en 429/503.
+
+Solo difiere la forma del payload/respuesta HTTP de cada API (Gemini: `contents`/`responseSchema`;
+OpenRouter: `messages`/`response_format` estilo OpenAI-compatible).
+
 **Flujo detallado:**
-1. `startListening()` → `VoiceService.start()` activa el micrófono.
-2. Al detectar silencio, el navegador retorna el `transcript` (texto).
-3. `parseText(transcript)` → `GeminiParserService.parse()` llama a `gemini-3.1-flash-lite` con el texto y las listas de categorías/cuentas/tarjetas del usuario como contexto.
-4. Gemini retorna un JSON estructurado con: `description`, `amount`, `type`, `category_hint`, `source_hint`, `date_hint`.
+1. `startListening()` → `VoiceService.start()` activa el micrófono; el navegador hace el STT (sin costo, sin IA).
+2. Al detectar silencio, retorna el `transcript` (texto) → `sendChatMessage(transcript)`.
+3. `getActiveAIProviderService().chatWithAdvisor()` llama al proveedor activo con el texto, el historial y las listas de categorías/cuentas/tarjetas del usuario como contexto (modelo principal + fallback configurables en Settings).
+4. El modelo retorna un JSON estructurado con: `description`, `amount`, `type`, `category_hint`, `source_hint`, `date_hint`, `intent`.
 5. `mapGeminiOutput()` resuelve los hints a IDs reales de la BD (fuzzy matching por nombre).
 6. Se muestra `TransactionConfirmForm` para que el usuario revise y confirme.
 7. `confirmAndSave()` → `BudgetService.addTransaction()` persiste y sincroniza.
 
-**Gestión de API Key**: el usuario provee su propia Gemini API key, que se guarda en `localStorage` bajo `bagi_gemini_api_key`. Nunca sale del dispositivo salvo en la llamada directa a la API de Google.
+**Gestión de proveedor + API Key**: el proveedor activo se guarda en `localStorage` bajo `bagi_ai_provider` (`'gemini' | 'openrouter'`, default `gemini`). Cada proveedor tiene su propia API key (`bagi_gemini_api_key` / `bagi_openrouter_api_key`) y sus propios modelos principal/fallback (`bagi_<proveedor>_model_primary` / `_fallback`), todo configurable en Settings → "Bagi IA". Las keys nunca salen del dispositivo salvo en la llamada directa a la API del proveedor elegido.
 
-**Errores manejados**: `OFF_TOPIC`, `QUOTA_EXHAUSTED`, `INVALID_API_KEY`, `SPEECH_NOT_SUPPORTED`, `NO_SPEECH_DETECTED`.
+**Errores manejados**: `OFF_TOPIC`, `QUOTA_EXHAUSTED`, `INVALID_API_KEY`, `TIMEOUT_ERROR`, `SPEECH_NOT_SUPPORTED`, `NO_SPEECH_DETECTED`.
 
 ---
 
@@ -289,7 +309,7 @@ La Gemini API Key del usuario es de usuario final y **no va en variables de ento
 | Base de Datos | `sql.js` 1.14 (SQLite via WebAssembly) |
 | Sincronización | Google Drive API v3 (GAPI) + GSI |
 | IA Offline | HuggingFace Transformers 4.0.1 + ONNX (`all-MiniLM-L6-v2`) |
-| IA Cloud | Gemini API (`gemini-3.1-flash-lite`) — requiere API key del usuario |
+| IA Cloud | Gemini u OpenRouter (`:free`), a elección del usuario — requiere su propia API key |
 | Voz | Web Speech API (nativa del navegador) |
 | Estilos | TailwindCSS 4 |
 | Gráficos | Recharts 3 |
@@ -310,7 +330,14 @@ Lógica pesada que puede requerir multithreading o matemáticas intensivas:
 | `EmbeddingService.ts` | Orquesta el Worker via RPC asíncrono, mantiene caché en memoria y persiste vectores en `tx_embeddings` |
 | `FeatureExtractor.ts` | Lee `monthly_category_summary` y calcula IQR, percentiles y ratios de tendencia por categoría |
 | `AlertScorer.ts` | Implementa regresión logística con sigmoide y gradient descent online para puntuar alertas |
+| `AIProviderTypes.ts` | Contrato `IAIProviderService` + tipos compartidos (`ParsedTransaction`, `ChatResponse`, `FinancialContext`) |
+| `AIPromptBuilder.ts` | Prompts y JSON schemas de Bagi IA, agnósticos de proveedor |
+| `AIHttpRetry.ts` | Retry con backoff + fallback a modelo secundario en 429/503, agnóstico de proveedor |
+| `AIProviderFactory.ts` | Resuelve el proveedor de IA activo y sus claves/modelos desde `localStorage` |
 | `GeminiParserService.ts` | Cliente HTTP de Gemini API con schema de respuesta JSON estructurado |
+| `OpenRouterParserService.ts` | Cliente HTTP de OpenRouter (OpenAI-compatible) con `response_format: json_schema` |
+| `GeminiModelCatalog.ts` | Lista estática de modelos Gemini seleccionables en Settings |
+| `OpenRouterModelCatalog.ts` | Trae en vivo el catálogo `:free` de OpenRouter filtrado a modelos con `structured_outputs` |
 | `VoiceService.ts` | Abstracción del Web Speech API (STT via `SpeechRecognition`, TTS via `SpeechSynthesis`) |
 | `AnalyticsService.ts` | Wrapper tipado de `gtag.js` para GA4 |
 | `SentryLogger.ts` | Wrapper de `@sentry/react` para captura de errores |
