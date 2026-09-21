@@ -285,19 +285,19 @@ export default function BudgetDiagnosticWidget({
 
           {/* Pilar 1: Límites Variables */}
           <div className="space-y-1.5">
-            <div className="flex justify-between text-xs font-semibold">
-              <span className="text-gray-500 flex items-center gap-1"><BarChart3 className="w-3.5 h-3.5" /> Consumo Variable (Límites)</span>
-              <span className="text-gray-400 font-bold flex items-center gap-1.5">
-                <span className={variableSpent > variablePlan ? 'text-rose-600 font-black' : 'text-gray-700 font-black'}>
-                  {formatCurrency(variableSpent, currency)}
-                </span>{' '}
-                | {formatCurrency(variablePlan, currency)} ({variablePct}%)
-                {variableSpent > variablePlan && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-rose-50 text-rose-600 rounded-md border border-rose-100 shrink-0">
-                    +{formatCurrency(variableSpent - variablePlan, currency)} excedido
-                  </span>
-                )}
+            <div className="flex flex-wrap justify-between items-baseline gap-x-2 gap-y-0.5">
+              <span className="text-gray-500 flex items-center gap-1 text-xs font-semibold"><BarChart3 className="w-3.5 h-3.5 shrink-0" /> Consumo Variable (Límites)</span>
+              <span className={`text-xs font-black ${variableSpent > variablePlan ? 'text-rose-600' : 'text-gray-700'}`}>
+                {formatCurrency(variableSpent, currency)}
               </span>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+              <span className="text-[11px] text-gray-400 font-bold">de {formatCurrency(variablePlan, currency)} ({variablePct}%)</span>
+              {variableSpent > variablePlan && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-rose-50 text-rose-600 rounded-md border border-rose-100">
+                  +{formatCurrency(variableSpent - variablePlan, currency)} excedido
+                </span>
+              )}
             </div>
             <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner border border-gray-200/50">
               <div
@@ -312,19 +312,19 @@ export default function BudgetDiagnosticWidget({
 
           {/* Pilar 2: Obligaciones Fijas (Servicios y Deudas) */}
           <div className="space-y-1.5">
-            <div className="flex justify-between text-xs font-semibold">
-              <span className="text-gray-500 flex items-center gap-1"><Home className="w-3.5 h-3.5" /> Obligaciones (Servicios y Deudas)</span>
-              <span className="text-gray-400 font-bold flex items-center gap-1.5">
-                <span className={obligationsActualPaid > obligationsPlan ? 'text-rose-600 font-black' : 'text-gray-700 font-black'}>
-                  {formatCurrency(obligationsActualPaid, currency)}
-                </span>{' '}
-                | {formatCurrency(obligationsPlan, currency)} ({paidObligationsCount} de {totalObligationsCount} pagadas)
-                {obligationsActualPaid > obligationsPlan && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-rose-50 text-rose-600 rounded-md border border-rose-100 shrink-0">
-                    +{formatCurrency(obligationsActualPaid - obligationsPlan, currency)} excedido
-                  </span>
-                )}
+            <div className="flex flex-wrap justify-between items-baseline gap-x-2 gap-y-0.5">
+              <span className="text-gray-500 flex items-center gap-1 text-xs font-semibold"><Home className="w-3.5 h-3.5 shrink-0" /> Obligaciones (Servicios y Deudas)</span>
+              <span className={`text-xs font-black ${obligationsActualPaid > obligationsPlan ? 'text-rose-600' : 'text-gray-700'}`}>
+                {formatCurrency(obligationsActualPaid, currency)}
               </span>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+              <span className="text-[11px] text-gray-400 font-bold">de {formatCurrency(obligationsPlan, currency)} ({paidObligationsCount} de {totalObligationsCount} pagadas)</span>
+              {obligationsActualPaid > obligationsPlan && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-rose-50 text-rose-600 rounded-md border border-rose-100">
+                  +{formatCurrency(obligationsActualPaid - obligationsPlan, currency)} excedido
+                </span>
+              )}
             </div>
             <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner border border-gray-200/50">
               <div
@@ -339,19 +339,19 @@ export default function BudgetDiagnosticWidget({
 
           {/* Pilar 3: Tarjetas de Crédito */}
           <div className="space-y-1.5">
-            <div className="flex justify-between text-xs font-semibold">
-              <span className="text-gray-500 flex items-center gap-1"><CreditCard className="w-3.5 h-3.5" /> Tarjetas de Crédito (Reservas)</span>
-              <span className="text-gray-400 font-bold flex items-center gap-1.5">
-                <span className={cardsSpent > cardsPlan ? 'text-rose-600 font-black' : 'text-gray-700 font-black'}>
-                  {formatCurrency(cardsSpent, currency)}
-                </span>{' '}
-                | {formatCurrency(cardsPlan, currency)} ({cardsPct}%)
-                {cardsSpent > cardsPlan && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-rose-50 text-rose-600 rounded-md border border-rose-100 shrink-0">
-                    +{formatCurrency(cardsSpent - cardsPlan, currency)} excedido
-                  </span>
-                )}
+            <div className="flex flex-wrap justify-between items-baseline gap-x-2 gap-y-0.5">
+              <span className="text-gray-500 flex items-center gap-1 text-xs font-semibold"><CreditCard className="w-3.5 h-3.5 shrink-0" /> Tarjetas de Crédito (Reservas)</span>
+              <span className={`text-xs font-black ${cardsSpent > cardsPlan ? 'text-rose-600' : 'text-gray-700'}`}>
+                {formatCurrency(cardsSpent, currency)}
               </span>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+              <span className="text-[11px] text-gray-400 font-bold">de {formatCurrency(cardsPlan, currency)} ({cardsPct}%)</span>
+              {cardsSpent > cardsPlan && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-rose-50 text-rose-600 rounded-md border border-rose-100">
+                  +{formatCurrency(cardsSpent - cardsPlan, currency)} excedido
+                </span>
+              )}
             </div>
             <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner border border-gray-200/50">
               <div

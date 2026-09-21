@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, AlertTriangle, Sparkles, ChevronDown, ChevronUp, RotateCcw, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { X, AlertOctagon, AlertTriangle, Info, Sparkles, ChevronDown, ChevronUp, RotateCcw, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { SmartAlert, runAlertEngine } from '../../application/intelligence/AlertEngine';
 import { getDb } from '../../infrastructure/adapters/SqliteAdapter';
 import { AlertScorer, buildAlertFeatures } from '../../services/AlertScorer';
@@ -39,8 +39,9 @@ const severityConfig = {
   CRITICAL: {
     border: 'border-l-rose-500',
     bg: 'bg-rose-50',
-    icon: <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />,
+    icon: <AlertOctagon className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />,
     badge: 'bg-rose-100 text-rose-700',
+    badgeIcon: <AlertOctagon className="w-3 h-3" />,
     label: 'Crítico',
   },
   WARNING: {
@@ -48,6 +49,7 @@ const severityConfig = {
     bg: 'bg-amber-50',
     icon: <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />,
     badge: 'bg-amber-100 text-amber-700',
+    badgeIcon: <AlertTriangle className="w-3 h-3" />,
     label: 'Atención',
   },
   INFO: {
@@ -55,6 +57,7 @@ const severityConfig = {
     bg: 'bg-indigo-50/60',
     icon: <Sparkles className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />,
     badge: 'bg-indigo-100 text-indigo-700',
+    badgeIcon: <Info className="w-3 h-3" />,
     label: 'Info',
   },
 };
@@ -241,13 +244,13 @@ export default function SmartAlertPanel({
           {!isRunning && (
             <div className="flex items-center gap-1.5">
               {criticalCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-700 uppercase tracking-wider">
-                  {criticalCount} crítica{criticalCount !== 1 ? 's' : ''}
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-700" title={`${criticalCount} crítica${criticalCount !== 1 ? 's' : ''}`}>
+                  <AlertOctagon className="w-3 h-3" /> {criticalCount}
                 </span>
               )}
               {warningCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-700 uppercase tracking-wider">
-                  {warningCount} aviso{warningCount !== 1 ? 's' : ''}
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-700" title={`${warningCount} aviso${warningCount !== 1 ? 's' : ''}`}>
+                  <AlertTriangle className="w-3 h-3" /> {warningCount}
                 </span>
               )}
             </div>
@@ -313,8 +316,8 @@ export default function SmartAlertPanel({
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <p className="text-xs font-semibold text-gray-800">{alert.title}</p>
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${cfg.badge}`}>
-                      {cfg.label}
+                    <span className={`p-1 rounded ${cfg.badge}`} title={cfg.label} aria-label={cfg.label}>
+                      {cfg.badgeIcon}
                     </span>
                   </div>
                   <p className="text-xs text-gray-600 leading-relaxed">{alert.message}</p>

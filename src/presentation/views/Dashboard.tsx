@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { Filter, ArrowRight, Repeat } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
@@ -524,7 +524,12 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
   const selectedAcc = !isCard ? (accounts as any[]).find((a: any) => a.id.toString() === accountId) : null;
 
   // Linked cards for correctly scoped spending (only when an account is selected)
-  const linkedCards = !isCard ? cards.filter((c: any) => (c as any).payment_account_id === actualId) : [];
+  // Memoized so tab switches (which re-render Dashboard) don't create a new array
+  // reference and re-trigger SmartAlertPanel's alert engine unnecessarily.
+  const linkedCards = useMemo(
+    () => (!isCard ? cards.filter((c: any) => (c as any).payment_account_id === actualId) : []),
+    [isCard, actualId, cards]
+  );
 
   // Calculate progress
   // For categories, we only show EXPENSES from the ACTUAL account/card (no mixing to avoid double counting)
