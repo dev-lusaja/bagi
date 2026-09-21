@@ -2,6 +2,7 @@ import { useState, useEffect, Fragment } from 'react';
 import { Filter, CreditCard, Wallet, Coins, Tags, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
+import { CURRENCY_CODES } from '../utils/currencies';
 import AlertModal from '../components/AlertModal';
 
 export default function Transactions() {
@@ -311,8 +312,7 @@ export default function Transactions() {
                  <Coins className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-indigo-500 transition-colors" />
                  <select className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-100 bg-white text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-indigo-100 transition-all appearance-none cursor-pointer" value={filterCurrency} onChange={e=>setFilterCurrency(e.target.value)}>
                     <option value="">Moneda</option>
-                    <option value="PEN">PEN</option>
-                    <option value="COP">COP</option>
+                    {CURRENCY_CODES.map(code => <option key={code} value={code}>{code}</option>)}
                  </select>
                </div>
 

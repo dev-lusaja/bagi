@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
+import { COUNTRY_CURRENCIES, CURRENCY_CODES } from '../utils/currencies';
 import { HelpCircle, ArrowRightLeft, TrendingUp, TrendingDown, User, LogOut, Sparkles, RefreshCw, Camera, Type, AlertTriangle, CheckCircle2, Save, Trash2 } from 'lucide-react';
 import AlertModal from '../components/AlertModal';
 import {
@@ -466,20 +467,14 @@ export default function SettingsView() {
                 value={accCountry} 
                 onChange={e => {
                   const country = e.target.value;
-                  const currencyMap: Record<string, string> = {
-                    'Colombia': 'COP',
-                    'Perú': 'PEN',
-                    'Estados Unidos': 'USD',
-                    'Europa': 'EUR'
-                  };
+                  const found = COUNTRY_CURRENCIES.find(c => c.country === country);
                   setAccCountry(country);
-                  setAccCurrency(currencyMap[country] || 'COP');
+                  setAccCurrency(found?.code || 'COP');
                 }}
               >
-                  <option value="Colombia">Colombia (COP)</option>
-                  <option value="Perú">Perú (PEN)</option>
-                  <option value="Estados Unidos">Estados Unidos (USD)</option>
-                  <option value="Europa">Unión Europea (EUR)</option>
+                  {COUNTRY_CURRENCIES.map(c => (
+                    <option key={c.country} value={c.country}>{c.country === 'Europa' ? 'Unión Europea' : c.country} ({c.code})</option>
+                  ))}
               </select>
               <button type="submit" className="bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 font-bold min-h-[44px]">Crear</button>
           </form>
@@ -521,10 +516,7 @@ export default function SettingsView() {
                         <option value="DEBIT">Débito</option>
                     </select>
                     <select className="rounded-xl border-gray-200 shadow-sm p-3 border" value={cardCurrency} onChange={e => setCardCurrency(e.target.value)}>
-                        <option value="COP">COP</option>
-                        <option value="PEN">PEN</option>
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
+                        {CURRENCY_CODES.map(code => <option key={code} value={code}>{code}</option>)}
                     </select>
                 </div>
               </div>

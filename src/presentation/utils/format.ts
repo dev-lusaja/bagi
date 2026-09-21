@@ -3,7 +3,15 @@ export const formatCurrency = (amount: number, currency?: string) => {
     'PEN': 'S/',
     'COP': '$',
     'USD': '$',
-    'EUR': '€'
+    'EUR': '€',
+    'ARS': '$',
+    'BOB': 'Bs',
+    'BRL': 'R$',
+    'CLP': '$',
+    'MXN': '$',
+    'PYG': '₲',
+    'UYU': '$U',
+    'VES': 'Bs.S',
   };
   const symbol = symbols[currency || ''] || '';
   const formatted = new Intl.NumberFormat('en-US', {

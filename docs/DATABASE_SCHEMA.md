@@ -10,7 +10,7 @@ Toda la persistencia dentro de Bagi ocurre en una base de datos SQLite cargada e
 
 ```
 users (legado, sin uso activo)
-  └──< accounts          [currency: COP | PEN]
+  └──< accounts          [currency: COP | PEN | USD | EUR | ARS | BOB | BRL | CLP | MXN | PYG | UYU | VES]
         └──< cards        [type: CREDIT | DEBIT]
         └──< transactions
         └──< global_budgets
@@ -52,7 +52,7 @@ Orígenes de fondos del usuario (cuentas bancarias o billeteras digitales).
 |---|---|---|---|
 | `id` | INTEGER | PK, AUTOINCREMENT | ID de cuenta |
 | `name` | TEXT | — | Nombre descriptivo (ej. "Bancolombia Ahorros") |
-| `currency` | TEXT | `'COP' \| 'PEN'` | Moneda de la cuenta |
+| `currency` | TEXT | ISO 4217 (ver `presentation/utils/currencies.ts`) | Moneda de la cuenta |
 | `country` | TEXT | — | País de la cuenta |
 | `user_id` | INTEGER | FK → `users.id` | Propietario (actualmente siempre `1`) |
 

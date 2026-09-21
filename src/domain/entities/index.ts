@@ -6,7 +6,7 @@ export interface User {
 export interface Account {
     id: number;
     name: string;
-    currency: 'COP' | 'PEN';
+    currency: string;
     country: string;
     user_id: number;
 }
