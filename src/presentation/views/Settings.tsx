@@ -359,7 +359,7 @@ export default function SettingsView() {
         )}
         <button 
           onClick={logout}
-          className="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 transition-colors"
+          className="p-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors"
           title="Cerrar Sesión"
         >
           <LogOut className="w-5 h-5" />
@@ -661,14 +661,14 @@ export default function SettingsView() {
               {hasEndDate && (
                 <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t ${OBLIGATION.divider} pt-4 animate-in slide-in-from-top-2 duration-300`}>
                     <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black text-rose-600 ml-1">Mes de finalización</label>
-                        <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-rose-700" value={recEndMonth} onChange={e => setRecEndMonth(parseInt(e.target.value))} required>
+                        <label className="text-[10px] font-black text-gray-500 ml-1">Mes de finalización</label>
+                        <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-gray-700" value={recEndMonth} onChange={e => setRecEndMonth(parseInt(e.target.value))} required>
                             {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                     </div>
                     <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black text-rose-600 ml-1">Año de finalización</label>
-                        <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-rose-700" value={recEndYear} onChange={e => setRecEndYear(parseInt(e.target.value))} required>
+                        <label className="text-[10px] font-black text-gray-500 ml-1">Año de finalización</label>
+                        <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-gray-700" value={recEndYear} onChange={e => setRecEndYear(parseInt(e.target.value))} required>
                             {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                     </div>
@@ -777,15 +777,15 @@ export default function SettingsView() {
                           {editRecData.end_year && (
                             <div className="grid grid-cols-2 gap-4 border-t border-indigo-50 pt-4">
                               <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-black text-rose-400">Mes de fin</label>
-                                <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-rose-100" value={editRecData.end_month || ''} onChange={e => setEditRecData({...editRecData, end_month: e.target.value})}>
+                                <label className="text-[10px] font-black text-gray-500">Mes de fin</label>
+                                <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.end_month || ''} onChange={e => setEditRecData({...editRecData, end_month: e.target.value})}>
                                   <option value="">Indefinido</option>
                                   {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-black text-rose-400">Año de fin</label>
-                                <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-rose-100" value={editRecData.end_year || ''} onChange={e => setEditRecData({...editRecData, end_year: e.target.value})}>
+                                <label className="text-[10px] font-black text-gray-500">Año de fin</label>
+                                <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.end_year || ''} onChange={e => setEditRecData({...editRecData, end_year: e.target.value})}>
                                    <option value="">Indefinido</option>
                                    {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
                                 </select>

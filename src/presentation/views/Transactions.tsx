@@ -132,16 +132,15 @@ export default function Transactions() {
     fetchFilters();
   };
 
-  const getTxTypeBadge = (type: string) => {
+  // The amount carries the transaction type: color plus a sign, so it doesn't rely on color alone.
+  const getAmountStyle = (type: string) => {
     switch (type) {
       case 'INCOME':
-        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-100">Ingreso</span>;
+        return { sign: '+', className: 'text-emerald-600' };
       case 'EXPENSE':
-        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-100">Gasto</span>;
-      case 'TRANSFER':
-        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-gray-100 text-gray-600 border border-gray-200">Transf</span>;
+        return { sign: '−', className: 'text-rose-600' };
       default:
-        return null;
+        return { sign: '', className: 'text-gray-500' };
     }
   };
 
@@ -355,7 +354,7 @@ export default function Transactions() {
             <thead>
               <tr className="bg-gray-50/50">
                 <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400">Información</th>
-                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400">Tipo / Categoría</th>
+                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400">Categoría</th>
                 <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400">Origen</th>
                 <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400">Monto</th>
                 <th className="px-6 py-4 text-right"></th>
@@ -372,7 +371,9 @@ export default function Transactions() {
                        </div>
                     </td>
                   </tr>
-                  {txs.map((t: any) => (
+                  {txs.map((t: any) => {
+                    const amount = getAmountStyle(t.category?.type);
+                    return (
                     <tr key={t.id} className="hover:bg-indigo-50/30 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
@@ -381,10 +382,7 @@ export default function Transactions() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                         <div className="flex flex-col gap-1.5">
-                            {getTxTypeBadge(t.category?.type)}
-                            <span className="text-gray-500 font-semibold text-xs ml-0.5">{t.category?.name}</span>
-                         </div>
+                         <span className="text-gray-600 font-medium text-sm">{t.category?.name}</span>
                       </td>
                        <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
@@ -392,8 +390,8 @@ export default function Transactions() {
                             <span className="text-gray-500 font-medium text-xs">{t.account?.name || t.card?.name}</span>
                           </div>
                        </td>
-                       <td className={`px-6 py-4 text-right font-normal text-base ${t.category?.type === 'INCOME' ? 'text-emerald-600' : 'text-gray-600'}`}>
-                          {formatCurrency(t.amount, t.account?.currency || t.card?.currency)}
+                       <td className={`px-6 py-4 text-right font-medium text-base tabular-nums whitespace-nowrap ${amount.className}`}>
+                          {amount.sign}{formatCurrency(t.amount, t.account?.currency || t.card?.currency)}
                        </td>
                       <td className="px-6 py-4 text-right">
                         <button 
@@ -405,7 +403,8 @@ export default function Transactions() {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </Fragment>
               ))}
               
@@ -437,7 +436,9 @@ export default function Transactions() {
                      <span className="text-[11px] font-black text-indigo-500">{dateGroup}</span>
                   </div>
                   <div className="flex flex-col">
-                    {txs.map((t: any) => (
+                    {txs.map((t: any) => {
+                      const amount = getAmountStyle(t.category?.type);
+                      return (
                       <div key={t.id} className="p-4 flex flex-col gap-2 relative bg-white border-b border-gray-50 last:border-b-0">
                          <div className="flex justify-between items-start gap-3">
                             <div className="flex flex-col min-w-0 flex-1">
@@ -449,16 +450,13 @@ export default function Transactions() {
                                </span>
                             </div>
                             <div className="flex flex-col items-end shrink-0">
-                               <span className={`font-bold text-base ${t.category?.type === 'INCOME' ? 'text-emerald-600' : 'text-gray-800'}`}>
-                                 {formatCurrency(t.amount, t.account?.currency || t.card?.currency)}
+                               <span className={`font-bold text-base tabular-nums whitespace-nowrap ${amount.className}`}>
+                                 {amount.sign}{formatCurrency(t.amount, t.account?.currency || t.card?.currency)}
                                </span>
                             </div>
                          </div>
                          <div className="flex justify-between items-center mt-1">
-                            <div className="flex items-center gap-1.5">
-                               {getTxTypeBadge(t.category?.type)}
-                               <span className="text-gray-400 font-semibold text-[10px]">{t.category?.name}</span>
-                            </div>
+                            <span className="text-gray-500 font-semibold text-xs">{t.category?.name}</span>
                             <button 
                                onClick={() => requestDelete(t.id)} 
                                className="p-1.5 text-gray-300 hover:text-rose-500 rounded-lg transition-all"
@@ -467,7 +465,8 @@ export default function Transactions() {
                             </button>
                          </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                </Fragment>
            ))}

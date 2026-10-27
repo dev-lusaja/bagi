@@ -179,7 +179,7 @@ export default function App() {
           )}
           <button
             onClick={logout}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors">
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition-colors">
             <LogOut className="w-5 h-5" />
             <span>Cerrar sesión</span>
           </button>

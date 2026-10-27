@@ -56,9 +56,10 @@ Cada tarea es independiente. Esfuerzo: **(S)** rápido · **(M)** unas horas. Ma
   - Verde = `emerald`, rojo = `rose` (ya eran los más usados). Los colores por concepto de C1 (azul/teal/morado) se mantienen como excepción.
   - Quitar el texto con degradado de todos los `<h2>` de vista.
   - Quitar los degradados de las barras del Diagnóstico.
-- [ ] **C3 (S): Usar el rojo solo para errores.**
-  - Tipo "Gasto" en rojo en Configuración (`views/Settings.tsx:440-444`) → gris.
+- [x] **C3 (S): Usar el rojo solo para errores y gastos.**
+  - El tipo "Gasto" se queda en rojo (`rose`) en toda la app, aunque comparta color con los errores. Ingreso verde, Transferencia gris.
   - Analítica: indigo-500 vs purple-500 casi no se distinguen (`views/Analytics.tsx:388-389`) → indigo vs gris.
+  - También a gris: "Cerrar sesión" y las etiquetas de fecha de fin de obligaciones. Los botones de borrar siguen en rojo (acción destructiva).
 - [ ] **C4 (S): Corregir el contraste.** Como mínimo `gray-500` para todo texto con significado.
   - `text-gray-400` sobre blanco ≈ 2.5:1 (falla WCAG AA).
   - `text-gray-200/300` en "Otras Tarjetas" (`views/Home.tsx:211`) y estados vacíos.

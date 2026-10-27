@@ -235,7 +235,7 @@ export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) =
         />
         <PeriodPicker
           label="Comparar con"
-          dotClass="bg-purple-500"
+          dotClass="bg-gray-400"
           month={monthB}
           year={yearB}
           onMonthChange={setMonthB}
@@ -382,7 +382,7 @@ export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) =
                   />
                   <Legend verticalAlign="top" height={36} />
                   <Bar dataKey={monthLabelA} fill="#6366f1" radius={[0, 8, 8, 0]} barSize={14} />
-                  <Bar dataKey={monthLabelB} fill="#a855f7" radius={[0, 8, 8, 0]} barSize={14} />
+                  <Bar dataKey={monthLabelB} fill="#9ca3af" radius={[0, 8, 8, 0]} barSize={14} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -407,7 +407,7 @@ export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) =
                         <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
                           <span>{monthLabelA}: <strong className="text-indigo-600">{formatCurrency(item.valA, currency)}</strong></span>
                           <span>vs</span>
-                          <span>{monthLabelB}: <strong className="text-purple-600">{formatCurrency(item.valB, currency)}</strong></span>
+                          <span>{monthLabelB}: <strong className="text-gray-600">{formatCurrency(item.valB, currency)}</strong></span>
                         </div>
                       </div>
 
