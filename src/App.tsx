@@ -187,8 +187,9 @@ export default function App() {
       </aside>
 
       {/* Main Content Area */}
-      <main ref={mainRef} className="flex-1 overflow-auto scroll-smooth overscroll-contain p-3 sm:p-4 md:p-8 pb-28 md:pb-8">
-        <div className="max-w-[90rem] mx-auto">
+      {/* Bagi IA is a full-height chat: messages scroll inside it and the input sits right above the bottom bar */}
+      <main ref={mainRef} className={`flex-1 overscroll-contain p-3 sm:p-4 md:p-8 md:pb-8 ${activeTab === 'intelligence' ? 'overflow-hidden flex flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))]' : 'overflow-auto scroll-smooth pb-28'}`}>
+        <div className={`max-w-[90rem] mx-auto ${activeTab === 'intelligence' ? 'w-full flex-1 min-h-0' : ''}`}>
           {activeTab === 'home' && <Home onNavigate={setActiveTab} onOpenAccountSummary={openAccountSummary} />}
           {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} initialAccountId={dashboardAccountId} />}
           {activeTab === 'transactions' && <Transactions />}

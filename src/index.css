@@ -50,15 +50,6 @@
       font-size: 16px !important;
     }
   }
-
-  /* Hide scrollbar utility for tab bars */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
 }
 
 

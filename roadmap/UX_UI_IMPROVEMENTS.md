@@ -88,14 +88,14 @@ Cada tarea es independiente. Esfuerzo: **(S)** rápido · **(M)** unas horas. Ma
 
 - [ ] **R1 (S): Mostrar primero la tarjeta "Presupuesto mensual" en móvil y tablet** (`order-first xl:order-none`; la vista pasa a 3 columnas desde `xl`).
   - `views/Dashboard.tsx:778` y `:1266`
-- [ ] **R2 (S): Pestañas de Presupuesto con nombres cortos:** "Resumen", "Categorías", "Pagos fijos", "Tarjetas" (sin scroll horizontal ni flecha parpadeante).
+- [x] **R2 (S): Pestañas de Presupuesto con nombres cortos:** "Resumen", "Categorías", "Pagos fijos", "Tarjetas" (sin scroll horizontal ni flecha parpadeante).
 - [ ] **R3 (S): Hacer visibles los botones de borrar en pantallas táctiles** (hoy `text-gray-200` + `group-hover`).
   - `views/Dashboard.tsx:962`, `views/Settings.tsx:447`, `:493`, `:555`
 - [ ] **R4 (S): Permitir el zoom y corregir el idioma.** Quitar `maximum-scale=1, user-scalable=0`; `lang="en"` → `"es"`.
   - `index.html:2-6`
 - [ ] **R5 (S): Modal de detalle de categoría como lista en móvil** (hoy tabla de 4 columnas con `p-8`).
   - `views/Dashboard.tsx:1600-1667`
-- [ ] **R6 (M): Chat de Bagi IA a pantalla completa** con el campo de texto fijo sobre la barra inferior.
+- [x] **R6 (M): Chat de Bagi IA a pantalla completa** con el campo de texto fijo sobre la barra inferior.
   - `views/Intelligence.tsx:206-250`
 
 ## 5. Flujo e interacción

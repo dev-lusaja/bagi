@@ -176,7 +176,7 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
   ) : null;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
+    <div className="h-full flex flex-col gap-4 sm:gap-6 animate-in fade-in duration-500">
 
       {/* ─── Header ─── */}
       <div>
@@ -201,11 +201,11 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
       )}
 
       {/* ─── Panel único: chat + voz unificados ─── */}
-      <div className="max-w-3xl mx-auto w-full">
-        <div className="bg-white p-4 sm:p-6 rounded-card border border-gray-100 shadow-sm space-y-4 flex flex-col min-h-[520px]">
+      <div className="max-w-3xl mx-auto w-full flex-1 min-h-0 flex flex-col">
+        <div className="bg-white p-3 sm:p-6 rounded-card border border-gray-100 shadow-sm flex flex-col gap-3 sm:gap-4 flex-1 min-h-0">
 
           {/* Header de controles e indicador de estado */}
-          <div className="w-full flex justify-between items-center px-2 border-b border-gray-50 pb-3">
+          <div className="w-full flex justify-between items-center px-2 border-b border-gray-50 pb-3 shrink-0">
             <div className="flex items-center gap-2" title={!activeProvider ? "Sin proveedor de IA configurado" : apiKey ? "API Key configurada" : "API Key no configurada"}>
               <span className={`w-2.5 h-2.5 rounded-full ${apiKey ? 'bg-emerald-500' : 'bg-rose-500'}`} />
               <span className="text-[10px] font-black text-gray-500">
@@ -246,7 +246,7 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
           </div>
 
           {/* Mensajes del chat */}
-          <div className="flex-1 overflow-y-auto max-h-[420px] space-y-3 pr-1">
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
             {chatMessages.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center py-10 space-y-2 text-gray-500">
                 <Bot className="w-10 h-10 text-indigo-400 animate-bounce" />
@@ -323,8 +323,97 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
             </p>
           )}
 
+          {/* Banner: sin proveedor de IA configurado por default */}
+          {!activeProvider && (
+            <div className="w-full bg-indigo-50/60 border border-indigo-100 rounded-control p-4 flex items-center justify-between gap-3 text-left">
+              <div className="flex items-center gap-2">
+                <Info className="w-4 h-4 text-indigo-500" />
+                <span className="text-xs font-semibold text-indigo-950">
+                  No tienes un proveedor de IA configurado por defecto
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate?.('settings')}
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-control text-[10px] font-black transition-all"
+              >
+                Ir a configuración
+              </button>
+            </div>
+          )}
+
+          {/* Banner: proveedor activo sin API Key */}
+          {activeProvider && !apiKey && (
+            <div className="w-full bg-indigo-50/60 border border-indigo-100 rounded-control p-4 flex items-center justify-between gap-3 text-left">
+              <div className="flex items-center gap-2">
+                <Info className="w-4 h-4 text-indigo-500" />
+                <span className="text-xs font-semibold text-indigo-950">
+                  Se requiere tu API Key de {activeProvider === 'gemini' ? 'Gemini' : 'OpenRouter'} para procesar
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsKeyModalOpen(true)}
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-control text-[10px] font-black transition-all"
+              >
+                Configurar
+              </button>
+            </div>
+          )}
+
+          {/* Alertas de error (NO_AI_PROVIDER y NO_API_KEY ya se comunican en los banners de arriba) */}
+          {error && error !== 'NO_AI_PROVIDER' && error !== 'NO_API_KEY' && (
+            <div className="w-full p-4 bg-rose-50 border border-rose-100 text-rose-800 text-xs font-semibold rounded-control flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+              <div>
+                {error === 'QUOTA_EXHAUSTED' && (
+                  <>
+                    <h5 className="font-extrabold">Cuota diaria agotada</h5>
+                    <p className="text-rose-700/90 mt-0.5">Has alcanzado el límite gratuito de consultas para hoy en Google AI Studio.</p>
+                  </>
+                )}
+                {error === 'INVALID_API_KEY' && (
+                  <>
+                    <h5 className="font-extrabold">API Key Inválida</h5>
+                    <p className="text-rose-700/90 mt-0.5">La clave ingresada no es válida. Por favor, re-configúrala.</p>
+                  </>
+                )}
+                {error === 'NO_SPEECH_DETECTED' && (
+                  <>
+                    <h5 className="font-extrabold">No te escuchamos</h5>
+                    <p className="text-rose-700/90 mt-0.5">No se detectó audio del micrófono. Por favor, vuelve a intentar.</p>
+                  </>
+                )}
+                {error === 'MIC_PERMISSION_DENIED' && (
+                  <>
+                    <h5 className="font-extrabold">Permiso de micrófono denegado</h5>
+                    <p className="text-rose-700/90 mt-0.5">Habilita el acceso al micrófono en los permisos del navegador e intenta de nuevo.</p>
+                  </>
+                )}
+                {error === 'NO_MICROPHONE' && (
+                  <>
+                    <h5 className="font-extrabold">No se detectó un micrófono</h5>
+                    <p className="text-rose-700/90 mt-0.5">Conecta o habilita un micrófono para usar el registro por voz.</p>
+                  </>
+                )}
+                {error === 'TIMEOUT_ERROR' && (
+                  <>
+                    <h5 className="font-extrabold">La IA tardó demasiado en responder</h5>
+                    <p className="text-rose-700/90 mt-0.5">Revisa tu conexión a internet e intenta de nuevo.</p>
+                  </>
+                )}
+                {error === 'GENERIC_ERROR' && (
+                  <>
+                    <h5 className="font-extrabold">Error inesperado</h5>
+                    <p className="text-rose-700/90 mt-0.5">Ocurrió un error al conectar con Gemini. Revisa tu conexión a internet.</p>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Formulario de envío */}
-          <form onSubmit={handleSendChat} className="space-y-2 pt-2 border-t border-gray-100">
+          <form onSubmit={handleSendChat} className="space-y-2 pt-2 border-t border-gray-100 shrink-0">
             {attachError && (
               <p className="text-[10px] text-rose-500 font-semibold">{attachError}</p>
             )}
@@ -429,95 +518,6 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
               </button>
             </div>
           </form>
-
-          {/* Banner: sin proveedor de IA configurado por default */}
-          {!activeProvider && (
-            <div className="w-full bg-indigo-50/60 border border-indigo-100 rounded-control p-4 flex items-center justify-between gap-3 text-left">
-              <div className="flex items-center gap-2">
-                <Info className="w-4 h-4 text-indigo-500" />
-                <span className="text-xs font-semibold text-indigo-950">
-                  No tienes un proveedor de IA configurado por defecto
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => onNavigate?.('settings')}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-control text-[10px] font-black transition-all"
-              >
-                Ir a configuración
-              </button>
-            </div>
-          )}
-
-          {/* Banner: proveedor activo sin API Key */}
-          {activeProvider && !apiKey && (
-            <div className="w-full bg-indigo-50/60 border border-indigo-100 rounded-control p-4 flex items-center justify-between gap-3 text-left">
-              <div className="flex items-center gap-2">
-                <Info className="w-4 h-4 text-indigo-500" />
-                <span className="text-xs font-semibold text-indigo-950">
-                  Se requiere tu API Key de {activeProvider === 'gemini' ? 'Gemini' : 'OpenRouter'} para procesar
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsKeyModalOpen(true)}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-control text-[10px] font-black transition-all"
-              >
-                Configurar
-              </button>
-            </div>
-          )}
-
-          {/* Alertas de error (NO_AI_PROVIDER y NO_API_KEY ya se comunican en los banners de arriba) */}
-          {error && error !== 'NO_AI_PROVIDER' && error !== 'NO_API_KEY' && (
-            <div className="w-full p-4 bg-rose-50 border border-rose-100 text-rose-800 text-xs font-semibold rounded-control flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
-              <div>
-                {error === 'QUOTA_EXHAUSTED' && (
-                  <>
-                    <h5 className="font-extrabold">Cuota diaria agotada</h5>
-                    <p className="text-rose-700/90 mt-0.5">Has alcanzado el límite gratuito de consultas para hoy en Google AI Studio.</p>
-                  </>
-                )}
-                {error === 'INVALID_API_KEY' && (
-                  <>
-                    <h5 className="font-extrabold">API Key Inválida</h5>
-                    <p className="text-rose-700/90 mt-0.5">La clave ingresada no es válida. Por favor, re-configúrala.</p>
-                  </>
-                )}
-                {error === 'NO_SPEECH_DETECTED' && (
-                  <>
-                    <h5 className="font-extrabold">No te escuchamos</h5>
-                    <p className="text-rose-700/90 mt-0.5">No se detectó audio del micrófono. Por favor, vuelve a intentar.</p>
-                  </>
-                )}
-                {error === 'MIC_PERMISSION_DENIED' && (
-                  <>
-                    <h5 className="font-extrabold">Permiso de micrófono denegado</h5>
-                    <p className="text-rose-700/90 mt-0.5">Habilita el acceso al micrófono en los permisos del navegador e intenta de nuevo.</p>
-                  </>
-                )}
-                {error === 'NO_MICROPHONE' && (
-                  <>
-                    <h5 className="font-extrabold">No se detectó un micrófono</h5>
-                    <p className="text-rose-700/90 mt-0.5">Conecta o habilita un micrófono para usar el registro por voz.</p>
-                  </>
-                )}
-                {error === 'TIMEOUT_ERROR' && (
-                  <>
-                    <h5 className="font-extrabold">La IA tardó demasiado en responder</h5>
-                    <p className="text-rose-700/90 mt-0.5">Revisa tu conexión a internet e intenta de nuevo.</p>
-                  </>
-                )}
-                {error === 'GENERIC_ERROR' && (
-                  <>
-                    <h5 className="font-extrabold">Error inesperado</h5>
-                    <p className="text-rose-700/90 mt-0.5">Ocurrió un error al conectar con Gemini. Revisa tu conexión a internet.</p>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
 
         </div>
       </div>

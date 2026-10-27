@@ -833,39 +833,24 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
           )}
 
           {/* Tabs Navigation */}
-          <div className="relative mb-6 group">
-            <div className="flex space-x-1 bg-gray-100/50 p-1 rounded-control overflow-x-auto no-scrollbar max-w-full pb-1 scroll-smooth">
+          {/* Short labels so every tab fits without horizontal scroll */}
+          <div role="tablist" className="flex gap-1 bg-gray-100/50 p-1 rounded-control mb-6">
+            {[
+              { key: 'diagnostic', label: 'Resumen' },
+              { key: 'consumption', label: 'Categorías' },
+              { key: 'obligations', label: 'Pagos fijos' },
+              ...(!isCard && linkedCards.length > 0 ? [{ key: 'cards', label: 'Tarjetas' }] : []),
+            ].map(tab => (
               <button
-                onClick={() => setActiveTab('diagnostic')}
-                className={`px-4 sm:px-6 py-2.5 rounded-control text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'diagnostic' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
+                key={tab.key}
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-1 min-w-0 px-2 sm:px-4 py-2.5 rounded-control text-xs sm:text-sm font-bold leading-tight transition-all min-h-[44px] ${activeTab === tab.key ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
               >
-                Resumen
+                {tab.label}
               </button>
-              <button
-                onClick={() => setActiveTab('consumption')}
-                className={`px-4 sm:px-6 py-2.5 rounded-control text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'consumption' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
-              >
-                Consumo por categoría
-              </button>
-              <button
-                onClick={() => setActiveTab('obligations')}
-                className={`px-4 sm:px-6 py-2.5 rounded-control text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'obligations' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
-              >
-                Obligaciones del mes
-              </button>
-              {!isCard && linkedCards.length > 0 && (
-                <button
-                  onClick={() => setActiveTab('cards')}
-                  className={`px-4 sm:px-6 py-2.5 rounded-control text-xs sm:text-sm font-bold transition-all shrink-0 min-h-[44px] ${activeTab === 'cards' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
-                >
-                  Tarjetas asociadas
-                </button>
-              )}
-            </div>
-            {/* Visual fade hint on mobile */}
-            <div className="pointer-events-none absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 to-transparent rounded-r-control sm:hidden flex items-center justify-end pr-1">
-              <span className="text-gray-400 text-xs font-bold">›</span>
-            </div>
+            ))}
           </div>
 
           {activeTab === 'diagnostic' && (
