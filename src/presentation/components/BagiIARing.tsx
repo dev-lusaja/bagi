@@ -46,7 +46,7 @@ export default function BagiIARing({ state, onClick, disabled, audioLevel = 0, s
           state === 'idle' && "border-transparent transition-colors duration-500",
           state === 'listening' && "border-indigo-400 border-t-indigo-200 border-r-indigo-200 animate-spin",
           state === 'processing' && "border-amber-400 border-t-amber-200 border-l-amber-200 animate-[spin_0.5s_linear_infinite] transition-colors duration-500",
-          state === 'speaking' && "border-indigo-600 border-opacity-80 animate-pulse transition-colors duration-500"
+          state === 'speaking' && "border-indigo-600 border-opacity-80 transition-colors duration-500"
         )}
       />
       

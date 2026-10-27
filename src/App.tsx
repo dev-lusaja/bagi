@@ -56,10 +56,10 @@ export default function App() {
   if (!isInitialized) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-gray-50 space-y-6">
-        <div className="w-24 h-24 bg-white rounded-[2rem] shadow-xl shadow-indigo-100/50 border border-indigo-50 flex items-center justify-center p-2 overflow-hidden animate-bounce">
+        <div className="w-24 h-24 bg-white rounded-card shadow-xl shadow-indigo-100/50 border border-indigo-50 flex items-center justify-center p-2 overflow-hidden">
           <img src="/logo_circle.png" className="w-full h-full object-contain" alt="Logo" />
         </div>
-        <div className="flex items-center space-x-2 text-gray-400">
+        <div className="flex items-center space-x-2 text-gray-500">
           <Loader2 className="w-5 h-5 animate-spin" />
           <span className="font-bold text-[10px]">Cargando Bagi...</span>
         </div>
@@ -80,12 +80,12 @@ export default function App() {
       {isDemoMode && (
         <div className="w-full bg-gray-900 text-white shrink-0 shadow-sm py-2 px-3.5 text-xs font-bold flex flex-wrap items-center justify-between gap-2 z-50">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <FlaskConical className="w-4 h-4 shrink-0 animate-pulse text-gray-300" />
+            <FlaskConical className="w-4 h-4 shrink-0 text-gray-300" />
             <span className="truncate leading-tight">Modo Demo</span>
           </div>
           <button
             onClick={logout}
-            className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg text-[10px] font-black transition-colors shrink-0 active:scale-95"
+            className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-control text-[10px] font-black transition-colors shrink-0 active:scale-95"
           >
             Salir
           </button>
@@ -97,7 +97,7 @@ export default function App() {
       <aside className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col shadow-sm">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between gap-3 bg-gradient-to-r from-gray-50 to-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white border border-indigo-50 shadow-sm flex items-center justify-center overflow-hidden p-1">
+            <div className="w-10 h-10 rounded-control bg-white border border-indigo-50 shadow-sm flex items-center justify-center overflow-hidden p-1">
               <img src="/logo_circle.png" className="w-full h-full object-contain" alt="Bagi" />
             </div>
             <h1 className="text-xl font-black text-gray-800 tracking-tighter">Bagi</h1>
@@ -105,7 +105,7 @@ export default function App() {
           <button
             onClick={sync}
             disabled={isSyncing}
-            className={`p-2 rounded-lg transition-all ${isSyncing ? 'animate-pulse text-indigo-400' :
+            className={`p-2 rounded-control transition-all ${isSyncing ? 'text-indigo-400' :
                 hasPendingChanges ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' :
                   'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
               }`}
@@ -120,37 +120,37 @@ export default function App() {
         <nav className="flex-1 p-4 space-y-2">
           <button
             onClick={() => setActiveTab('home')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'home' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-control transition-colors ${activeTab === 'home' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <HomeIcon className="w-5 h-5" />
             <span>Inicio</span>
           </button>
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-control transition-colors ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <LayoutDashboard className="w-5 h-5" />
             <span>Presupuesto</span>
           </button>
           <button
             onClick={() => setActiveTab('transactions')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'transactions' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-control transition-colors ${activeTab === 'transactions' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <Receipt className="w-5 h-5" />
             <span>Movimientos</span>
           </button>
           <button
             onClick={() => setActiveTab('intelligence')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'intelligence' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-control transition-colors ${activeTab === 'intelligence' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <Sparkles className="w-5 h-5" />
             <span>Bagi IA</span>
           </button>
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'analytics' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-control transition-colors ${activeTab === 'analytics' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <BarChart3 className="w-5 h-5" />
             <span>Analítica</span>
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-control transition-colors ${activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <Settings className="w-5 h-5" />
             <span>Configuración</span>
           </button>
@@ -173,13 +173,13 @@ export default function App() {
               )}
               <div className="overflow-hidden">
                 <p className="text-xs font-bold text-gray-800 truncate">{userInfo.name}</p>
-                <p className="text-[10px] text-gray-400">Cuenta de Google</p>
+                <p className="text-[10px] text-gray-500">Cuenta de Google</p>
               </div>
             </div>
           )}
           <button
             onClick={logout}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition-colors">
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-control text-gray-600 hover:bg-gray-100 transition-colors">
             <LogOut className="w-5 h-5" />
             <span>Cerrar sesión</span>
           </button>
@@ -202,23 +202,23 @@ export default function App() {
 
       {/* Bottom Navigation (Mobile) */}
       <nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex items-center justify-around p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-lg z-50">
-        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'home' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-control transition-colors ${activeTab === 'home' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-600'}`}>
           <HomeIcon className="w-5 h-5" />
           <span className="text-[11px] font-bold tracking-tight">Inicio</span>
         </button>
-        <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'dashboard' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+        <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-control transition-colors ${activeTab === 'dashboard' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-600'}`}>
           <LayoutDashboard className="w-5 h-5" />
           <span className="text-[11px] font-bold tracking-tight">Presupuesto</span>
         </button>
-        <button onClick={() => setActiveTab('transactions')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'transactions' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+        <button onClick={() => setActiveTab('transactions')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-control transition-colors ${activeTab === 'transactions' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-600'}`}>
           <Receipt className="w-5 h-5" />
           <span className="text-[11px] font-bold tracking-tight">Movimientos</span>
         </button>
-        <button onClick={() => setActiveTab('intelligence')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'intelligence' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+        <button onClick={() => setActiveTab('intelligence')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-control transition-colors ${activeTab === 'intelligence' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-600'}`}>
           <Sparkles className="w-5 h-5" />
           <span className="text-[11px] font-bold tracking-tight">Bagi IA</span>
         </button>
-        <button onClick={() => setActiveTab('more')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${isMoreActive ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+        <button onClick={() => setActiveTab('more')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-control transition-colors ${isMoreActive ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-600'}`}>
           <MoreHorizontal className="w-5 h-5" />
           <span className="text-[11px] font-bold tracking-tight">Más</span>
         </button>

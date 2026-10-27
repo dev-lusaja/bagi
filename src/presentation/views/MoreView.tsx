@@ -18,14 +18,14 @@ export default function MoreView({ onNavigate }: MoreViewProps) {
         </h2>
       </div>
 
-      <ul className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden max-w-xl">
+      <ul className="bg-white rounded-card border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden max-w-xl">
         {ITEMS.map(({ tab, label, Icon, iconClass }) => (
           <li key={tab}>
             <button
               onClick={() => onNavigate(tab)}
               className="w-full flex items-center gap-4 px-4 py-3 min-h-[56px] text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
             >
-              <span className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconClass}`}>
+              <span className={`w-9 h-9 rounded-control flex items-center justify-center shrink-0 ${iconClass}`}>
                 <Icon className="w-5 h-5" />
               </span>
               <span className="flex-1 text-sm font-semibold text-gray-800">{label}</span>

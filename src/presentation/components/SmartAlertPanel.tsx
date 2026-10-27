@@ -186,16 +186,15 @@ export default function SmartAlertPanel({
 
   if (isAnalyzing) {
     return (
-      <div className="mb-6 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+      <div className="mb-6 rounded-card border border-gray-100 bg-white shadow-sm overflow-hidden">
         <div className="flex items-center gap-3 px-5 py-3.5">
-          <Sparkles className="w-4 h-4 text-indigo-400 animate-pulse shrink-0" />
-          <span className="text-sm font-semibold text-gray-400">Bagi está analizando tus datos…</span>
+          <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+          <span className="text-sm font-semibold text-gray-500">Bagi está analizando tus datos…</span>
           <div className="flex gap-0.5 ml-1">
             {[0, 1, 2].map(i => (
               <div
                 key={i}
-                className="w-1 h-1 rounded-full bg-indigo-300 animate-bounce"
-                style={{ animationDelay: `${i * 0.15}s` }}
+                className="w-1 h-1 rounded-full bg-indigo-300"
               />
             ))}
           </div>
@@ -207,7 +206,7 @@ export default function SmartAlertPanel({
   // Estado: todo procesado pero sin alertas
   if (activeAlerts.length === 0) {
     return (
-      <div className="mb-6 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+      <div className="mb-6 rounded-card border border-gray-100 bg-white shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3.5 bg-gray-50/30">
           <div className="flex items-center gap-3">
             <Sparkles className="w-4 h-4 text-gray-400 shrink-0" />
@@ -218,7 +217,7 @@ export default function SmartAlertPanel({
           {dismissedCount > 0 && (
             <button
               onClick={undoDismissAll}
-              className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 hover:text-indigo-500 transition-colors"
+              className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 hover:text-indigo-500 transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
               Restaurar ({dismissedCount})
@@ -230,14 +229,14 @@ export default function SmartAlertPanel({
   }
 
   return (
-    <div className="mb-6 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+    <div className="mb-6 rounded-card border border-gray-100 bg-white shadow-sm overflow-hidden">
       {/* Header del panel */}
       <button
         onClick={() => setExpanded(p => !p)}
         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50/70 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <Sparkles className={`w-4 h-4 ${isRunning ? 'text-indigo-400 animate-pulse' : 'text-indigo-500'}`} />
+          <Sparkles className={`w-4 h-4 ${isRunning ? 'text-indigo-400' : 'text-indigo-500'}`} />
           <span className="text-sm font-semibold text-gray-700">
             {isRunning ? 'Bagi está analizando tus datos…' : `Bagi detectó ${activeAlerts.length} alerta${activeAlerts.length !== 1 ? 's' : ''}`}
           </span>
@@ -260,8 +259,7 @@ export default function SmartAlertPanel({
               {[0, 1, 2].map(i => (
                 <div
                   key={i}
-                  className="w-1 h-1 rounded-full bg-indigo-400 animate-bounce"
-                  style={{ animationDelay: `${i * 0.15}s` }}
+                  className="w-1 h-1 rounded-full bg-indigo-400"
                 />
               ))}
             </div>
@@ -271,7 +269,7 @@ export default function SmartAlertPanel({
           {dismissedCount > 0 && (
             <button
               onClick={e => { e.stopPropagation(); undoDismissAll(); }}
-              className="flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-indigo-500 transition-colors"
+              className="flex items-center gap-1 text-[10px] font-bold text-gray-500 hover:text-indigo-500 transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
               <span className="hidden sm:inline">Restaurar ({dismissedCount})</span>
@@ -292,12 +290,12 @@ export default function SmartAlertPanel({
           {isRunning && activeAlerts.length === 0 && (
             <div className="px-5 py-4 space-y-3">
               {[1, 2].map(i => (
-                <div key={i} className="animate-pulse flex gap-3 items-start">
-                  <div className="w-4 h-4 rounded bg-gray-200 shrink-0 mt-0.5" />
+                <div key={i} className="flex gap-3 items-start">
+                  <div className="w-4 h-4 rounded-full bg-gray-200 shrink-0 mt-0.5" />
                   <div className="flex-1 space-y-1.5">
-                    <div className="h-3 bg-gray-200 rounded w-1/3" />
-                    <div className="h-2.5 bg-gray-100 rounded w-full" />
-                    <div className="h-2.5 bg-gray-100 rounded w-3/4" />
+                    <div className="h-3 bg-gray-200 rounded-full w-1/3" />
+                    <div className="h-2.5 bg-gray-100 rounded-full w-full" />
+                    <div className="h-2.5 bg-gray-100 rounded-full w-3/4" />
                   </div>
                 </div>
               ))}
@@ -316,7 +314,7 @@ export default function SmartAlertPanel({
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <p className="text-xs font-semibold text-gray-800">{alert.title}</p>
-                    <span className={`p-1 rounded ${cfg.badge}`} title={cfg.label} aria-label={cfg.label}>
+                    <span className={`p-1 rounded-control ${cfg.badge}`} title={cfg.label} aria-label={cfg.label}>
                       {cfg.badgeIcon}
                     </span>
                   </div>
@@ -325,21 +323,21 @@ export default function SmartAlertPanel({
                 <div className="flex items-center gap-0.5 shrink-0">
                   <button
                     onClick={() => handleFeedback(alert, true)}
-                    className="p-1 rounded text-emerald-400 hover:bg-emerald-50 transition-colors"
+                    className="p-1 rounded-control text-emerald-400 hover:bg-emerald-50 transition-colors"
                     title="Esta alerta es útil"
                   >
                     <ThumbsUp className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleFeedback(alert, false)}
-                    className="p-1 rounded text-rose-400 hover:bg-rose-50 transition-colors"
+                    className="p-1 rounded-control text-rose-400 hover:bg-rose-50 transition-colors"
                     title="Esta alerta no es útil"
                   >
                     <ThumbsDown className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => dismiss(alert.id)}
-                    className="p-1 rounded-lg text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all"
+                    className="p-1 rounded-control text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all"
                     title="Descartar alerta sin enviar feedback"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -352,7 +350,7 @@ export default function SmartAlertPanel({
           {/* Estado vacío al terminar sin alertas */}
           {!isRunning && activeAlerts.length === 0 && (
             <div className="px-5 py-6 text-center">
-              <p className="text-xs text-gray-400">No hay alertas activas en este momento.</p>
+              <p className="text-xs text-gray-500">No hay alertas activas en este momento.</p>
             </div>
           )}
         </div>

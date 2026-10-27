@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
+import { Check, X } from 'lucide-react';
 import type { BudgetService } from '../../application/use-cases/BudgetService';
 import { formatCurrency, formatAmountInput, parseAmountInput } from '../utils/format';
 
@@ -60,7 +61,7 @@ export default function CategoryLimitEditor({
       <div className="flex justify-between items-start gap-3">
         <div className="flex flex-col gap-1 min-w-0">
           <span className="text-gray-800 text-lg leading-tight truncate">{categoryName}</span>
-          <span className="text-[10px] font-black text-indigo-500">
+          <span className="text-[10px] font-black text-indigo-600">
             {isNew ? 'Asignar límite' : 'Editar límite'}
           </span>
         </div>
@@ -70,18 +71,18 @@ export default function CategoryLimitEditor({
             onClick={onCancel}
             aria-label="Cancelar"
             title="Cancelar"
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors active:scale-95"
+            className="w-10 h-10 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors active:scale-95"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+            <X className="w-4 h-4" strokeWidth={2.5} />
           </button>
           <button
             type="submit"
             disabled={!!edit.error}
             aria-label="Guardar límite"
             title="Guardar"
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm shadow-emerald-200 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100"
+            className="w-10 h-10 flex items-center justify-center rounded-control bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+            <Check className="w-4 h-4" strokeWidth={3} />
           </button>
         </div>
       </div>
@@ -97,7 +98,7 @@ export default function CategoryLimitEditor({
         autoFocus
         aria-label="Nuevo límite"
         aria-invalid={!!edit.error}
-        className={`w-full rounded-xl border p-3 text-lg font-semibold text-gray-800 outline-none focus:ring-2 transition-all ${edit.error ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100' : 'border-gray-200 focus:border-indigo-400 focus:ring-indigo-100'}`}
+        className={`w-full rounded-control border p-3 text-lg font-semibold text-gray-800 outline-none focus:ring-2 transition-all ${edit.error ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100' : 'border-gray-200 focus:border-indigo-400 focus:ring-indigo-100'}`}
       />
 
       <div>
@@ -122,7 +123,7 @@ export default function CategoryLimitEditor({
             className="limit-slider absolute inset-0 w-full"
           />
         </div>
-        <div className="flex justify-between mt-1.5 text-[10px] font-semibold text-gray-400">
+        <div className="flex justify-between mt-1.5 text-[10px] font-semibold text-gray-500">
           <span>Gastado <span className="text-gray-600">{fmt(spent)}</span></span>
           <span>Máx. <span className="text-gray-600">{fmt(edit.max)}</span></span>
         </div>

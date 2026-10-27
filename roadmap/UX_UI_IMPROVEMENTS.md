@@ -60,26 +60,28 @@ Cada tarea es independiente. Esfuerzo: **(S)** rápido · **(M)** unas horas. Ma
   - El tipo "Gasto" se queda en rojo (`rose`) en toda la app, aunque comparta color con los errores. Ingreso verde, Transferencia gris.
   - Analítica: indigo-500 vs purple-500 casi no se distinguen (`views/Analytics.tsx:388-389`) → indigo vs gris.
   - También a gris: "Cerrar sesión" y las etiquetas de fecha de fin de obligaciones. Los botones de borrar siguen en rojo (acción destructiva).
-- [ ] **C4 (S): Corregir el contraste.** Como mínimo `gray-500` para todo texto con significado.
+- [x] **C4 (S): Corregir el contraste.** Como mínimo `gray-500` para todo texto con significado.
   - `text-gray-400` sobre blanco ≈ 2.5:1 (falla WCAG AA).
   - `text-gray-200/300` en "Otras Tarjetas" (`views/Home.tsx:211`) y estados vacíos.
-- [ ] **C5 (S): Dejar animaciones solo para alertas reales** y respetar `prefers-reduced-motion`.
+  - También: errores en `rose-600` y etiquetas/enlaces `indigo-400/500` → `indigo-600` o `gray-500`. Íconos decorativos y placeholders siguen en `gray-400`; los botones de solo ícono quedan para R3.
+- [x] **C5 (S): Dejar animaciones solo para alertas reales** y respetar `prefers-reduced-motion`.
+  - Decisión: solo se animan el corazón del login y el robot del chat de Bagi IA. Se mantienen los spinners de carga (`animate-spin`) porque indican progreso. Regla global de `prefers-reduced-motion` en `src/index.css`.
   - `animate-ping` permanente en el estado de IA (`views/Intelligence.tsx:211`).
   - Pulse en el ícono de Bagi IA, banner demo, corazón del login, flecha "›" de pestañas.
   - Bounce en el bot y el logo de carga.
 
 ## 3. Alineación y layout
 
-- [ ] **A1 (S): Bug de alineación en las tarjetas de Obligaciones.** La fila superior tiene 3 hijos en un `justify-between` y el ojo queda en el centro; envolver los dos botones en un `div`.
+- [x] **A1 (S): Bug de alineación en las tarjetas de Obligaciones.** La fila superior tiene 3 hijos en un `justify-between` y el ojo queda en el centro; envolver los dos botones en un `div`.
   - `views/Dashboard.tsx:1046-1073`
-- [ ] **A2 (M): Simplificar la tarjeta de categoría.** Nombre + %, barra, *"S/ 120 de S/ 300"*; la tarjeta abre el detalle; borrar pasa al modo edición.
+- [x] **A2 (M): Simplificar la tarjeta de categoría.** Nombre + %, barra, *"S/ 120 de S/ 300"*; la tarjeta abre el detalle. Editar y borrar quedan juntos arriba a la derecha (40×40, mismo tamaño que Cancelar/Guardar en modo edición).
   - `views/Dashboard.tsx:926-1027`
 - [ ] **A3 (M): Escala tipográfica corta:** 12 / 14 / 16 / 20 / 28px, mínimo 12px (hoy llega a 8px). `font-black` solo en cifras principales.
 - [ ] **A4 (S): Crear un componente `PageHeader` común** (título a la izquierda, controles a la derecha, mismo espaciado).
 - [ ] **A5 (S): Mismo orden mes/año en toda la app** (mes primero). Hoy Presupuesto muestra "2026 | Octubre".
   - `views/Dashboard.tsx:739-755`
-- [ ] **A6 (S): Reducir los bordes redondeados** de 10 variantes a 3 (controles, tarjetas, modales).
-- [ ] **A7 (S): Tarjeta de cuenta en Inicio** siempre alineada a la izquierda y clickeable entera (en vez del enlace suelto "Ver presupuesto").
+- [x] **A6 (S): Reducir los bordes redondeados** de 10 variantes a 3 (controles, tarjetas, modales). Tokens en `@theme` (`src/index.css`): `rounded-control` 12px, `rounded-card` 24px, `rounded-modal` 32px; `rounded-full` solo para píldoras, puntos y barras.
+- [x] **A7 (S): Tarjeta de cuenta en Inicio** siempre alineada a la izquierda y clickeable entera (en vez del enlace suelto "Ver presupuesto").
   - `views/Home.tsx:81-146`
 
 ## 4. Responsive (móvil)

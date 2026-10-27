@@ -26,9 +26,9 @@ export default function AlertModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100">
+      <div className="bg-white rounded-modal shadow-2xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100">
         <div className="p-8 text-center space-y-6">
-          <div className={`w-20 h-20 rounded-3xl mx-auto flex items-center justify-center rotate-3 shadow-inner ${
+          <div className={`w-20 h-20 rounded-control mx-auto flex items-center justify-center rotate-3 shadow-inner ${
             type === 'error' ? 'bg-rose-50 text-rose-500' : 
             type === 'success' ? 'bg-emerald-50 text-emerald-500' : 
             type === 'warning' ? 'bg-amber-50 text-amber-500' :
@@ -56,7 +56,7 @@ export default function AlertModal({
           <div className="flex flex-col gap-2">
             <button
               onClick={onConfirm || onClose}
-              className={`w-full py-4 rounded-[1.5rem] text-sm font-black text-white transition-all active:scale-95 shadow-xl shadow-gray-200 ${
+              className={`w-full py-4 rounded-card text-sm font-black text-white transition-all active:scale-95 shadow-xl shadow-gray-200 ${
                 type === 'error' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-gray-900 hover:bg-indigo-600'
               }`}
             >
@@ -65,7 +65,7 @@ export default function AlertModal({
             {isConfirm && (
               <button
                 onClick={onClose}
-                className="w-full py-4 rounded-[1.5rem] text-sm font-black text-gray-400 hover:text-gray-600 transition-all"
+                className="w-full py-4 rounded-card text-sm font-black text-gray-500 hover:text-gray-600 transition-all"
               >
                 {cancelText}
               </button>

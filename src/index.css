@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Three corner radii for the whole app: controls (buttons, inputs, chips, inner boxes), cards, and modals.
+   rounded-full stays for pills, dots, avatars and progress bars. */
+@theme {
+  --radius-control: 0.75rem;
+  --radius-card: 1.5rem;
+  --radius-modal: 2rem;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -104,4 +112,16 @@
 }
 .limit-slider:disabled::-moz-range-thumb {
   border-color: #d1d5db;
+}
+
+/* Respect the OS "reduce motion" setting: stop animations, transitions and smooth scrolling */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -64,12 +64,12 @@ export default function ApiKeyModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100">
+      <div className="bg-white rounded-modal shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100">
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-6">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-indigo-50 rounded-2xl border border-indigo-100 text-indigo-600">
-                <Sparkles className="w-6 h-6 animate-pulse" />
+              <div className="p-3 bg-indigo-50 rounded-control border border-indigo-100 text-indigo-600">
+                <Sparkles className="w-6 h-6" />
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-extrabold text-gray-900 tracking-tight flex items-center gap-1.5">
@@ -81,7 +81,7 @@ export default function ApiKeyModal({
               </div>
             </div>
 
-            <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-50/60 text-xs text-indigo-950/80 leading-relaxed flex flex-col gap-2">
+            <div className="bg-indigo-50/50 p-4 rounded-control border border-indigo-50/60 text-xs text-indigo-950/80 leading-relaxed flex flex-col gap-2">
               <p className="font-bold flex items-center gap-1">
                 <ExternalLink className="w-3.5 h-3.5" /> ¿Cómo conseguirla gratis?
               </p>
@@ -98,7 +98,7 @@ export default function ApiKeyModal({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-gray-400 ml-1 block">{copy.keyLabel}</label>
+              <label className="text-[10px] font-bold text-gray-500 ml-1 block">{copy.keyLabel}</label>
               <div className="relative">
                 <Key className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -107,7 +107,7 @@ export default function ApiKeyModal({
                   value={key}
                   onChange={(e) => setKey(e.target.value)}
                   placeholder={copy.placeholder}
-                  className="w-full pl-11 pr-4 bg-gray-50 border border-gray-200 text-gray-900 rounded-2xl py-3.5 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono text-sm placeholder-gray-400"
+                  className="w-full pl-11 pr-4 bg-gray-50 border border-gray-200 text-gray-900 rounded-control py-3.5 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono text-sm placeholder-gray-400"
                   required
                 />
               </div>
@@ -118,14 +118,14 @@ export default function ApiKeyModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all active:scale-95"
+              className="px-5 py-2.5 rounded-control text-sm font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all active:scale-95"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={key.trim() === ''}
-              className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-100"
+              className="px-6 py-2.5 rounded-control text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-100"
             >
               Guardar Clave
             </button>

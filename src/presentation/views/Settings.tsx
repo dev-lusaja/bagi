@@ -28,13 +28,13 @@ const OBLIGATION = CONCEPT_COLORS.obligations;
 const Section = ({ id, title, icon, children, openSection, setOpenSection }: any) => {
     const isOpen = openSection === id;
     return (
-      <div className={`bg-white rounded-2xl shadow-sm border ${isOpen ? 'border-indigo-200' : 'border-gray-100'} transition-all overflow-hidden`}>
+      <div className={`bg-white rounded-card shadow-sm border ${isOpen ? 'border-indigo-200' : 'border-gray-100'} transition-all overflow-hidden`}>
         <button 
           onClick={(e) => { e.preventDefault(); setOpenSection(isOpen ? '' : id); }}
           className={`w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors ${isOpen ? 'bg-indigo-50/30' : ''}`}
         >
           <div className="flex items-center gap-4">
-            <span className={`p-3 rounded-xl ${isOpen ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
+            <span className={`p-3 rounded-control ${isOpen ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
               {icon}
             </span>
             <span className={`text-xl font-bold ${isOpen ? 'text-indigo-900' : 'text-gray-700'}`}>{title}</span>
@@ -52,11 +52,11 @@ const Section = ({ id, title, icon, children, openSection, setOpenSection }: any
 const ModelCapabilityBadge = ({ supportsImage }: { supportsImage: boolean }) => {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="inline-flex items-center gap-1 w-fit px-2 py-1 rounded-lg text-[10px] font-bold bg-gray-100 text-gray-500">
+      <span className="inline-flex items-center gap-1 w-fit px-2 py-1 rounded-control text-[10px] font-bold bg-gray-100 text-gray-500">
         <Type className="w-3 h-3" /> Texto
       </span>
       {supportsImage && (
-        <span className="inline-flex items-center gap-1 w-fit px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-600">
+        <span className="inline-flex items-center gap-1 w-fit px-2 py-1 rounded-control text-[10px] font-bold bg-emerald-50 text-emerald-600">
           <Camera className="w-3 h-3" /> Imagen
         </span>
       )}
@@ -335,7 +335,7 @@ export default function SettingsView() {
 
   return (
     <div className="space-y-8 pb-20">
-      <div className="flex md:hidden justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex md:hidden justify-between items-center mb-8 bg-white p-4 rounded-card shadow-sm border border-gray-100">
         {userInfo && (
           <div className="flex items-center gap-3">
             {userInfo.picture && !imgError ? (
@@ -353,13 +353,13 @@ export default function SettingsView() {
             )}
             <div>
               <p className="text-sm font-bold text-gray-800">{userInfo.name}</p>
-              <p className="text-xs text-gray-400">Cuenta de Google</p>
+              <p className="text-xs text-gray-500">Cuenta de Google</p>
             </div>
           </div>
         )}
         <button 
           onClick={logout}
-          className="p-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors"
+          className="p-3 bg-gray-100 text-gray-600 rounded-control hover:bg-gray-200 transition-colors"
           title="Cerrar Sesión"
         >
           <LogOut className="w-5 h-5" />
@@ -381,7 +381,7 @@ export default function SettingsView() {
           <div className="flex justify-end items-center mb-6">
             <button 
               onClick={() => setShowCatHelp(!showCatHelp)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-control text-xs font-bold transition-all ${
                 showCatHelp ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
               }`}
             >
@@ -392,7 +392,7 @@ export default function SettingsView() {
 
           {showCatHelp && (
             <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 duration-500">
-              <div className="p-4 bg-rose-50 rounded-2xl border border-rose-100/50">
+              <div className="p-4 bg-rose-50 rounded-control border border-rose-100/50">
                 <div className="flex items-center gap-2 mb-2 text-rose-600">
                   <TrendingDown className="w-4 h-4" />
                   <span className="font-black text-xs">Gasto</span>
@@ -402,7 +402,7 @@ export default function SettingsView() {
                 </p>
               </div>
               
-              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100/50">
+              <div className="p-4 bg-emerald-50 rounded-control border border-emerald-100/50">
                 <div className="flex items-center gap-2 mb-2 text-emerald-600">
                   <TrendingUp className="w-4 h-4" />
                   <span className="font-black text-xs">Ingreso</span>
@@ -412,7 +412,7 @@ export default function SettingsView() {
                 </p>
               </div>
 
-              <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+              <div className="p-4 bg-gray-50 rounded-control border border-gray-100">
                 <div className="flex items-center gap-2 mb-2 text-gray-600">
                   <ArrowRightLeft className="w-4 h-4" />
                   <span className="font-black text-xs">Transferencia</span>
@@ -425,17 +425,17 @@ export default function SettingsView() {
           )}
 
           <form onSubmit={addCategory} className="flex flex-col sm:flex-row gap-2 mb-6">
-            <input className="flex-1 rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none min-h-[44px]" placeholder="Nueva Categoría" value={newCatName} onChange={e => setNewCatName(e.target.value)} required />
-            <select className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none min-h-[44px]" value={newCatType} onChange={e => setNewCatType(e.target.value)}>
+            <input className="flex-1 rounded-control border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none min-h-[44px]" placeholder="Nueva Categoría" value={newCatName} onChange={e => setNewCatName(e.target.value)} required />
+            <select className="rounded-control border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none min-h-[44px]" value={newCatType} onChange={e => setNewCatType(e.target.value)}>
                 <option value="EXPENSE">Gasto</option>
                 <option value="INCOME">Ingreso</option>
                 <option value="TRANSFER">Transferencia</option>
             </select>
-            <button type="submit" className="bg-indigo-600 text-white px-8 py-3 rounded-xl hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95 min-h-[44px]">Agregar</button>
+            <button type="submit" className="bg-indigo-600 text-white px-8 py-3 rounded-control hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95 min-h-[44px]">Agregar</button>
           </form>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
             {categories.map((c: any) => (
-                <div key={c.id} className="p-3 bg-gray-50 rounded-xl flex justify-between items-center group hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100">
+                <div key={c.id} className="p-3 bg-gray-50 rounded-control flex justify-between items-center group hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100">
                     <div className="flex flex-col">
                         <span className="font-semibold text-gray-700">{c.name}</span>
                         <span className={`text-[10px] font-black ${
@@ -445,7 +445,7 @@ export default function SettingsView() {
                             {c.type === 'INCOME' ? 'Ingreso' : c.type === 'TRANSFER' ? 'Transferencia' : 'Gasto'}
                         </span>
                     </div>
-                    <button onClick={() => deleteItem('categories', c.id)} className="text-gray-200 group-hover:text-rose-400 hover:text-rose-600 transition-all p-2 bg-white rounded-lg shadow-sm border border-transparent hover:border-rose-100">
+                    <button onClick={() => deleteItem('categories', c.id)} className="text-gray-200 group-hover:text-rose-400 hover:text-rose-600 transition-all p-2 bg-white rounded-control shadow-sm border border-transparent hover:border-rose-100">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
                 </div>
@@ -461,9 +461,9 @@ export default function SettingsView() {
           icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>}
         >
           <form onSubmit={addAccount} className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-8">
-              <input className="rounded-xl border-gray-200 shadow-sm p-3 border sm:col-span-2 min-h-[44px]" placeholder="Nombre de la Cuenta" value={accName} onChange={e => setAccName(e.target.value)} required />
+              <input className="rounded-control border-gray-200 shadow-sm p-3 border sm:col-span-2 min-h-[44px]" placeholder="Nombre de la Cuenta" value={accName} onChange={e => setAccName(e.target.value)} required />
               <select 
-                className="rounded-xl border-gray-200 shadow-sm p-3 border min-h-[44px]"
+                className="rounded-control border-gray-200 shadow-sm p-3 border min-h-[44px]"
                 value={accCountry} 
                 onChange={e => {
                   const country = e.target.value;
@@ -476,21 +476,21 @@ export default function SettingsView() {
                     <option key={c.country} value={c.country}>{c.country === 'Europa' ? 'Unión Europea' : c.country} ({c.code})</option>
                   ))}
               </select>
-              <button type="submit" className="bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 font-bold min-h-[44px]">Crear</button>
+              <button type="submit" className="bg-indigo-600 text-white px-6 py-3 rounded-control hover:bg-indigo-700 font-bold min-h-[44px]">Crear</button>
           </form>
           <div className="grid grid-cols-1 gap-3">
               {accounts.map((a: any) => (
-                  <div key={a.id} className="p-4 sm:p-5 bg-indigo-50/40 rounded-2xl border border-indigo-100 flex justify-between items-center group hover:shadow-lg transition-all gap-3">
+                  <div key={a.id} className="p-4 sm:p-5 bg-indigo-50/40 rounded-control border border-indigo-100 flex justify-between items-center group hover:shadow-lg transition-all gap-3">
                       <div className="min-w-0 flex-1">
                           <p className="font-bold text-indigo-900 text-base sm:text-lg break-words">{a.name}</p>
                           <div className="flex gap-2 items-center flex-wrap">
-                            <p className="text-xs font-bold text-indigo-400">{a.country}</p>
+                            <p className="text-xs font-bold text-indigo-600">{a.country}</p>
                             <span className="text-[10px] text-indigo-300">•</span>
-                            <p className="text-xs font-bold text-indigo-400">{a.currency}</p>
+                            <p className="text-xs font-bold text-indigo-600">{a.currency}</p>
                           </div>
                       </div>
                       <div className="flex items-center gap-6">
-                           <button onClick={() => deleteItem('accounts', a.id)} className="p-2 bg-white rounded-xl shadow-sm border border-transparent hover:border-rose-100 text-gray-200 group-hover:text-rose-400 hover:text-rose-600 transition-all">
+                           <button onClick={() => deleteItem('accounts', a.id)} className="p-2 bg-white rounded-control shadow-sm border border-transparent hover:border-rose-100 text-gray-200 group-hover:text-rose-400 hover:text-rose-600 transition-all">
                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                            </button>
                       </div>
@@ -506,40 +506,40 @@ export default function SettingsView() {
           setOpenSection={setOpenSection}
           icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>}
         >
-          <form onSubmit={addCard} className="flex flex-col space-y-4 mb-10 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+          <form onSubmit={addCard} className="flex flex-col space-y-4 mb-10 bg-gray-50 p-6 rounded-control border border-gray-100">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input className="rounded-xl border-gray-200 shadow-sm p-3 border" placeholder="Nombre de la Tarjeta" value={cardName} onChange={e => setCardName(e.target.value)} required />
+                <input className="rounded-control border-gray-200 shadow-sm p-3 border" placeholder="Nombre de la Tarjeta" value={cardName} onChange={e => setCardName(e.target.value)} required />
                 <div className="grid grid-cols-2 gap-2">
-                    <select className="rounded-xl border-gray-200 shadow-sm p-3 border" value={cardType} onChange={e => setCardType(e.target.value)}>
+                    <select className="rounded-control border-gray-200 shadow-sm p-3 border" value={cardType} onChange={e => setCardType(e.target.value)}>
                         <option value="CREDIT">Crédito</option>
                         <option value="DEBIT">Débito</option>
                     </select>
-                    <select className="rounded-xl border-gray-200 shadow-sm p-3 border" value={cardCurrency} onChange={e => setCardCurrency(e.target.value)}>
+                    <select className="rounded-control border-gray-200 shadow-sm p-3 border" value={cardCurrency} onChange={e => setCardCurrency(e.target.value)}>
                         {CURRENCY_CODES.map(code => <option key={code} value={code}>{code}</option>)}
                     </select>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {cardType === 'CREDIT' && (
-                      <input type="number" step="0.01" className="rounded-xl border-gray-200 shadow-sm p-3 border" placeholder="Límite de Cupo" value={cardLimit} onChange={e => setCardLimit(e.target.value)} required />
+                      <input type="number" step="0.01" className="rounded-control border-gray-200 shadow-sm p-3 border" placeholder="Límite de Cupo" value={cardLimit} onChange={e => setCardLimit(e.target.value)} required />
                   )}
-                  <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-indigo-700" value={cardPaymentAccId} onChange={e => setCardPaymentAccId(e.target.value)} required>
+                  <select className="rounded-control border-gray-200 shadow-sm p-3 border font-bold text-indigo-700" value={cardPaymentAccId} onChange={e => setCardPaymentAccId(e.target.value)} required>
                       <option value="">Selecciona Cuenta de Pago</option>
                       {accounts.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </select>
               </div>
-              <button type="submit" className="bg-indigo-600 text-white px-6 py-4 rounded-xl hover:bg-indigo-700 font-bold transition-all hover:scale-[1.01] active:scale-95">Agregar Tarjeta</button>
+              <button type="submit" className="bg-indigo-600 text-white px-6 py-4 rounded-control hover:bg-indigo-700 font-bold transition-all hover:scale-[1.01] active:scale-95">Agregar Tarjeta</button>
           </form>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {cards.map((c: any) => (
-                  <div key={c.id} className="p-5 bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-xl transition-all relative group overflow-hidden">
+                  <div key={c.id} className="p-5 bg-white border border-gray-100 rounded-card shadow-sm hover:shadow-xl transition-all relative group overflow-hidden">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 -mr-12 -mt-12 rounded-full opacity-50 group-hover:bg-indigo-600 group-hover:opacity-10 transition-all"></div>
                       <div className="relative z-10 flex justify-between items-start text-sm">
                           <div>
                               <p className="font-black text-gray-800 text-xl leading-none mb-1">{c.name}</p>
                               <div className="flex gap-2 items-center">
                                   <span className={`text-[9px] px-2 py-0.5 rounded-full font-black ${c.type==='CREDIT'?'bg-purple-100 text-purple-600':'bg-gray-100 text-gray-600'}`}>{c.type === 'CREDIT'?'Crédito':'Débito'}</span>
-                                  <span className="text-[10px] text-gray-400 font-bold">{c.currency}</span>
+                                  <span className="text-[10px] text-gray-500 font-bold">{c.currency}</span>
                                   {c.payment_account && (
                                       <span className="text-[9px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-500 font-bold border border-indigo-100 italic">Pagada desde: {c.payment_account.name}</span>
                                   )}
@@ -547,11 +547,11 @@ export default function SettingsView() {
                           </div>
                            <div className="flex items-center gap-1 relative z-10">
                                {c.type === 'CREDIT' && (
-                                   <button onClick={() => { setEditingCardId(c.id); setEditCardLimit(c.credit_limit || ''); }} className="text-gray-300 hover:text-indigo-500 transition-all p-1.5 rounded-lg hover:bg-indigo-50">
+                                   <button onClick={() => { setEditingCardId(c.id); setEditCardLimit(c.credit_limit || ''); }} className="text-gray-300 hover:text-indigo-500 transition-all p-1.5 rounded-control hover:bg-indigo-50">
                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                    </button>
                                )}
-                               <button onClick={() => deleteItem('cards', c.id)} className="text-gray-200 group-hover:text-rose-400 hover:text-rose-600 transition-all p-1.5 rounded-lg hover:bg-rose-50">
+                               <button onClick={() => deleteItem('cards', c.id)} className="text-gray-200 group-hover:text-rose-400 hover:text-rose-600 transition-all p-1.5 rounded-control hover:bg-rose-50">
                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                </button>
                            </div>
@@ -560,9 +560,9 @@ export default function SettingsView() {
                           <div className="text-2xl font-black text-gray-900 tracking-tighter">
                                {editingCardId === c.id ? (
                                    <div className="flex gap-2">
-                                     <input type="number" step="0.01" className="w-32 rounded-lg border-gray-300 shadow-sm px-2 py-1 text-lg border font-bold" value={editCardLimit} onChange={e => setEditCardLimit(e.target.value)} />
-                                     <button onClick={() => saveCardEdit(c)} className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">OK</button>
-                                     <button onClick={() => setEditingCardId(null)} className="bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm font-bold">X</button>
+                                     <input type="number" step="0.01" className="w-32 rounded-control border-gray-300 shadow-sm px-2 py-1 text-lg border font-bold" value={editCardLimit} onChange={e => setEditCardLimit(e.target.value)} />
+                                     <button onClick={() => saveCardEdit(c)} className="bg-indigo-600 text-white px-3 py-1 rounded-control text-sm font-bold">OK</button>
+                                     <button onClick={() => setEditingCardId(null)} className="bg-gray-200 text-gray-700 px-3 py-1 rounded-control text-sm font-bold">X</button>
                                    </div>
                                ) : (
                                    c.type === 'CREDIT' ? formatCurrency(c.credit_limit, c.currency) : 'Tarjeta Débito'
@@ -570,7 +570,7 @@ export default function SettingsView() {
                           </div>
                       </div>
                       {c.type === 'CREDIT' && editingCardId !== c.id && (
-                          <p className="text-[10px] text-gray-400 mt-2 font-medium">Cupo Asignado</p>
+                          <p className="text-[10px] text-gray-500 mt-2 font-medium">Cupo Asignado</p>
                       )}
                   </div>
               ))}
@@ -584,33 +584,33 @@ export default function SettingsView() {
           setOpenSection={setOpenSection}
           icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>}
         >
-          <form onSubmit={addRecurring} className={`flex flex-col space-y-4 mb-8 p-6 rounded-2xl border ${OBLIGATION.panel}`}>
+          <form onSubmit={addRecurring} className={`flex flex-col space-y-4 mb-8 p-6 rounded-control border ${OBLIGATION.panel}`}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1">Nombre de la obligación</label>
-                      <input className={`rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 ${OBLIGATION.input} outline-none`} placeholder="Netflix, Agua, Préstamo..." value={recName} onChange={e => setRecName(e.target.value)} required />
+                      <label className="text-xs font-bold text-gray-500 ml-1">Nombre de la obligación</label>
+                      <input className={`rounded-control border-gray-200 shadow-sm p-3 border focus:ring-2 ${OBLIGATION.input} outline-none`} placeholder="Netflix, Agua, Préstamo..." value={recName} onChange={e => setRecName(e.target.value)} required />
                   </div>
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1">Notas / detalle</label>
-                      <input className={`rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 ${OBLIGATION.input} outline-none font-medium`} placeholder="Opcional: Nro contrato, plan, etc." value={recNotes} onChange={e => setRecNotes(e.target.value)} />
+                      <label className="text-xs font-bold text-gray-500 ml-1">Notas / detalle</label>
+                      <input className={`rounded-control border-gray-200 shadow-sm p-3 border focus:ring-2 ${OBLIGATION.input} outline-none font-medium`} placeholder="Opcional: Nro contrato, plan, etc." value={recNotes} onChange={e => setRecNotes(e.target.value)} />
                   </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1">Monto aproximado</label>
-                      <input type="number" step="0.01" className="rounded-xl border-gray-200 shadow-sm p-3 border" value={recAmount} onChange={e => setRecAmount(e.target.value)} required />
+                      <label className="text-xs font-bold text-gray-500 ml-1">Monto aproximado</label>
+                      <input type="number" step="0.01" className="rounded-control border-gray-200 shadow-sm p-3 border" value={recAmount} onChange={e => setRecAmount(e.target.value)} required />
                       <p className={`text-[9px] ${OBLIGATION.label} font-bold ml-1`}>Este será el monto predeterminado al inicializar cada mes.</p>
                   </div>
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1">Día de vencimiento</label>
-                      <input type="number" min="1" max="31" className="rounded-xl border-gray-200 shadow-sm p-3 border" value={recDay} onChange={e => setRecDay(e.target.value)} required />
+                      <label className="text-xs font-bold text-gray-500 ml-1">Día de vencimiento</label>
+                      <input type="number" min="1" max="31" className="rounded-control border-gray-200 shadow-sm p-3 border" value={recDay} onChange={e => setRecDay(e.target.value)} required />
                   </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1">Categoría</label>
-                      <select className="rounded-xl border-gray-200 shadow-sm p-3 border" value={recCatId} onChange={e => setRecCatId(e.target.value)} required>
+                      <label className="text-xs font-bold text-gray-500 ml-1">Categoría</label>
+                      <select className="rounded-control border-gray-200 shadow-sm p-3 border" value={recCatId} onChange={e => setRecCatId(e.target.value)} required>
                           <option value="" disabled>Seleccionar</option>
                           {categories
                             .filter((c: any) => c.name === "Servicios Recurrentes" || c.name === "Deudas Recurrentes")
@@ -618,8 +618,8 @@ export default function SettingsView() {
                       </select>
                   </div>
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1">Cuenta de pago por defecto</label>
-                      <select className={`rounded-xl border-gray-200 shadow-sm p-3 border font-bold ${OBLIGATION.label}`} value={recSourceId} onChange={e => setRecSourceId(e.target.value)} required>
+                      <label className="text-xs font-bold text-gray-500 ml-1">Cuenta de pago por defecto</label>
+                      <select className={`rounded-control border-gray-200 shadow-sm p-3 border font-bold ${OBLIGATION.label}`} value={recSourceId} onChange={e => setRecSourceId(e.target.value)} required>
                           <option value="" disabled>Seleccionar Origen</option>
                           <optgroup label="Cuentas">
                             {accounts.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
@@ -633,23 +633,23 @@ export default function SettingsView() {
               <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t ${OBLIGATION.divider} pt-4`}>
                   <div className="flex flex-col gap-1">
                       <label className={`text-[10px] font-black ${OBLIGATION.label} ml-1`}>Mes de inicio</label>
-                      <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold" value={recStartMonth} onChange={e => setRecStartMonth(parseInt(e.target.value))} required>
+                      <select className="rounded-control border-gray-200 shadow-sm p-3 border font-bold" value={recStartMonth} onChange={e => setRecStartMonth(parseInt(e.target.value))} required>
                           {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
                   </div>
                   <div className="flex flex-col gap-1">
                       <label className={`text-[10px] font-black ${OBLIGATION.label} ml-1`}>Año de inicio</label>
-                      <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold" value={recStartYear} onChange={e => setRecStartYear(parseInt(e.target.value))} required>
+                      <select className="rounded-control border-gray-200 shadow-sm p-3 border font-bold" value={recStartYear} onChange={e => setRecStartYear(parseInt(e.target.value))} required>
                           {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
                       </select>
                   </div>
               </div>
               
-              <div className={`flex items-center gap-3 p-4 bg-white/50 rounded-2xl border ${OBLIGATION.divider}`}>
+              <div className={`flex items-center gap-3 p-4 bg-white/50 rounded-control border ${OBLIGATION.divider}`}>
                   <input 
                     type="checkbox" 
                     id="hasEndDate" 
-                    className={`w-5 h-5 rounded-lg border-gray-300 ${OBLIGATION.checkbox} cursor-pointer`}
+                    className={`w-5 h-5 rounded-control border-gray-300 ${OBLIGATION.checkbox} cursor-pointer`}
                     checked={hasEndDate}
                     onChange={e => setHasEndDate(e.target.checked)}
                   />
@@ -662,61 +662,61 @@ export default function SettingsView() {
                 <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t ${OBLIGATION.divider} pt-4 animate-in slide-in-from-top-2 duration-300`}>
                     <div className="flex flex-col gap-1">
                         <label className="text-[10px] font-black text-gray-500 ml-1">Mes de finalización</label>
-                        <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-gray-700" value={recEndMonth} onChange={e => setRecEndMonth(parseInt(e.target.value))} required>
+                        <select className="rounded-control border-gray-200 shadow-sm p-3 border font-bold text-gray-700" value={recEndMonth} onChange={e => setRecEndMonth(parseInt(e.target.value))} required>
                             {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-[10px] font-black text-gray-500 ml-1">Año de finalización</label>
-                        <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-gray-700" value={recEndYear} onChange={e => setRecEndYear(parseInt(e.target.value))} required>
+                        <select className="rounded-control border-gray-200 shadow-sm p-3 border font-bold text-gray-700" value={recEndYear} onChange={e => setRecEndYear(parseInt(e.target.value))} required>
                             {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                     </div>
                 </div>
               )}
-              <button type="submit" className={`${OBLIGATION.button} text-white px-6 py-4 rounded-xl font-bold shadow-lg transition-all active:scale-95 text-xs`}>Guardar obligación</button>
+              <button type="submit" className={`${OBLIGATION.button} text-white px-6 py-4 rounded-control font-bold shadow-lg transition-all active:scale-95 text-xs`}>Guardar obligación</button>
           </form>
           <div className="space-y-4">
               {recurringItems.map((r: any) => (
-                  <div key={r.id} className="p-5 bg-white border border-gray-100 rounded-3xl flex flex-col group hover:shadow-xl transition-all overflow-hidden relative">
+                  <div key={r.id} className="p-5 bg-white border border-gray-100 rounded-card flex flex-col group hover:shadow-xl transition-all overflow-hidden relative">
                       {editingRecId === r.id ? (
                         <div className="space-y-4 animate-in fade-in duration-200">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400">Nombre</label>
-                              <input className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.name} onChange={e => setEditRecData({...editRecData, name: e.target.value})} />
+                              <label className="text-[10px] font-black text-gray-500">Nombre</label>
+                              <input className="rounded-control border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.name} onChange={e => setEditRecData({...editRecData, name: e.target.value})} />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400">Notas / detalle</label>
-                              <input className="rounded-xl border-gray-200 p-2 text-sm border outline-none focus:ring-2 focus:ring-indigo-100 italic" value={editRecData.notes || ''} onChange={e => setEditRecData({...editRecData, notes: e.target.value})} />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400">Monto</label>
-                              <input type="number" step="0.01" className="rounded-xl border-gray-200 p-2 text-sm font-black border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.amount} onChange={e => setEditRecData({...editRecData, amount: e.target.value})} />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400">Día de vencimiento</label>
-                              <input type="number" min="1" max="31" className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.due_day} onChange={e => setEditRecData({...editRecData, due_day: e.target.value})} />
+                              <label className="text-[10px] font-black text-gray-500">Notas / detalle</label>
+                              <input className="rounded-control border-gray-200 p-2 text-sm border outline-none focus:ring-2 focus:ring-indigo-100 italic" value={editRecData.notes || ''} onChange={e => setEditRecData({...editRecData, notes: e.target.value})} />
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400">Mes de inicio</label>
-                              <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.start_month} onChange={e => setEditRecData({...editRecData, start_month: parseInt(e.target.value)})}>
+                              <label className="text-[10px] font-black text-gray-500">Monto</label>
+                              <input type="number" step="0.01" className="rounded-control border-gray-200 p-2 text-sm font-black border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.amount} onChange={e => setEditRecData({...editRecData, amount: e.target.value})} />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[10px] font-black text-gray-500">Día de vencimiento</label>
+                              <input type="number" min="1" max="31" className="rounded-control border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.due_day} onChange={e => setEditRecData({...editRecData, due_day: e.target.value})} />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[10px] font-black text-gray-500">Mes de inicio</label>
+                              <select className="rounded-control border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.start_month} onChange={e => setEditRecData({...editRecData, start_month: parseInt(e.target.value)})}>
                                 {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
                               </select>
                             </div>
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400">Año de inicio</label>
-                              <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.start_year} onChange={e => setEditRecData({...editRecData, start_year: parseInt(e.target.value)})}>
+                              <label className="text-[10px] font-black text-gray-500">Año de inicio</label>
+                              <select className="rounded-control border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.start_year} onChange={e => setEditRecData({...editRecData, start_year: parseInt(e.target.value)})}>
                                  {[2025, 2026, 2027, 2028].map(y => <option key={y} value={y}>{y}</option>)}
                               </select>
                             </div>
                           </div>
                           
-                          <div className="flex items-center gap-2 p-2 bg-indigo-50/30 rounded-xl border border-indigo-50 mt-2">
+                          <div className="flex items-center gap-2 p-2 bg-indigo-50/30 rounded-control border border-indigo-50 mt-2">
                              <input 
                                 type="checkbox" 
                                 id={`editHasEndDate-${r.id}`}
@@ -735,9 +735,9 @@ export default function SettingsView() {
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400">Categoría</label>
+                              <label className="text-[10px] font-black text-gray-500">Categoría</label>
                               <select 
-                                className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" 
+                                className="rounded-control border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" 
                                 value={editRecData.category_id} 
                                 onChange={e => setEditRecData({...editRecData, category_id: e.target.value})}
                               >
@@ -751,9 +751,9 @@ export default function SettingsView() {
                               </select>
                             </div>
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400">Origen</label>
+                              <label className="text-[10px] font-black text-gray-500">Origen</label>
                               <select 
-                                className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" 
+                                className="rounded-control border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" 
                                 value={editRecData.card_id ? `c-${editRecData.card_id}` : editRecData.account_id} 
                                 onChange={e => {
                                   const val = e.target.value;
@@ -778,14 +778,14 @@ export default function SettingsView() {
                             <div className="grid grid-cols-2 gap-4 border-t border-indigo-50 pt-4">
                               <div className="flex flex-col gap-1">
                                 <label className="text-[10px] font-black text-gray-500">Mes de fin</label>
-                                <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.end_month || ''} onChange={e => setEditRecData({...editRecData, end_month: e.target.value})}>
+                                <select className="rounded-control border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.end_month || ''} onChange={e => setEditRecData({...editRecData, end_month: e.target.value})}>
                                   <option value="">Indefinido</option>
                                   {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1">
                                 <label className="text-[10px] font-black text-gray-500">Año de fin</label>
-                                <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.end_year || ''} onChange={e => setEditRecData({...editRecData, end_year: e.target.value})}>
+                                <select className="rounded-control border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.end_year || ''} onChange={e => setEditRecData({...editRecData, end_year: e.target.value})}>
                                    <option value="">Indefinido</option>
                                    {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
                                 </select>
@@ -794,30 +794,30 @@ export default function SettingsView() {
                           )}
 
                           <div className="flex gap-2 pt-2">
-                            <button onClick={() => saveRecEdit(r)} className="flex-1 bg-indigo-600 text-white py-2 rounded-xl text-xs font-black hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-100">Guardar</button>
-                            <button onClick={() => {setEditingRecId(null); setEditRecData(null);}} className="px-6 bg-gray-100 text-gray-400 py-2 rounded-xl text-xs font-black hover:bg-gray-200 transition-all active:scale-95">X</button>
+                            <button onClick={() => saveRecEdit(r)} className="flex-1 bg-indigo-600 text-white py-2 rounded-control text-xs font-black hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-100">Guardar</button>
+                            <button onClick={() => {setEditingRecId(null); setEditRecData(null);}} className="px-6 bg-gray-100 text-gray-600 py-2 rounded-control text-xs font-black hover:bg-gray-200 transition-all active:scale-95">X</button>
                           </div>
                         </div>
                       ) : (
                         <>
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                              <div className="p-2.5 sm:p-3 rounded-2xl bg-indigo-50 text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
+                              <div className="p-2.5 sm:p-3 rounded-control bg-indigo-50 text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
                                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                               </div>
                               <div className="text-sm min-w-0 flex-1">
                                   <p className="font-black text-gray-800 text-base flex items-center gap-2 break-words">
                                     {r.name}
                                     {r.notes && (
-                                      <span className="p-1 rounded bg-amber-50 text-amber-500 shrink-0" title={r.notes}>
+                                      <span className="p-1 rounded-control bg-amber-50 text-amber-500 shrink-0" title={r.notes}>
                                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                                       </span>
                                     )}
                                   </p>
                                   <div className="flex gap-2 items-center mt-0.5 flex-wrap">
-                                      <p className="text-[10px] text-gray-400 font-black">Vence día {r.due_day}</p>
+                                      <p className="text-[10px] text-gray-500 font-black">Vence día {r.due_day}</p>
                                       <span className="text-[10px] text-gray-200">•</span>
-                                      <span className="text-[10px] px-2 py-0.5 rounded-lg bg-gray-50 text-gray-500 font-black border border-gray-100 shadow-sm truncate max-w-[150px]">
+                                      <span className="text-[10px] px-2 py-0.5 rounded-control bg-gray-50 text-gray-500 font-black border border-gray-100 shadow-sm truncate max-w-[150px]">
                                           {(accounts as any[]).find(a => a.id === r.account_id)?.name || 
                                           (cards as any[]).find(c => c.id === r.card_id)?.name}
                                       </span>
@@ -835,10 +835,10 @@ export default function SettingsView() {
                                   </span>
                               </div>
                               <div className="flex gap-1">
-                                  <button onClick={() => {setEditingRecId(r.id); setEditRecData(r);}} className="p-2 text-gray-200 hover:text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all active:scale-90">
+                                  <button onClick={() => {setEditingRecId(r.id); setEditRecData(r);}} className="p-2 text-gray-200 hover:text-indigo-500 hover:bg-indigo-50 rounded-control transition-all active:scale-90">
                                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                   </button>
-                                  <button onClick={() => deleteItem('recurring_items', r.id)} className="p-2 text-gray-200 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90">
+                                  <button onClick={() => deleteItem('recurring_items', r.id)} className="p-2 text-gray-200 hover:text-rose-500 hover:bg-rose-50 rounded-control transition-all active:scale-90">
                                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                   </button>
                               </div>
@@ -865,16 +865,16 @@ export default function SettingsView() {
           icon={<Sparkles className="w-6 h-6" />}
         >
           <div className="space-y-6">
-            <div className={`border rounded-2xl p-3 flex items-center gap-2 text-xs font-bold ${activeProvider ? 'bg-indigo-50/60 border-indigo-100 text-indigo-900' : 'bg-amber-50 border-amber-100 text-amber-800'}`}>
+            <div className={`border rounded-control p-3 flex items-center gap-2 text-xs font-bold ${activeProvider ? 'bg-indigo-50/60 border-indigo-100 text-indigo-900' : 'bg-amber-50 border-amber-100 text-amber-800'}`}>
               <span className={`w-2 h-2 rounded-full shrink-0 ${activeProvider ? 'bg-emerald-500' : 'bg-amber-500'}`} />
               Proveedor activo ahora mismo: {activeProvider ? PROVIDER_LABELS[activeProvider] : 'ninguno configurado'}
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-gray-400 ml-1">Viendo configuración de</label>
+              <label className="text-[10px] font-bold text-gray-500 ml-1">Viendo configuración de</label>
               <div className="flex flex-wrap items-center gap-3">
                 <select
-                  className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold max-w-xs"
+                  className="rounded-control border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold max-w-xs"
                   value={aiProvider}
                   onChange={e => handleProviderChange(e.target.value as AIProviderId)}
                 >
@@ -886,34 +886,34 @@ export default function SettingsView() {
                     <button
                       type="button"
                       onClick={handleActivateProvider}
-                      className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg font-bold transition-all active:scale-95 text-[11px]"
+                      className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-control font-bold transition-all active:scale-95 text-[11px]"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" /> Usar como predeterminado
                     </button>
                   ) : (
-                    <span className="text-[11px] text-gray-400 italic">Guarda tu API Key de {PROVIDER_LABELS[aiProvider]} para poder activarlo</span>
+                    <span className="text-[11px] text-gray-500 italic">Guarda tu API Key de {PROVIDER_LABELS[aiProvider]} para poder activarlo</span>
                   )
                 )}
               </div>
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[11px] text-gray-500">
                 Cambiar este selector solo te deja ver/editar la key y los modelos de ese proveedor — no lo activa hasta que presiones el botón de arriba, y solo se puede activar un proveedor que ya tiene su API Key guardada.
               </p>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-gray-400 ml-1">Tu {PROVIDER_LABELS[aiProvider]} API Key</label>
+              <label className="text-[10px] font-bold text-gray-500 ml-1">Tu {PROVIDER_LABELS[aiProvider]} API Key</label>
               <div className="flex gap-2">
                 <input
                   type="password"
                   value={settingsApiKey}
                   onChange={e => setSettingsApiKey(e.target.value)}
                   placeholder={hasSavedKey ? '••••••••••••••••••••••••' : `Ingresa tu ${PROVIDER_LABELS[aiProvider]} API Key...`}
-                  className="flex-1 min-w-0 rounded-xl border border-gray-200 shadow-sm p-3 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono"
+                  className="flex-1 min-w-0 rounded-control border border-gray-200 shadow-sm p-3 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono"
                 />
                 <button
                   onClick={handleSaveSettingsKey}
                   title="Guardar API Key"
-                  className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl transition-all active:scale-95"
+                  className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-control transition-all active:scale-95"
                 >
                   <Save className="w-4 h-4" />
                 </button>
@@ -921,22 +921,22 @@ export default function SettingsView() {
                   <button
                     onClick={handleDeleteSettingsKey}
                     title="Borrar API Key"
-                    className="shrink-0 bg-rose-50 hover:bg-rose-100 text-rose-600 p-3 rounded-xl transition-all active:scale-95"
+                    className="shrink-0 bg-rose-50 hover:bg-rose-100 text-rose-600 p-3 rounded-control transition-all active:scale-95"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-500">
                 ¿No tienes una? Consíguela gratis en <a href={PROVIDER_HELP[aiProvider].url} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline font-bold">{PROVIDER_HELP[aiProvider].label}</a>.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold text-gray-400 ml-1">Modelo principal</label>
+                <label className="text-[10px] font-bold text-gray-500 ml-1">Modelo principal</label>
                 <select
-                  className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                  className="rounded-control border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                   value={primaryModelId}
                   onChange={e => handleModelChange('primary', e.target.value)}
                   disabled={aiProvider === 'openrouter' && loadingModels}
@@ -948,9 +948,9 @@ export default function SettingsView() {
                 {aiProvider === 'openrouter' && primaryOption && <ModelCapabilityBadge supportsImage={primaryOption.supportsImage} />}
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold text-gray-400 ml-1">Modelo de respaldo</label>
+                <label className="text-[10px] font-bold text-gray-500 ml-1">Modelo de respaldo</label>
                 <select
-                  className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                  className="rounded-control border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                   value={fallbackModelId}
                   onChange={e => handleModelChange('fallback', e.target.value)}
                   disabled={aiProvider === 'openrouter' && loadingModels}
@@ -965,7 +965,7 @@ export default function SettingsView() {
 
             {aiProvider === 'openrouter' && (
               <div className="flex items-center justify-between">
-                <p className="text-[11px] text-gray-400">
+                <p className="text-[11px] text-gray-500">
                   {loadingModels
                     ? 'Cargando modelos gratuitos de OpenRouter...'
                     : modelsError || `${openRouterModels.length} modelos gratuitos disponibles (con salida estructurada).`}
@@ -981,7 +981,7 @@ export default function SettingsView() {
             )}
 
             {noVisionSupport && (
-              <div className="bg-amber-50 border border-amber-100 rounded-2xl p-3 text-xs text-amber-800 font-medium flex items-center gap-2">
+              <div className="bg-amber-50 border border-amber-100 rounded-control p-3 text-xs text-amber-800 font-medium flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 Ni el modelo principal ni el de respaldo soportan imágenes — el escaneo de recibos no va a funcionar con esta selección.
               </div>
@@ -1007,7 +1007,7 @@ export default function SettingsView() {
         onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
       />
       <div className="pt-8 text-center border-t border-gray-100">
-        <span className="text-[11px] text-gray-400 font-mono">
+        <span className="text-[11px] text-gray-500 font-mono">
           versión: {__APP_COMMIT__}
         </span>
       </div>

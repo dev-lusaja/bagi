@@ -19,7 +19,7 @@ export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ steps 
   const progressPercent = Math.round((completedCount / totalCount) * 100);
 
   return (
-    <div className="bg-white border border-gray-200/80 rounded-2xl sm:rounded-3xl shadow-lg shadow-gray-200/40 overflow-hidden animate-in fade-in duration-500">
+    <div className="bg-white border border-gray-200/80 rounded-card shadow-lg shadow-gray-200/40 overflow-hidden animate-in fade-in duration-500">
       {/* Header */}
       <div className="p-4 sm:p-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
@@ -40,7 +40,7 @@ export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ steps 
               />
             </div>
           </div>
-          <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 shrink-0">
+          <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-control border border-indigo-100 shrink-0">
             {progressPercent}%
           </span>
         </div>
@@ -80,7 +80,7 @@ export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ steps 
                     {step.title}
                   </h4>
                 </div>
-                <p className="text-[11px] sm:text-xs text-gray-400 font-medium truncate mt-0.5">
+                <p className="text-[11px] sm:text-xs text-gray-500 font-medium truncate mt-0.5">
                   {step.description}
                 </p>
               </div>

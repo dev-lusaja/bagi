@@ -44,8 +44,8 @@ export default function BudgetDiagnosticWidget({
 }: Props) {
   if (!globalBudget) {
     return (
-      <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center gap-4">
-        <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl shrink-0">
+      <div className="bg-white p-6 rounded-card border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center gap-4">
+        <div className="p-4 bg-indigo-50 text-indigo-600 rounded-control shrink-0">
           <HelpCircle className="w-8 h-8" />
         </div>
         <div>
@@ -195,7 +195,7 @@ export default function BudgetDiagnosticWidget({
 
   if (isOverBudget) {
     statusColor = 'border-rose-100 bg-rose-50/30 text-rose-800';
-    statusIcon = <AlertOctagon className="w-6 h-6 text-rose-600 shrink-0 animate-pulse" />;
+    statusIcon = <AlertOctagon className="w-6 h-6 text-rose-600 shrink-0" />;
     statusLabel = 'Presupuesto excedido';
   } else if (isPillarOverrun) {
     statusColor = 'border-amber-200 bg-amber-50/50 text-amber-900';
@@ -208,7 +208,7 @@ export default function BudgetDiagnosticWidget({
   }
 
   return (
-    <div className={`p-6 rounded-[2rem] border shadow-sm transition-all duration-300 ${statusColor}`}>
+    <div className={`p-6 rounded-card border shadow-sm transition-all duration-300 ${statusColor}`}>
       <div className="flex items-center gap-2.5 mb-5">
         {statusIcon}
         <span className="text-[10px] font-black">{statusLabel}</span>
@@ -216,7 +216,7 @@ export default function BudgetDiagnosticWidget({
 
       <div className="space-y-5">
         {/* Desglose por Pilares (Límites, Obligaciones, Tarjetas) */}
-        <div className="space-y-5 bg-white/70 p-5 rounded-[1.5rem] border border-gray-100/30 shadow-inner">
+        <div className="space-y-5 bg-white/70 p-5 rounded-control border border-gray-100/30 shadow-inner">
           {/* Pilar 1: Límites Variables */}
           <div className="space-y-1.5">
             <div className="flex flex-wrap justify-between items-baseline gap-x-2 gap-y-0.5">
@@ -225,7 +225,7 @@ export default function BudgetDiagnosticWidget({
                 {formatCurrency(variableSpent, currency)}
               </span>
             </div>
-            <p className="text-[11px] text-gray-400 font-bold">de {formatCurrency(variablePlan, currency)} ({variablePct}%)</p>
+            <p className="text-[11px] text-gray-500 font-bold">de {formatCurrency(variablePlan, currency)} ({variablePct}%)</p>
             <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner border border-gray-200/50">
               <div
                 className={`h-full rounded-full transition-all duration-700 ${variableSpent > variablePlan
@@ -245,7 +245,7 @@ export default function BudgetDiagnosticWidget({
                 {formatCurrency(obligationsActualPaid, currency)}
               </span>
             </div>
-            <p className="text-[11px] text-gray-400 font-bold">de {formatCurrency(obligationsPlan, currency)} ({paidObligationsCount} de {totalObligationsCount} pagadas)</p>
+            <p className="text-[11px] text-gray-500 font-bold">de {formatCurrency(obligationsPlan, currency)} ({paidObligationsCount} de {totalObligationsCount} pagadas)</p>
             <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner border border-gray-200/50">
               <div
                 className={`h-full rounded-full transition-all duration-700 ${obligationsActualPaid > obligationsPlan
@@ -265,11 +265,11 @@ export default function BudgetDiagnosticWidget({
                 {formatCurrency(cardsSpent, currency)}
               </span>
             </div>
-            <p className="text-[11px] text-gray-400 font-bold">de {formatCurrency(cardsPlan, currency)} ({cardsPct}%)</p>
+            <p className="text-[11px] text-gray-500 font-bold">de {formatCurrency(cardsPlan, currency)} ({cardsPct}%)</p>
             <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner border border-gray-200/50">
               <div
                 className={`h-full rounded-full transition-all duration-700 ${cardsSpent > cardsPlan
-                  ? 'bg-rose-500 animate-pulse'
+                  ? 'bg-rose-500'
                   : CONCEPT_COLORS.cards.bar
                   }`}
                 style={{ width: `${Math.min(100, cardsPct)}%` }}
@@ -279,13 +279,13 @@ export default function BudgetDiagnosticWidget({
         </div>
 
         {/* Diagnosis: one sentence + one action */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-white/40 backdrop-blur-sm p-5 rounded-[1.5rem] border border-white/20 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-white/40 backdrop-blur-sm p-5 rounded-control border border-white/20 shadow-sm">
           <p className="flex-1 text-sm font-medium leading-relaxed">{getDiagnosticMessage()}</p>
           {!isHealthy && onAdjustLimits && (
             <button
               type="button"
               onClick={onAdjustLimits}
-              className="shrink-0 self-start sm:self-auto px-4 py-2 rounded-xl bg-white text-indigo-600 text-xs font-bold border border-indigo-100 hover:bg-indigo-50 transition-colors active:scale-95"
+              className="shrink-0 self-start sm:self-auto px-4 py-2 rounded-control bg-white text-indigo-600 text-xs font-bold border border-indigo-100 hover:bg-indigo-50 transition-colors active:scale-95"
             >
               Ajustar límites
             </button>

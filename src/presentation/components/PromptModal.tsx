@@ -52,7 +52,7 @@ export default function PromptModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100">
+      <div className="bg-white rounded-modal shadow-2xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100">
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
             <div>
@@ -68,13 +68,13 @@ export default function PromptModal({
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 placeholder={placeholder}
-                className={`w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium placeholder-gray-400 ${isCash ? 'opacity-50 pointer-events-none' : ''}`}
+                className={`w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-control px-4 py-3.5 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium placeholder-gray-400 ${isCash ? 'opacity-50 pointer-events-none' : ''}`}
                 required={!isCash}
               />
             </div>
             
             {showCashToggle && (
-              <label className="flex items-center gap-3 p-3 mt-4 rounded-xl border border-gray-100 bg-gray-50/50 cursor-pointer hover:bg-gray-50 transition-colors">
+              <label className="flex items-center gap-3 p-3 mt-4 rounded-control border border-gray-100 bg-gray-50/50 cursor-pointer hover:bg-gray-50 transition-colors">
                 <div className="relative flex items-center">
                   <input
                     type="checkbox"
@@ -95,14 +95,14 @@ export default function PromptModal({
             <button
               type="button"
               onClick={onCancel}
-              className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all active:scale-95"
+              className="px-5 py-2.5 rounded-control text-sm font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all active:scale-95"
             >
               {cancelText}
             </button>
             <button
               type="submit"
               disabled={(!isCash && value.trim() === '')}
-              className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              className="px-5 py-2.5 rounded-control text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               {confirmText}
             </button>

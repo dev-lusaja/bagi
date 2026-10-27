@@ -77,7 +77,7 @@ export default function BagiActionModal({
       aria-modal="true"
       aria-label={title}
     >
-      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100 max-h-[85dvh] flex flex-col">
+      <div className="bg-white rounded-modal shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100 max-h-[85dvh] flex flex-col">
 
         {/* ─── Cabecera ─── */}
         <div className="relative bg-indigo-600 p-5 text-white flex-shrink-0">
@@ -111,7 +111,6 @@ export default function BagiActionModal({
             // Pantalla de éxito
             <div className="p-10 flex flex-col items-center justify-center gap-5 text-center animate-in fade-in zoom-in-95 duration-300">
               <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-emerald-100 animate-ping opacity-40" />
                 <div className="relative w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center">
                   <Check className="w-10 h-10 text-emerald-600" strokeWidth={2.5} />
                 </div>
@@ -119,7 +118,7 @@ export default function BagiActionModal({
               <div className="space-y-1">
                 <h4 className="text-xl font-extrabold text-gray-900">{successMessage}</h4>
                 {successDetail && (
-                  <p className="text-sm text-gray-400 font-medium leading-relaxed">{successDetail}</p>
+                  <p className="text-sm text-gray-500 font-medium leading-relaxed">{successDetail}</p>
                 )}
               </div>
             </div>

@@ -9,7 +9,7 @@ export const SavingOverlay: React.FC<SavingOverlayProps> = ({ isVisible }) => {
 
     return (
         <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-[9999] flex items-center justify-center transition-all duration-300">
-            <div className="bg-white p-8 rounded-3xl shadow-2xl border border-indigo-50 flex flex-col items-center space-y-4 animate-in zoom-in-95 fade-in duration-300">
+            <div className="bg-white p-8 rounded-modal shadow-2xl border border-indigo-50 flex flex-col items-center space-y-4 animate-in zoom-in-95 fade-in duration-300">
                 <div className="relative">
                     <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center">
                         <CloudSync className="w-8 h-8 text-indigo-600 animate-spin" />

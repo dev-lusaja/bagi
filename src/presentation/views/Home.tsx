@@ -78,71 +78,65 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
     ];
 
     return (
-      <div key={`acc-${account.id}`} className="bg-white p-4 sm:p-6 rounded-3xl sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col gap-4 sm:gap-6 group hover:shadow-xl transition-all duration-500 bg-gradient-to-b from-white to-gray-50/20">
-        
-        {/* Parte Superior: Gráfico Maestro y Título */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-          <div className="relative w-28 h-28 sm:w-32 sm:h-32 shrink-0">
-            <div style={{ width: '100%', height: '100%', minWidth: 1, minHeight: 1 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <RadialBarChart 
-                  cx="50%" cy="50%" 
-                  innerRadius="80%" outerRadius="100%" 
-                  barSize={10} 
-                  data={chartData} 
-                  startAngle={90} endAngle={90 + (3.6 * Math.min(100, totalPercent))}
-                >
-                  <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-                  <RadialBar background dataKey="value" cornerRadius={30} angleAxisId={0} />
-                </RadialBarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`text-2xl font-black tracking-tighter ${totalPercent > 100 ? 'text-rose-600' : 'text-gray-900'}`}>{totalPercent}%</span>
-              <span className="text-[8px] font-black text-gray-400 mt-0.5">Usado</span>
-            </div>
+      <div key={`acc-${account.id}`} className={`relative bg-white p-4 sm:p-6 rounded-card shadow-sm border border-gray-100 flex items-center gap-4 sm:gap-6 transition-shadow ${onOpenAccountSummary ? 'hover:shadow-md' : ''}`}>
+        {/* The whole card opens the account's budget */}
+        {onOpenAccountSummary && (
+          <button
+            type="button"
+            onClick={() => onOpenAccountSummary(account.id)}
+            className="absolute inset-0 rounded-card cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+            aria-label={`Ver presupuesto de ${account.name}`}
+          />
+        )}
+
+        <div className="relative w-20 h-20 sm:w-28 sm:h-28 shrink-0">
+          <div style={{ width: '100%', height: '100%', minWidth: 1, minHeight: 1 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadialBarChart 
+                cx="50%" cy="50%" 
+                innerRadius="80%" outerRadius="100%" 
+                barSize={10} 
+                data={chartData} 
+                startAngle={90} endAngle={90 + (3.6 * Math.min(100, totalPercent))}
+              >
+                <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                <RadialBar background dataKey="value" cornerRadius={30} angleAxisId={0} />
+              </RadialBarChart>
+            </ResponsiveContainer>
           </div>
-
-          <div className="flex-1 space-y-4 text-center sm:text-left">
-            <div>
-              <div className="flex items-center justify-center sm:justify-start gap-3 mb-1">
-                <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-100">
-                  <Landmark className="w-5 h-5" />
-                </div>
-                <h3 className="text-xl font-black text-gray-800 tracking-tight">{account.name}</h3>
-              </div>
-              <div className="flex items-center justify-center sm:justify-start mb-1">
-                <p className="text-gray-400 font-bold text-[10px]">Disponible</p>
-              </div>
-              <p className={`text-xl sm:text-2xl font-black tracking-tight break-all ${accountAvailable < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                {formatCurrency(accountAvailable, account.currency)}
-              </p>
-            </div>
-
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 pt-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 break-words">
-                <span>Total gastado:</span>
-                <span className="text-gray-800">{formatCurrency(totalSpent, account.currency)}</span>
-              </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 break-words">
-                <span>Presupuesto:</span>
-                <span className="text-gray-800">{formatCurrency(budgetLimit, account.currency)}</span>
-              </div>
-            </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className={`text-lg sm:text-2xl font-black tracking-tighter ${totalPercent > 100 ? 'text-rose-600' : 'text-gray-900'}`}>{totalPercent}%</span>
+            <span className="text-[10px] font-black text-gray-500">Usado</span>
           </div>
         </div>
 
-        {onOpenAccountSummary && (
-          <div className="flex justify-end -mt-2">
-            <button
-              onClick={() => onOpenAccountSummary(account.id)}
-              className="flex items-center gap-0.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors"
-            >
-              Ver presupuesto
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+        <div className="flex-1 min-w-0 space-y-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 rounded-control bg-indigo-600 text-white shrink-0">
+              <Landmark className="w-4 h-4 sm:w-5 sm:h-5" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-black text-gray-800 tracking-tight leading-tight min-w-0 break-words">{account.name}</h3>
+            {onOpenAccountSummary && <ChevronRight className="ml-auto w-5 h-5 text-gray-400 shrink-0" aria-hidden="true" />}
           </div>
-        )}
+
+          <div>
+            <p className="text-gray-500 font-bold text-[10px]">Disponible</p>
+            <p className={`text-xl sm:text-2xl font-black tracking-tight tabular-nums break-words ${accountAvailable < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+              {formatCurrency(accountAvailable, account.currency)}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-control border border-gray-100 text-[10px] font-bold text-gray-500">
+              <span>Total gastado:</span>
+              <span className="text-gray-800">{formatCurrency(totalSpent, account.currency)}</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-control border border-gray-100 text-[10px] font-bold text-gray-500">
+              <span>Presupuesto:</span>
+              <span className="text-gray-800">{formatCurrency(budgetLimit, account.currency)}</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   };
@@ -178,13 +172,13 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
           {onboardingComplete && (
             <button 
               onClick={() => setShowOnboardingManual(!showOnboardingManual)}
-              className="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 font-bold text-xs hover:bg-indigo-100 transition-all shadow-sm min-h-[44px]"
+              className="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-600 rounded-control border border-indigo-100 font-bold text-xs hover:bg-indigo-100 transition-all shadow-sm min-h-[44px]"
             >
               <HelpCircle className="w-4 h-4" />
               {showOnboardingManual ? 'Ocultar guía' : 'Guía rápida'}
             </button>
           )}
-          <div className="flex items-center gap-2.5 bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100 shadow-sm">
+          <div className="flex items-center gap-2.5 bg-indigo-50 px-4 py-2 rounded-control border border-indigo-100 shadow-sm">
              <div className="text-indigo-400">
                <CheckCircle2 className="w-4 h-4" />
              </div>
@@ -207,7 +201,7 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
           <div className="space-y-6">
             <div className="flex items-center gap-4 px-4">
               <div className="h-px flex-1 bg-gray-100" />
-              <h4 className="text-[10px] font-black text-gray-300">Otras tarjetas (sin vincular)</h4>
+              <h4 className="text-[10px] font-black text-gray-500">Otras tarjetas (sin vincular)</h4>
               <div className="h-px flex-1 bg-gray-100" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -218,16 +212,16 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
                   return cat?.type === 'EXPENSE' ? acc + t.amount : acc;
                 }, 0);
                 return (
-                  <div key={card.id} className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all">
+                  <div key={card.id} className="bg-white p-5 sm:p-8 rounded-card border border-gray-100 shadow-sm hover:shadow-xl transition-all">
                     <div className="flex justify-between items-start mb-6">
-                      <div className="p-3 bg-gray-50 text-gray-400 rounded-2xl">
+                      <div className="p-3 bg-gray-50 text-gray-400 rounded-control">
                         <CreditCard className="w-6 h-6" />
                       </div>
                       <AlertCircle className="w-5 h-5 text-amber-400" />
                     </div>
                     <p className="text-xl font-black text-gray-800 mb-6">{card.name}</p>
-                    <div className="bg-gray-50 p-4 rounded-2xl space-y-1">
-                      <p className="text-[10px] font-black text-gray-400">Consumo</p>
+                    <div className="bg-gray-50 p-4 rounded-control space-y-1">
+                      <p className="text-[10px] font-black text-gray-500">Consumo</p>
                       <p className="text-2xl font-black text-gray-800">{formatCurrency(spent, card.currency)}</p>
                     </div>
                   </div>
@@ -238,7 +232,7 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
         )}
 
         {accounts.length === 0 && cards.length === 0 && (
-          <div className="py-32 text-center bg-white rounded-[4rem] border border-dashed border-gray-200">
+          <div className="py-32 text-center bg-white rounded-card border border-dashed border-gray-200">
             <div className="max-w-xs mx-auto space-y-6">
               <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-300 shadow-inner">
                 <Landmark className="w-10 h-10" />

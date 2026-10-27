@@ -17,11 +17,11 @@ export const BudgetExplainer: React.FC = () => {
           <p className="text-gray-500 font-medium text-lg leading-relaxed">
             Bagi te permite establecer un <b>presupuesto mensual</b> basado en tus ingresos registrados. Este presupuesto es el techo o límite para toda la configuración que hagas.
           </p>
-          <div className="bg-indigo-600 p-6 rounded-[2rem] shadow-2xl shadow-indigo-200/50 space-y-4 text-white relative overflow-hidden group max-w-sm">
+          <div className="bg-indigo-600 p-6 rounded-card shadow-2xl shadow-indigo-200/50 space-y-4 text-white relative overflow-hidden group max-w-sm">
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-white/20 transition-all duration-700" />
             <div className="flex justify-between items-start">
               <h4 className="text-base font-medium opacity-90">Presupuesto mensual</h4>
-              <div className="p-1.5 bg-white/20 rounded-lg">
+              <div className="p-1.5 bg-white/20 rounded-control">
                 <Wallet className="w-3.5 h-3.5" />
               </div>
             </div>
@@ -41,8 +41,8 @@ export const BudgetExplainer: React.FC = () => {
         </div>
         <div className="relative order-1 md:order-2 flex justify-center">
           <div className="w-64 h-64 bg-indigo-600/5 rounded-full absolute blur-3xl" />
-          <div className="relative bg-white p-8 rounded-[3rem] shadow-2xl border border-gray-50 transform rotate-3 hover:rotate-0 transition-transform duration-500">
-            <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg mb-6">
+          <div className="relative bg-white p-8 rounded-card shadow-2xl border border-gray-50 transform rotate-3 hover:rotate-0 transition-transform duration-500">
+            <div className="w-16 h-16 bg-indigo-600 rounded-control flex items-center justify-center text-white shadow-lg mb-6">
               <Wallet className="w-8 h-8" />
             </div>
             <div className="space-y-4">
@@ -59,21 +59,21 @@ export const BudgetExplainer: React.FC = () => {
         <div className="relative flex justify-center">
           <div className="w-64 h-64 bg-emerald-600/5 rounded-full absolute blur-3xl" />
           <div className="flex flex-row flex-wrap justify-center gap-4 relative">
-             <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-50 -rotate-6 w-36 sm:w-40">
+             <div className="bg-white p-4 rounded-control shadow-xl border border-gray-50 -rotate-6 w-36 sm:w-40">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><Tag className="w-3.5 h-3.5" /></div>
+                  <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-control"><Tag className="w-3.5 h-3.5" /></div>
                   <span className="font-bold text-[10px]">Mercado</span>
                 </div>
                 <div className="space-y-1.5">
                   <div className="h-1 w-full bg-emerald-100 rounded-full overflow-hidden">
                     <div className="h-full bg-emerald-500 w-[70%]" />
                   </div>
-                  <p className="text-[8px] font-bold text-gray-400">$350 / $500</p>
+                  <p className="text-[8px] font-bold text-gray-500">$350 / $500</p>
                 </div>
              </div>
-             <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-50 rotate-6 mt-6 sm:mt-10 w-36 sm:w-40">
+             <div className="bg-white p-4 rounded-control shadow-xl border border-gray-50 rotate-6 mt-6 sm:mt-10 w-36 sm:w-40">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><Tag className="w-3.5 h-3.5" /></div>
+                  <div className="p-1.5 bg-rose-50 text-rose-600 rounded-control"><Tag className="w-3.5 h-3.5" /></div>
                   <span className="font-bold text-[10px]">Ocio</span>
                 </div>
                 <div className="space-y-1.5">
@@ -112,8 +112,8 @@ export const BudgetExplainer: React.FC = () => {
           <p className="text-gray-500 font-medium text-lg leading-relaxed">
             En Bagi, tus gastos fijos (Netflix, Alquiler, Luz) no son solo plantillas. Cada mes se crea una <b>"fotografía"</b> independiente. Si la luz sube este mes, cámbiala solo para hoy sin afectar tus estadísticas históricas.
           </p>
-          <div className="flex items-center gap-4 p-4 bg-teal-50/50 rounded-2xl border border-teal-100 border-dashed">
-            <div className="p-3 bg-teal-600 text-white rounded-xl shadow-lg shadow-teal-200">
+          <div className="flex items-center gap-4 p-4 bg-teal-50/50 rounded-control border border-teal-100 border-dashed">
+            <div className="p-3 bg-teal-600 text-white rounded-control shadow-lg shadow-teal-200">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
@@ -128,16 +128,16 @@ export const BudgetExplainer: React.FC = () => {
         </div>
         <div className="relative order-1 md:order-2 flex justify-center">
           <div className="w-64 h-64 bg-teal-600/5 rounded-full absolute blur-3xl" />
-          <div className="relative bg-white p-6 rounded-[2rem] shadow-2xl border border-gray-50 flex flex-col gap-4 max-w-sm">
+          <div className="relative bg-white p-6 rounded-card shadow-2xl border border-gray-50 flex flex-col gap-4 max-w-sm">
             <div className="h-2.5 w-32 bg-gray-100 rounded-full" />
             <div className="h-2.5 w-40 bg-gray-100 rounded-full opacity-60" />
             <div className="h-2.5 w-28 bg-gray-100 rounded-full opacity-30" />
-            <div className="mt-2 p-3 bg-teal-50 rounded-xl border border-teal-100 flex items-center justify-between">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm text-teal-600">
+            <div className="mt-2 p-3 bg-teal-50 rounded-control border border-teal-100 flex items-center justify-between">
+              <div className="w-8 h-8 bg-white rounded-control flex items-center justify-center shadow-sm text-teal-600">
                 <Repeat className="w-4 h-4" />
               </div>
               <ArrowRight className="w-3.5 h-3.5 text-teal-300" />
-              <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center shadow-sm text-white">
+              <div className="w-8 h-8 bg-teal-600 rounded-control flex items-center justify-center shadow-sm text-white">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
             </div>
@@ -150,16 +150,16 @@ export const BudgetExplainer: React.FC = () => {
         <div className="relative flex justify-center">
           <div className="w-64 h-64 bg-amber-600/5 rounded-full absolute blur-3xl" />
           <div className="space-y-4 relative scale-90 md:scale-100">
-             <div className="bg-gradient-to-br from-gray-800 to-black p-5 rounded-xl shadow-2xl text-white w-48 transform -rotate-12">
+             <div className="bg-gradient-to-br from-gray-800 to-black p-5 rounded-control shadow-2xl text-white w-48 transform -rotate-12">
                 <CreditCard className="w-6 h-6 mb-3 opacity-50" />
                 <p className="text-[8px] font-bold opacity-40">Credit card</p>
                 <p className="text-base font-black mt-1">•••• 4242</p>
              </div>
-             <div className="bg-white p-5 rounded-xl shadow-xl border border-gray-100 w-48 translate-x-10 -translate-y-6">
+             <div className="bg-white p-5 rounded-control shadow-xl border border-gray-100 w-48 translate-x-10 -translate-y-6">
                 <div className="flex items-center gap-3">
-                   <div className="p-1.5 bg-amber-50 text-amber-600 rounded-lg"><Landmark className="w-4 h-4" /></div>
+                   <div className="p-1.5 bg-amber-50 text-amber-600 rounded-control"><Landmark className="w-4 h-4" /></div>
                    <div>
-                      <p className="text-[8px] font-black text-gray-400">Cuenta sueldo</p>
+                      <p className="text-[8px] font-black text-gray-500">Cuenta sueldo</p>
                       <p className="font-bold text-xs">$2,450.00</p>
                    </div>
                 </div>
