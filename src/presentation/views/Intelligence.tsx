@@ -170,7 +170,7 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
       <div className="flex items-center gap-1.5 text-[10px] font-black bg-white/20 px-2 py-1.5 rounded-lg flex-shrink-0 ml-3">
         {editedTx.type === 'INCOME' && <><TrendingUp className="w-3.5 h-3.5 text-emerald-300" /> Ingreso</>}
         {editedTx.type === 'EXPENSE' && <><TrendingDown className="w-3.5 h-3.5 text-rose-300" /> Gasto</>}
-        {editedTx.type === 'TRANSFER' && <><ArrowLeftRight className="w-3.5 h-3.5 text-blue-300" /> Traspaso</>}
+        {editedTx.type === 'TRANSFER' && <><ArrowLeftRight className="w-3.5 h-3.5 text-indigo-200" /> Traspaso</>}
       </div>
     </div>
   ) : null;
@@ -180,7 +180,7 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
 
       {/* ─── Header ─── */}
       <div>
-        <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-800 tracking-tight flex items-center gap-2">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
           <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-500 animate-pulse" />
           Bagi IA
         </h2>
@@ -223,7 +223,7 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
                 title={voiceReplyEnabled ? 'Desactivar respuesta por voz' : 'Activar respuesta por voz'}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold cursor-pointer transition-colors ${
                   voiceReplyEnabled
-                    ? 'bg-violet-600 text-white hover:bg-violet-700'
+                    ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                     : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                 }`}
               >

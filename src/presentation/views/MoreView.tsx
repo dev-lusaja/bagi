@@ -6,14 +6,14 @@ interface MoreViewProps {
 
 const ITEMS = [
   { tab: 'analytics', label: 'Analítica', Icon: BarChart3, iconClass: 'bg-indigo-50 text-indigo-600' },
-  { tab: 'settings', label: 'Configuración', Icon: Settings, iconClass: 'bg-purple-50 text-purple-600' },
+  { tab: 'settings', label: 'Configuración', Icon: Settings, iconClass: 'bg-gray-100 text-gray-600' },
 ];
 
 export default function MoreView({ onNavigate }: MoreViewProps) {
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
       <div>
-        <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
           Más opciones
         </h2>
       </div>

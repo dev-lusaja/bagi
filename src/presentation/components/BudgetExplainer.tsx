@@ -17,7 +17,7 @@ export const BudgetExplainer: React.FC = () => {
           <p className="text-gray-500 font-medium text-lg leading-relaxed">
             Bagi te permite establecer un <b>presupuesto mensual</b> basado en tus ingresos registrados. Este presupuesto es el techo o límite para toda la configuración que hagas.
           </p>
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-[2rem] shadow-2xl shadow-indigo-200/50 space-y-4 text-white relative overflow-hidden group max-w-sm">
+          <div className="bg-indigo-600 p-6 rounded-[2rem] shadow-2xl shadow-indigo-200/50 space-y-4 text-white relative overflow-hidden group max-w-sm">
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-white/20 transition-all duration-700" />
             <div className="flex justify-between items-start">
               <h4 className="text-base font-medium opacity-90">Presupuesto mensual</h4>
@@ -102,42 +102,42 @@ export const BudgetExplainer: React.FC = () => {
       {/* Pillar 3: Snapshots (Obligations) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <div className="space-y-6 order-2 md:order-1">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-full text-[10px] font-black border border-purple-100">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-600 rounded-full text-[10px] font-black border border-teal-100">
             <Repeat className="w-3 h-3" />
             Obligaciones mensuales
           </div>
           <h3 className="text-4xl font-black text-gray-900 tracking-tighter leading-tight">
-            Tus facturas, <span className="text-purple-600">versionadas</span>
+            Tus facturas, <span className="text-teal-600">versionadas</span>
           </h3>
           <p className="text-gray-500 font-medium text-lg leading-relaxed">
             En Bagi, tus gastos fijos (Netflix, Alquiler, Luz) no son solo plantillas. Cada mes se crea una <b>"fotografía"</b> independiente. Si la luz sube este mes, cámbiala solo para hoy sin afectar tus estadísticas históricas.
           </p>
-          <div className="flex items-center gap-4 p-4 bg-purple-50/50 rounded-2xl border border-purple-100 border-dashed">
-            <div className="p-3 bg-purple-600 text-white rounded-xl shadow-lg shadow-purple-200">
+          <div className="flex items-center gap-4 p-4 bg-teal-50/50 rounded-2xl border border-teal-100 border-dashed">
+            <div className="p-3 bg-teal-600 text-white rounded-xl shadow-lg shadow-teal-200">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
               <p className="font-bold text-gray-800 text-sm">Netflix (Junio)</p>
-              <p className="text-[10px] font-bold text-purple-600">Pagado • $15.99</p>
+              <p className="text-[10px] font-bold text-teal-600">Pagado • $15.99</p>
             </div>
             <div className="ml-auto flex -space-x-2">
                <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-[8px] font-bold">MAY</div>
-               <div className="w-8 h-8 rounded-full border-2 border-white bg-purple-600 text-white flex items-center justify-center text-[8px] font-bold shadow-lg">JUN</div>
+               <div className="w-8 h-8 rounded-full border-2 border-white bg-teal-600 text-white flex items-center justify-center text-[8px] font-bold shadow-lg">JUN</div>
             </div>
           </div>
         </div>
         <div className="relative order-1 md:order-2 flex justify-center">
-          <div className="w-64 h-64 bg-purple-600/5 rounded-full absolute blur-3xl" />
+          <div className="w-64 h-64 bg-teal-600/5 rounded-full absolute blur-3xl" />
           <div className="relative bg-white p-6 rounded-[2rem] shadow-2xl border border-gray-50 flex flex-col gap-4 max-w-sm">
             <div className="h-2.5 w-32 bg-gray-100 rounded-full" />
             <div className="h-2.5 w-40 bg-gray-100 rounded-full opacity-60" />
             <div className="h-2.5 w-28 bg-gray-100 rounded-full opacity-30" />
-            <div className="mt-2 p-3 bg-purple-50 rounded-xl border border-purple-100 flex items-center justify-between">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm text-purple-600">
+            <div className="mt-2 p-3 bg-teal-50 rounded-xl border border-teal-100 flex items-center justify-between">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm text-teal-600">
                 <Repeat className="w-4 h-4" />
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-purple-300" />
-              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center shadow-sm text-white">
+              <ArrowRight className="w-3.5 h-3.5 text-teal-300" />
+              <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center shadow-sm text-white">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
             </div>

@@ -78,9 +78,9 @@ export default function App() {
       <SavingOverlay isVisible={isSyncing} />
 
       {isDemoMode && (
-        <div className="w-full bg-purple-600 text-white shrink-0 shadow-sm py-2 px-3.5 text-xs font-bold flex flex-wrap items-center justify-between gap-2 z-50">
+        <div className="w-full bg-gray-900 text-white shrink-0 shadow-sm py-2 px-3.5 text-xs font-bold flex flex-wrap items-center justify-between gap-2 z-50">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <FlaskConical className="w-4 h-4 shrink-0 animate-pulse text-purple-200" />
+            <FlaskConical className="w-4 h-4 shrink-0 animate-pulse text-gray-300" />
             <span className="truncate leading-tight">Modo Demo</span>
           </div>
           <button

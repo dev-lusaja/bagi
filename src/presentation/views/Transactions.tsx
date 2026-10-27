@@ -139,7 +139,7 @@ export default function Transactions() {
       case 'EXPENSE':
         return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-100">Gasto</span>;
       case 'TRANSFER':
-        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-50 text-blue-600 border border-blue-100">Transf</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-gray-100 text-gray-600 border border-gray-200">Transf</span>;
       default:
         return null;
     }
@@ -191,7 +191,7 @@ export default function Transactions() {
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-end gap-4">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Movimientos</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Movimientos</h2>
         </div>
         {/* <div className="bg-indigo-50 px-3.5 sm:px-4 py-2 rounded-2xl border border-indigo-100 text-right shrink-0">
           <p className="text-[10px] font-black text-indigo-400 mb-0.5">Mostrando</p>
@@ -388,7 +388,7 @@ export default function Transactions() {
                       </td>
                        <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            {t.card_id ? <CreditCard className="w-3.5 h-3.5 text-indigo-400" /> : <Wallet className="w-3.5 h-3.5 text-emerald-400" />}
+                            {t.card_id ? <CreditCard className="w-3.5 h-3.5 text-indigo-400" /> : <Wallet className="w-3.5 h-3.5 text-gray-400" />}
                             <span className="text-gray-500 font-medium text-xs">{t.account?.name || t.card?.name}</span>
                           </div>
                        </td>
@@ -444,7 +444,7 @@ export default function Transactions() {
                                <span className="text-gray-800 font-medium text-sm break-words">{t.description}</span>
                                {getImputationBadge(t)}
                                <span className="text-[11px] text-gray-500 font-medium flex items-center gap-1 mt-1 truncate">
-                                 {t.card_id ? <CreditCard className="w-3.5 h-3.5 text-indigo-400 shrink-0" /> : <Wallet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                                 {t.card_id ? <CreditCard className="w-3.5 h-3.5 text-indigo-400 shrink-0" /> : <Wallet className="w-3.5 h-3.5 text-gray-400 shrink-0" />}
                                  <span className="truncate">{t.account?.name || t.card?.name}</span>
                                </span>
                             </div>

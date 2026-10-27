@@ -81,7 +81,7 @@ export default function ApiKeyModal({
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-indigo-50/50 to-violet-50/30 p-4 rounded-2xl border border-indigo-50/60 text-xs text-indigo-950/80 leading-relaxed flex flex-col gap-2">
+            <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-50/60 text-xs text-indigo-950/80 leading-relaxed flex flex-col gap-2">
               <p className="font-bold flex items-center gap-1">
                 <ExternalLink className="w-3.5 h-3.5" /> ¿Cómo conseguirla gratis?
               </p>

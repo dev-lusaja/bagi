@@ -50,9 +50,10 @@ Cada tarea es independiente. Esfuerzo: **(S)** rápido · **(M)** unas horas. Ma
 
 ## 2. Colores
 
-- [ ] **C1 (S): Un color fijo por concepto, definido en una constante compartida.**
+- [x] **C1 (S): Un color fijo por concepto, definido en una constante compartida.** `presentation/utils/conceptColors.ts`: Categorías azul, Obligaciones teal, Tarjetas morado.
   - Hoy: Obligaciones ámbar en Planificación (`views/Dashboard.tsx:676`) pero verde-teal en Diagnóstico y verde en Configuración; Tarjetas morado vs rosa; Categorías azul vs índigo-morado.
-- [ ] **C2 (M): Reducir la paleta** a indigo (principal) + verde/ámbar/rojo (estado) + grises.
+- [x] **C2 (M): Reducir la paleta** a indigo (principal) + verde/ámbar/rojo (estado) + grises.
+  - Verde = `emerald`, rojo = `rose` (ya eran los más usados). Los colores por concepto de C1 (azul/teal/morado) se mantienen como excepción.
   - Quitar el texto con degradado de todos los `<h2>` de vista.
   - Quitar los degradados de las barras del Diagnóstico.
 - [ ] **C3 (S): Usar el rojo solo para errores.**
@@ -82,7 +83,7 @@ Cada tarea es independiente. Esfuerzo: **(S)** rápido · **(M)** unas horas. Ma
 
 ## 4. Responsive (móvil)
 
-- [ ] **R1 (S): Mostrar primero la tarjeta "Presupuesto mensual" en móvil** (`order-first md:order-none`).
+- [ ] **R1 (S): Mostrar primero la tarjeta "Presupuesto mensual" en móvil y tablet** (`order-first xl:order-none`; la vista pasa a 3 columnas desde `xl`).
   - `views/Dashboard.tsx:778` y `:1266`
 - [ ] **R2 (S): Pestañas de Presupuesto con nombres cortos:** "Resumen", "Categorías", "Pagos fijos", "Tarjetas" (sin scroll horizontal ni flecha parpadeante).
 - [ ] **R3 (S): Hacer visibles los botones de borrar en pantallas táctiles** (hoy `text-gray-200` + `group-hover`).

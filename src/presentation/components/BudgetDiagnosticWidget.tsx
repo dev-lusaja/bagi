@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle2, AlertOctagon, HelpCircle, AlertCircle, BarChart3, Home, CreditCard } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
+import { CONCEPT_COLORS } from '../utils/conceptColors';
 
 interface Props {
   globalBudget: { total_amount: number } | null;
@@ -197,8 +198,8 @@ export default function BudgetDiagnosticWidget({
     statusIcon = <AlertOctagon className="w-6 h-6 text-rose-600 shrink-0 animate-pulse" />;
     statusLabel = 'Presupuesto excedido';
   } else if (isPillarOverrun) {
-    statusColor = 'border-orange-100 bg-orange-50/30 text-orange-800';
-    statusIcon = <AlertCircle className="w-6 h-6 text-orange-600 shrink-0" />;
+    statusColor = 'border-amber-200 bg-amber-50/50 text-amber-900';
+    statusIcon = <AlertCircle className="w-6 h-6 text-amber-700 shrink-0" />;
     statusLabel = 'Plan excedido';
   } else if (isOverPlanned) {
     statusColor = 'border-amber-100 bg-amber-50/35 text-amber-800';
@@ -228,8 +229,8 @@ export default function BudgetDiagnosticWidget({
             <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner border border-gray-200/50">
               <div
                 className={`h-full rounded-full transition-all duration-700 ${variableSpent > variablePlan
-                  ? 'bg-gradient-to-r from-rose-400 to-red-500'
-                  : 'bg-gradient-to-r from-indigo-400 to-purple-500'
+                  ? 'bg-rose-500'
+                  : CONCEPT_COLORS.categories.bar
                   }`}
                 style={{ width: `${Math.min(100, variablePct)}%` }}
               ></div>
@@ -248,8 +249,8 @@ export default function BudgetDiagnosticWidget({
             <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner border border-gray-200/50">
               <div
                 className={`h-full rounded-full transition-all duration-700 ${obligationsActualPaid > obligationsPlan
-                  ? 'bg-gradient-to-r from-rose-400 to-red-500'
-                  : 'bg-gradient-to-r from-emerald-400 to-teal-500'
+                  ? 'bg-rose-500'
+                  : CONCEPT_COLORS.obligations.bar
                   }`}
                 style={{ width: `${Math.min(100, obligationsPct)}%` }}
               ></div>
@@ -268,8 +269,8 @@ export default function BudgetDiagnosticWidget({
             <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner border border-gray-200/50">
               <div
                 className={`h-full rounded-full transition-all duration-700 ${cardsSpent > cardsPlan
-                  ? 'bg-gradient-to-r from-pink-500 to-rose-600 animate-pulse'
-                  : 'bg-gradient-to-r from-pink-400 to-purple-500'
+                  ? 'bg-rose-500 animate-pulse'
+                  : CONCEPT_COLORS.cards.bar
                   }`}
                 style={{ width: `${Math.min(100, cardsPct)}%` }}
               ></div>

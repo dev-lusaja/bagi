@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { Filter, ArrowRight, Repeat } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
+import { CONCEPT_COLORS } from '../utils/conceptColors';
 import SmartAlertPanel from '../components/SmartAlertPanel';
 import BudgetDiagnosticWidget from '../components/BudgetDiagnosticWidget';
 import PromptModal from '../components/PromptModal';
@@ -673,17 +674,17 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
   const planRows = [
     {
       key: 'obligations', index: 0, label: 'Obligaciones del mes', amount: totalServicesPlan,
-      bar: 'bg-amber-400', iconBox: 'bg-amber-50 text-amber-600', chip: 'bg-amber-50 text-amber-700',
+      bar: CONCEPT_COLORS.obligations.bar, iconBox: CONCEPT_COLORS.obligations.iconBox, chip: CONCEPT_COLORS.obligations.chip,
       icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     },
     {
       key: 'cards', index: 1, label: 'Reservas para tarjetas', amount: totalCardsPlan,
-      bar: 'bg-purple-400', iconBox: 'bg-purple-50 text-purple-600', chip: 'bg-purple-50 text-purple-700',
+      bar: CONCEPT_COLORS.cards.bar, iconBox: CONCEPT_COLORS.cards.iconBox, chip: CONCEPT_COLORS.cards.chip,
       icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>,
     },
     {
       key: 'limits', index: 2, label: 'Límites por categoría', amount: totalVariableLimitsPlan,
-      bar: 'bg-blue-400', iconBox: 'bg-blue-50 text-blue-600', chip: 'bg-blue-50 text-blue-700',
+      bar: CONCEPT_COLORS.categories.bar, iconBox: CONCEPT_COLORS.categories.iconBox, chip: CONCEPT_COLORS.categories.chip,
       icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
     },
   ];
@@ -728,12 +729,12 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 sm:gap-6 mb-6 sm:mb-8">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Presupuesto</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Presupuesto</h2>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full lg:w-auto">
           <div className="flex items-center justify-between bg-indigo-50 rounded-2xl border border-indigo-100 p-1 shadow-sm min-h-[44px]">
             <select
               className="flex-1 bg-transparent text-xs font-black text-indigo-700 px-3 py-1.5 outline-none cursor-pointer text-center"
@@ -774,8 +775,8 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="col-span-1 md:col-span-2">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="col-span-1 xl:col-span-2 min-w-0">
 
 
           {/* ALERTAS GLOBALES */}
@@ -1172,7 +1173,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                             {card.type === 'CREDIT' ? 'Crédito' : 'Débito'}
                           </span>
                         </div>
-                        <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl shadow-inner">
+                        <div className={`p-3 rounded-2xl shadow-inner ${CONCEPT_COLORS.cards.solid}`}>
                           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
                         </div>
                       </div>
@@ -1228,7 +1229,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                         <div className="flex justify-between items-end">
                           <div>
                             <p className="text-[10px] font-black text-gray-400 mb-1">Deuda pendiente</p>
-                            <p className={`text-3xl font-medium bg-clip-text text-transparent ${pendingDebt > 0 ? 'bg-gradient-to-r from-gray-900 to-gray-600' : 'bg-gray-400'}`}>
+                            <p className={`text-3xl font-medium ${pendingDebt > 0 ? 'text-gray-900' : 'text-gray-400'}`}>
                               {formatCurrency(pendingDebt, card.currency)}
                             </p>
                           </div>
@@ -1258,7 +1259,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
 
         <div className="flex flex-col gap-6">
           {/* Global Budget Card */}
-          <div className={`p-6 rounded-2xl shadow-md text-white transition-all ${isOverBudgeted ? 'bg-gradient-to-br from-rose-500 to-orange-600 ring-4 ring-rose-200' : 'bg-gradient-to-br from-indigo-500 to-purple-600'}`}>
+          <div className={`p-6 rounded-2xl shadow-md text-white transition-all ${isOverBudgeted ? 'bg-rose-600 ring-4 ring-rose-200' : 'bg-indigo-600'}`}>
             {isOverBudgeted && (
               <div className="mb-4 px-3 py-2 bg-white/20 rounded-xl border border-white/30 text-xs font-bold flex items-center gap-2">
                 <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -1271,7 +1272,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                   <span>Estado de Tarjeta</span>
                   <span className="text-xs bg-white/20 px-2 py-1 rounded-full">{selectedCard?.type === 'CREDIT' ? 'Crédito' : 'Débito'}</span>
                 </h3>
-                <div className="text-4xl font-bold bg-clip-text">
+                <div className="text-3xl xl:text-2xl 2xl:text-3xl font-bold whitespace-nowrap tabular-nums">
                   {formatCurrency(totalSpent, selectedCard?.currency)}
                 </div>
                 {selectedCard?.type === 'CREDIT' && selectedCard?.credit_limit && (
@@ -1327,7 +1328,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                       </form>
                     ) : (
                       <>
-                        <div className="text-4xl font-bold mb-5 tracking-tight tabular-nums">
+                        <div className="text-3xl xl:text-2xl 2xl:text-3xl font-bold mb-5 tracking-tight tabular-nums whitespace-nowrap">
                           {formatCurrency(globalBudget.total_amount, selectedAcc?.currency || 'PEN')}
                         </div>
 
@@ -1350,14 +1351,14 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                           ))}
                         </div>
 
-                        <div className="flex justify-between items-baseline gap-3 mt-3">
+                        <div className="flex flex-wrap justify-between items-baseline gap-x-3 gap-y-2 mt-3">
                           <div>
                             <p className="text-xs opacity-80">Gastado</p>
-                            <p className="text-lg font-black tabular-nums">{formatCurrency(totalSpentGlobal, selectedAcc?.currency)}</p>
+                            <p className="text-lg xl:text-base 2xl:text-lg font-black tabular-nums whitespace-nowrap">{formatCurrency(totalSpentGlobal, selectedAcc?.currency)}</p>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right ml-auto">
                             <p className="text-xs opacity-80">Disponible</p>
-                            <p className={`text-lg font-black tabular-nums ${remainingGlobal < 0 ? 'text-rose-200' : ''}`}>
+                            <p className={`text-lg xl:text-base 2xl:text-lg font-black tabular-nums whitespace-nowrap ${remainingGlobal < 0 ? 'text-rose-200' : ''}`}>
                               {formatCurrency(remainingGlobal, selectedAcc?.currency)}
                             </p>
                           </div>

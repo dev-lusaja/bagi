@@ -198,7 +198,7 @@ export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) =
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
             Analítica
           </h2>
         </div>

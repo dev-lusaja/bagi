@@ -171,7 +171,7 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
     <div className="space-y-8 sm:space-y-12 animate-in fade-in duration-1000 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Inicio</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Inicio</h2>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto justify-between md:justify-end">

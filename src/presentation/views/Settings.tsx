@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
 import { COUNTRY_CURRENCIES, CURRENCY_CODES } from '../utils/currencies';
+import { CONCEPT_COLORS } from '../utils/conceptColors';
 import { HelpCircle, ArrowRightLeft, TrendingUp, TrendingDown, User, LogOut, Sparkles, RefreshCw, Camera, Type, AlertTriangle, CheckCircle2, Save, Trash2 } from 'lucide-react';
 import AlertModal from '../components/AlertModal';
 import {
@@ -21,6 +22,8 @@ const PROVIDER_HELP: Record<AIProviderId, { url: string; label: string }> = {
   gemini: { url: 'https://aistudio.google.com/', label: 'Google AI Studio' },
   openrouter: { url: 'https://openrouter.ai/settings/keys', label: 'OpenRouter' },
 };
+
+const OBLIGATION = CONCEPT_COLORS.obligations;
 
 const Section = ({ id, title, icon, children, openSection, setOpenSection }: any) => {
     const isOpen = openSection === id;
@@ -364,7 +367,7 @@ export default function SettingsView() {
       </div>
 
       <div>
-        <h2 className="text-3xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500">Configuración</h2>
+        <h2 className="text-3xl lg:text-3xl font-bold text-gray-900">Configuración</h2>
       </div>
 
       <div className="flex flex-col gap-4 max-w-4xl">
@@ -409,12 +412,12 @@ export default function SettingsView() {
                 </p>
               </div>
 
-              <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100/50">
-                <div className="flex items-center gap-2 mb-2 text-blue-600">
+              <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="flex items-center gap-2 mb-2 text-gray-600">
                   <ArrowRightLeft className="w-4 h-4" />
                   <span className="font-black text-xs">Transferencia</span>
                 </div>
-                <p className="text-[11px] text-blue-800/70 leading-relaxed font-medium">
+                <p className="text-[11px] text-gray-600 leading-relaxed font-medium">
                   Movimientos entre tus propios recursos. No afectan tu gasto real ni ingreso total, solo cambian la ubicación del dinero.
                 </p>
               </div>
@@ -437,7 +440,7 @@ export default function SettingsView() {
                         <span className="font-semibold text-gray-700">{c.name}</span>
                         <span className={`text-[10px] font-black ${
                             c.type === 'INCOME' ? 'text-emerald-500' : 
-                            c.type === 'TRANSFER' ? 'text-blue-500' : 'text-rose-500'
+                            c.type === 'TRANSFER' ? 'text-gray-500' : 'text-rose-500'
                         }`}>
                             {c.type === 'INCOME' ? 'Ingreso' : c.type === 'TRANSFER' ? 'Transferencia' : 'Gasto'}
                         </span>
@@ -535,7 +538,7 @@ export default function SettingsView() {
                           <div>
                               <p className="font-black text-gray-800 text-xl leading-none mb-1">{c.name}</p>
                               <div className="flex gap-2 items-center">
-                                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-black ${c.type==='CREDIT'?'bg-purple-100 text-purple-600':'bg-amber-100 text-amber-600'}`}>{c.type === 'CREDIT'?'Crédito':'Débito'}</span>
+                                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-black ${c.type==='CREDIT'?'bg-purple-100 text-purple-600':'bg-gray-100 text-gray-600'}`}>{c.type === 'CREDIT'?'Crédito':'Débito'}</span>
                                   <span className="text-[10px] text-gray-400 font-bold">{c.currency}</span>
                                   {c.payment_account && (
                                       <span className="text-[9px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-500 font-bold border border-indigo-100 italic">Pagada desde: {c.payment_account.name}</span>
@@ -581,15 +584,15 @@ export default function SettingsView() {
           setOpenSection={setOpenSection}
           icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>}
         >
-          <form onSubmit={addRecurring} className="flex flex-col space-y-4 mb-8 bg-emerald-50/30 p-6 rounded-2xl border border-emerald-100">
+          <form onSubmit={addRecurring} className={`flex flex-col space-y-4 mb-8 p-6 rounded-2xl border ${OBLIGATION.panel}`}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-gray-400 ml-1">Nombre de la obligación</label>
-                      <input className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Netflix, Agua, Préstamo..." value={recName} onChange={e => setRecName(e.target.value)} required />
+                      <input className={`rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 ${OBLIGATION.input} outline-none`} placeholder="Netflix, Agua, Préstamo..." value={recName} onChange={e => setRecName(e.target.value)} required />
                   </div>
                   <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-gray-400 ml-1">Notas / detalle</label>
-                      <input className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-emerald-500 outline-none font-medium" placeholder="Opcional: Nro contrato, plan, etc." value={recNotes} onChange={e => setRecNotes(e.target.value)} />
+                      <input className={`rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 ${OBLIGATION.input} outline-none font-medium`} placeholder="Opcional: Nro contrato, plan, etc." value={recNotes} onChange={e => setRecNotes(e.target.value)} />
                   </div>
               </div>
 
@@ -597,7 +600,7 @@ export default function SettingsView() {
                   <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-gray-400 ml-1">Monto aproximado</label>
                       <input type="number" step="0.01" className="rounded-xl border-gray-200 shadow-sm p-3 border" value={recAmount} onChange={e => setRecAmount(e.target.value)} required />
-                      <p className="text-[9px] text-emerald-600 font-bold ml-1">Este será el monto predeterminado al inicializar cada mes.</p>
+                      <p className={`text-[9px] ${OBLIGATION.label} font-bold ml-1`}>Este será el monto predeterminado al inicializar cada mes.</p>
                   </div>
                   <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-gray-400 ml-1">Día de vencimiento</label>
@@ -616,7 +619,7 @@ export default function SettingsView() {
                   </div>
                   <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-gray-400 ml-1">Cuenta de pago por defecto</label>
-                      <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-emerald-700" value={recSourceId} onChange={e => setRecSourceId(e.target.value)} required>
+                      <select className={`rounded-xl border-gray-200 shadow-sm p-3 border font-bold ${OBLIGATION.label}`} value={recSourceId} onChange={e => setRecSourceId(e.target.value)} required>
                           <option value="" disabled>Seleccionar Origen</option>
                           <optgroup label="Cuentas">
                             {accounts.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
@@ -627,26 +630,26 @@ export default function SettingsView() {
                       </select>
                   </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t border-emerald-100/50 pt-4">
+              <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t ${OBLIGATION.divider} pt-4`}>
                   <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-black text-emerald-600 ml-1">Mes de inicio</label>
+                      <label className={`text-[10px] font-black ${OBLIGATION.label} ml-1`}>Mes de inicio</label>
                       <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold" value={recStartMonth} onChange={e => setRecStartMonth(parseInt(e.target.value))} required>
                           {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
                   </div>
                   <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-black text-emerald-600 ml-1">Año de inicio</label>
+                      <label className={`text-[10px] font-black ${OBLIGATION.label} ml-1`}>Año de inicio</label>
                       <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold" value={recStartYear} onChange={e => setRecStartYear(parseInt(e.target.value))} required>
                           {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
                       </select>
                   </div>
               </div>
               
-              <div className="flex items-center gap-3 p-4 bg-white/50 rounded-2xl border border-emerald-100/50">
+              <div className={`flex items-center gap-3 p-4 bg-white/50 rounded-2xl border ${OBLIGATION.divider}`}>
                   <input 
                     type="checkbox" 
                     id="hasEndDate" 
-                    className="w-5 h-5 rounded-lg border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    className={`w-5 h-5 rounded-lg border-gray-300 ${OBLIGATION.checkbox} cursor-pointer`}
                     checked={hasEndDate}
                     onChange={e => setHasEndDate(e.target.checked)}
                   />
@@ -656,7 +659,7 @@ export default function SettingsView() {
               </div>
 
               {hasEndDate && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t border-emerald-100/50 pt-4 animate-in slide-in-from-top-2 duration-300">
+                <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t ${OBLIGATION.divider} pt-4 animate-in slide-in-from-top-2 duration-300`}>
                     <div className="flex flex-col gap-1">
                         <label className="text-[10px] font-black text-rose-600 ml-1">Mes de finalización</label>
                         <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-rose-700" value={recEndMonth} onChange={e => setRecEndMonth(parseInt(e.target.value))} required>
@@ -671,7 +674,7 @@ export default function SettingsView() {
                     </div>
                 </div>
               )}
-              <button type="submit" className="bg-emerald-600 text-white px-6 py-4 rounded-xl hover:bg-emerald-700 font-bold shadow-lg shadow-emerald-100 transition-all active:scale-95 text-xs">Guardar obligación</button>
+              <button type="submit" className={`${OBLIGATION.button} text-white px-6 py-4 rounded-xl font-bold shadow-lg transition-all active:scale-95 text-xs`}>Guardar obligación</button>
           </form>
           <div className="space-y-4">
               {recurringItems.map((r: any) => (

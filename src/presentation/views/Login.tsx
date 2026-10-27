@@ -80,7 +80,7 @@ export default function Login() {
       <section className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-6 py-8 md:h-screen md:py-6 relative shrink-0">
         {/* Decorative Gradients */}
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/5 blur-[100px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/5 blur-[100px] rounded-full" />
 
         <div className="w-full max-w-lg relative animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div className="text-center mb-6 sm:mb-10 space-y-3 sm:space-y-4">
@@ -136,10 +136,10 @@ export default function Login() {
                     }
                   }}
                   disabled={loading || demoLoading}
-                  className="inline-flex items-center justify-center gap-2 text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors py-2 px-3 rounded-xl hover:bg-purple-50/50 disabled:opacity-50 disabled:cursor-not-allowed group"
+                  className="inline-flex items-center justify-center gap-2 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors py-2 px-3 rounded-xl hover:bg-indigo-50/50 disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
-                  <FlaskConical className="w-3.5 h-3.5 text-purple-500 group-hover:scale-110 transition-transform" />
-                  <span className="underline decoration-purple-300 underline-offset-4 group-hover:decoration-purple-600">
+                  <FlaskConical className="w-3.5 h-3.5 text-indigo-500 group-hover:scale-110 transition-transform" />
+                  <span className="underline decoration-indigo-300 underline-offset-4 group-hover:decoration-indigo-600">
                     Probar en modo demo
                   </span>
                 </button>
@@ -174,7 +174,7 @@ export default function Login() {
 
         <div className="max-w-4xl w-full space-y-16">
           <div className="text-center space-y-4">
-            <h2 className="text-sm font-black text-purple-600">Conoce a Bagi IA</h2>
+            <h2 className="text-sm font-black text-indigo-600">Conoce a Bagi IA</h2>
             <h3 className="text-4xl font-black text-gray-900 tracking-tighter">Tu asistente financiero personal. Inteligente, privado y rápido.</h3>
           </div>
 
@@ -194,12 +194,12 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:shadow-2xl hover:shadow-purple-100/30 transition-all duration-500 group">
+            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:shadow-2xl hover:shadow-indigo-100/30 transition-all duration-500 group">
               <div className="flex items-center justify-between">
-                <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
                   <Mic className="w-7 h-7" />
                 </div>
-                <span className="text-[9px] font-black text-purple-700 bg-purple-50 border border-purple-100 px-2.5 py-1 rounded-full">Opcional</span>
+                <span className="text-[9px] font-black text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-full">Opcional</span>
               </div>
               <div className="space-y-3">
                 <h4 className="text-xl font-bold text-gray-800 tracking-tight">Voz y chat</h4>
@@ -249,7 +249,7 @@ export default function Login() {
             </div>
 
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 space-y-6 hover:shadow-2xl hover:shadow-indigo-100/30 transition-all duration-500 group">
-              <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
                 <Lock className="w-7 h-7" />
               </div>
               <div className="space-y-3">

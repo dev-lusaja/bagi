@@ -14,7 +14,7 @@ export const SavingOverlay: React.FC<SavingOverlayProps> = ({ isVisible }) => {
                     <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center">
                         <CloudSync className="w-8 h-8 text-indigo-600 animate-spin" />
                     </div>
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white"></div>
                 </div>
                 <div className="text-center">
                     <h3 className="text-lg font-bold text-gray-900">Sincronizando con Drive</h3>

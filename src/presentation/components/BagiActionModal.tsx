@@ -79,8 +79,8 @@ export default function BagiActionModal({
     >
       <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100 max-h-[85dvh] flex flex-col">
 
-        {/* ─── Cabecera con gradiente ─── */}
-        <div className="relative bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-5 text-white flex-shrink-0">
+        {/* ─── Cabecera ─── */}
+        <div className="relative bg-indigo-600 p-5 text-white flex-shrink-0">
           {/* Botón X – explícito, único punto de cierre manual */}
           <button
             type="button"

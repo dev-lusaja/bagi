@@ -29,9 +29,9 @@ export default function BagiIARing({ state, onClick, disabled, audioLevel = 0, s
         "focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed",
         // Glowing box-shadow based on state
         state === 'idle' && "bg-gray-100/50 shadow-none hover:bg-gray-100",
-        state === 'listening' && "bg-cyan-50 shadow-[0_0_40px_rgba(6,182,212,0.4)]",
+        state === 'listening' && "bg-indigo-50 shadow-[0_0_40px_rgba(99,102,241,0.4)]",
         state === 'processing' && "bg-amber-50 shadow-[0_0_40px_rgba(245,158,11,0.4)]",
-        state === 'speaking' && "bg-violet-50 shadow-[0_0_40px_rgba(124,58,237,0.4)]"
+        state === 'speaking' && "bg-indigo-50 shadow-[0_0_40px_rgba(79,70,229,0.4)]"
       )}
       style={{
         transform: `scale(${listeningScale})`,
@@ -44,9 +44,9 @@ export default function BagiIARing({ state, onClick, disabled, audioLevel = 0, s
           "absolute inset-0 rounded-full",
           isSmall ? "border-[3px]" : "border-[6px]",
           state === 'idle' && "border-transparent transition-colors duration-500",
-          state === 'listening' && "border-cyan-400 border-t-cyan-200 border-r-cyan-200 animate-spin",
+          state === 'listening' && "border-indigo-400 border-t-indigo-200 border-r-indigo-200 animate-spin",
           state === 'processing' && "border-amber-400 border-t-amber-200 border-l-amber-200 animate-[spin_0.5s_linear_infinite] transition-colors duration-500",
-          state === 'speaking' && "border-violet-500 border-opacity-80 animate-pulse transition-colors duration-500"
+          state === 'speaking' && "border-indigo-600 border-opacity-80 animate-pulse transition-colors duration-500"
         )}
       />
       
@@ -54,9 +54,9 @@ export default function BagiIARing({ state, onClick, disabled, audioLevel = 0, s
       <div className={clsx(
         "relative z-10 transition-colors duration-300",
         state === 'idle' && "text-gray-400",
-        state === 'listening' && "text-cyan-500",
+        state === 'listening' && "text-indigo-500",
         state === 'processing' && "text-amber-500",
-        state === 'speaking' && "text-violet-500"
+        state === 'speaking' && "text-indigo-600"
       )}>
         {state === 'processing' ? (
           <RefreshCw className={clsx(isSmall ? "w-5 h-5" : "w-10 h-10", "animate-spin")} />
