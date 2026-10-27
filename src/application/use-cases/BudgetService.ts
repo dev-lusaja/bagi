@@ -397,6 +397,31 @@ export class BudgetService {
         };
     }
 
+    // Business Logic: How the budget is split across planned buckets, with the unassigned remainder as the last bucket.
+    // Percents are whole numbers of the budget, rounded with the largest remainder method so they add up to
+    // exactly 100% when the plan fits; shares are bar widths relative to max(budget, planned) so the bar never overflows.
+    getPlanDistribution(budgetAmount: number, planned: number[]) {
+        const totalPlanned = planned.reduce((s, v) => s + v, 0);
+        const unassigned = budgetAmount - totalPlanned;
+        const status: 'UNASSIGNED' | 'COMPLETE' | 'OVER' =
+            unassigned > INCOME_GAP_EPSILON ? 'UNASSIGNED' : unassigned < -INCOME_GAP_EPSILON ? 'OVER' : 'COMPLETE';
+
+        const values = [...planned, Math.max(0, unassigned)];
+        if (budgetAmount <= 0) return { percents: values.map(() => 0), shares: values.map(() => 0), unassigned, status };
+
+        const raw = values.map(v => (v / budgetAmount) * 100);
+        const percents = raw.map(Math.floor);
+        let leftover = 100 - percents.reduce((s, v) => s + v, 0);
+        raw
+            .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+            .sort((a, b) => b.frac - a.frac)
+            .forEach(({ i }) => { if (leftover > 0) { percents[i]++; leftover--; } });
+
+        const scale = Math.max(budgetAmount, totalPlanned);
+        const shares = values.map(v => (v / scale) * 100);
+        return { percents, shares, unassigned, status };
+    }
+
     async getCategoryBudgets(y: number, m: number) { return this.repo.getCategoryBudgets(y, m); }
     async addCategoryBudget(b: any) { return this.performOperation(() => this.repo.saveCategoryBudget(b)); }
     async deleteCategoryBudget(id: number) { return this.performOperation(() => this.repo.deleteCategoryBudget(id)); }

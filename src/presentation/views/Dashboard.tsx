@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { Filter, ArrowRight, Repeat } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
@@ -57,6 +57,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
   // Inline category limit editor (consumption card switches to edit mode)
   const [editingLimitCatId, setEditingLimitCatId] = useState<number | null>(null);
   const [editLimitAmt, setEditLimitAmt] = useState('');
+  const assignLimitSelectRef = useRef<HTMLSelectElement>(null);
 
   const [promptConfig, setPromptConfig] = useState<{
     isOpen: boolean;
@@ -664,7 +665,33 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
 
   const totalPlannedArchitecture = totalServicesPlan + totalCardsPlan + totalVariableLimitsPlan;
   const theoreticalFreeBalance = globalBudget ? globalBudget.total_amount - totalPlannedArchitecture : 0;
-  const isOverPlannedArchitecture = globalBudget && totalPlannedArchitecture > globalBudget.total_amount;
+
+  const planDistribution = service.getPlanDistribution(
+    globalBudget ? globalBudget.total_amount : 0,
+    [totalServicesPlan, totalCardsPlan, totalVariableLimitsPlan]
+  );
+  const planRows = [
+    {
+      key: 'obligations', index: 0, label: 'Obligaciones del mes', amount: totalServicesPlan,
+      bar: 'bg-amber-400', iconBox: 'bg-amber-50 text-amber-600', chip: 'bg-amber-50 text-amber-700',
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    },
+    {
+      key: 'cards', index: 1, label: 'Reservas para tarjetas', amount: totalCardsPlan,
+      bar: 'bg-purple-400', iconBox: 'bg-purple-50 text-purple-600', chip: 'bg-purple-50 text-purple-700',
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>,
+    },
+    {
+      key: 'limits', index: 2, label: 'Límites por categoría', amount: totalVariableLimitsPlan,
+      bar: 'bg-blue-400', iconBox: 'bg-blue-50 text-blue-600', chip: 'bg-blue-50 text-blue-700',
+      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+    },
+  ];
+
+  const focusAssignLimitForm = () => {
+    assignLimitSelectRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    assignLimitSelectRef.current?.focus({ preventScroll: true });
+  };
 
   const getLimitEdit = (catId: number, proposed: number) => service.getCategoryLimitEdit({
     currentLimit: budgets.find(b => b.category_id === catId)?.amount || 0,
@@ -1336,7 +1363,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                             <p className="text-lg font-black tabular-nums">{formatCurrency(totalSpentGlobal, selectedAcc?.currency)}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs opacity-80">Disponible</p>
+                            <p className="text-xs opacity-80">Por gastar</p>
                             <p className={`text-lg font-black tabular-nums ${remainingGlobal < 0 ? 'text-rose-200' : ''}`}>
                               {formatCurrency(remainingGlobal, selectedAcc?.currency)}
                             </p>
@@ -1453,68 +1480,82 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                 <h3 className="text-lg font-bold text-gray-800">Planificación mensual</h3>
               </div>
 
+              {/* Stacked bar: same buckets as the rows below, unassigned as a hatched gap */}
+              <div className="flex h-2.5 rounded-full overflow-hidden bg-gray-100 mb-6" aria-hidden="true">
+                {planRows.map(row => (
+                  <div key={row.key} className={`h-full ${row.bar}`} style={{ width: `${planDistribution.shares[row.index]}%` }} />
+                ))}
+                <div
+                  className="h-full"
+                  style={{
+                    width: `${planDistribution.shares[planRows.length]}%`,
+                    backgroundImage: 'repeating-linear-gradient(135deg, rgb(209,213,219) 0 3px, transparent 3px 6px)'
+                  }}
+                />
+              </div>
+
               <div className="space-y-5">
-                <div className="flex justify-between items-center group">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-amber-50 text-amber-600 rounded-lg group-hover:scale-110 transition-transform">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                {planRows.map(row => (
+                  <div key={row.key} className="flex justify-between items-center group">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg group-hover:scale-110 transition-transform ${row.iconBox}`}>
+                        {row.icon}
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-500">{row.label}</p>
+                        <p className="font-bold text-gray-700">{formatCurrency(row.amount, selectedAcc?.currency || selectedCard?.currency)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs font-medium text-gray-500">Obligaciones del mes</p>
-                      <p className="font-bold text-gray-700">{formatCurrency(totalServicesPlan, selectedAcc?.currency || selectedCard?.currency)}</p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">
-                    {Math.round((totalServicesPlan / globalBudget.total_amount) * 100)}%
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center group">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-50 text-purple-600 rounded-lg group-hover:scale-110 transition-transform">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-gray-500">Reservas para tarjetas</p>
-                      <p className="font-bold text-gray-700">{formatCurrency(totalCardsPlan, selectedAcc?.currency || selectedCard?.currency)}</p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">
-                    {Math.round((totalCardsPlan / globalBudget.total_amount) * 100)}%
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center group">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:scale-110 transition-transform">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-gray-500">Límites por categoría</p>
-                      <p className="font-bold text-gray-700">{formatCurrency(totalVariableLimitsPlan, selectedAcc?.currency || selectedCard?.currency)}</p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">
-                    {Math.round((totalVariableLimitsPlan / globalBudget.total_amount) * 100)}%
-                  </span>
-                </div>
-
-                <div className={`mt-6 p-4 rounded-xl border transition-all ${isOverPlannedArchitecture ? 'bg-rose-50 border-rose-100' : 'bg-indigo-50 border-indigo-100'}`}>
-                  <div className="flex justify-between items-start mb-1">
-                    <p className="text-xs font-medium text-gray-500">{isOverPlannedArchitecture ? 'Asignaste de más' : 'Por asignar'}</p>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isOverPlannedArchitecture ? 'bg-rose-100 text-rose-600' : 'bg-indigo-100 text-indigo-600'}`}>
-                      {Math.round((theoreticalFreeBalance / globalBudget.total_amount) * 100)}%
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-md tabular-nums ${row.chip}`}>
+                      {planDistribution.percents[row.index]}%
                     </span>
                   </div>
-                  <p className={`text-2xl font-black ${isOverPlannedArchitecture ? 'text-rose-600' : 'text-indigo-600'}`}>
-                    {formatCurrency(theoreticalFreeBalance, selectedAcc?.currency || selectedCard?.currency)}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1 leading-snug">
-                    {isOverPlannedArchitecture
-                      ? 'Tus límites y reservas superan el presupuesto. Reduce alguno para cuadrar.'
-                      : 'Lo que queda de tu presupuesto para asignar a categorías o tarjetas.'}
-                  </p>
-                </div>
+                ))}
+
+                {planDistribution.status === 'UNASSIGNED' && (
+                  <div className="flex justify-between items-center pt-5 border-t border-dashed border-gray-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg border-2 border-dashed border-gray-300" aria-hidden="true" />
+                      <div>
+                        <p className="text-xs font-medium text-gray-500">Sin asignar</p>
+                        <p className="font-bold text-gray-700">{formatCurrency(planDistribution.unassigned, selectedAcc?.currency || selectedCard?.currency)}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-[10px] font-bold px-2 py-1 rounded-md tabular-nums bg-gray-100 text-gray-600">
+                        {planDistribution.percents[planRows.length]}%
+                      </span>
+                      {!isCard && !isPastMonth && (
+                        <button
+                          type="button"
+                          onClick={focusAssignLimitForm}
+                          className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline"
+                        >
+                          Asignar →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {planDistribution.status === 'COMPLETE' && (
+                  <div className="flex items-center gap-2 pt-5 border-t border-dashed border-gray-200 text-sm font-semibold text-emerald-600">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                    Plan completo: todo tu presupuesto está asignado.
+                  </div>
+                )}
+
+                {planDistribution.status === 'OVER' && (
+                  <div className="mt-6 p-4 rounded-xl border bg-rose-50 border-rose-100">
+                    <p className="text-xs font-medium text-gray-500 mb-1">Asignaste de más</p>
+                    <p className="text-2xl font-black text-rose-600">
+                      {formatCurrency(Math.abs(planDistribution.unassigned), selectedAcc?.currency || selectedCard?.currency)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1 leading-snug">
+                      Tus límites y reservas superan el presupuesto. Reduce alguno para cuadrar.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1523,7 +1564,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-1">
               <h3 className="text-lg font-semibold mb-4">Asignar límites por categoría</h3>
               <form onSubmit={addBudget} className="space-y-4">
-                <select className="w-full rounded-xl border border-gray-200 p-3 shadow-sm" value={newBgtCatId} onChange={e => setNewBgtCatId(e.target.value)} required>
+                <select ref={assignLimitSelectRef} className="w-full rounded-xl border border-gray-200 p-3 shadow-sm" value={newBgtCatId} onChange={e => setNewBgtCatId(e.target.value)} required>
                   <option value="" disabled>Selecciona una categoría</option>
                   {categories
                     .filter((c: any) => c.type === 'EXPENSE' && c.name !== 'Servicios Recurrentes' && c.name !== 'Deudas Recurrentes')
