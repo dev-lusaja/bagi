@@ -9,11 +9,11 @@ import AlertModal from '../components/AlertModal';
 import CategoryLimitEditor from '../components/CategoryLimitEditor';
 import { ErrorLogger } from '../../services/SentryLogger';
 
-export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (tab: string) => void }) {
+export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }: { onNavigate?: (tab: string) => void; initialAccountId?: string | null }) {
   const { service } = useBudget();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [accountId, setAccountId] = useState('');
+  const [accountId, setAccountId] = useState(initialAccountId || '');
   const [activeTab, setActiveTab] = useState('diagnostic');
 
   const [accounts, setAccounts] = useState<any[]>([]);

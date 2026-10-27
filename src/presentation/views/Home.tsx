@@ -4,10 +4,10 @@ import { formatCurrency } from '../utils/format';
 import { 
   ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis
 } from 'recharts';
-import { CreditCard, Landmark, Wallet, CheckCircle2, AlertCircle, Tag, Repeat, HelpCircle, DollarSign } from 'lucide-react';
+import { CreditCard, Landmark, Wallet, CheckCircle2, AlertCircle, Tag, Repeat, HelpCircle, DollarSign, ChevronRight } from 'lucide-react';
 import { OnboardingChecklist } from '../components/OnboardingChecklist';
 
-export default function Home({ onNavigate }: { onNavigate?: (tab: string) => void }) {
+export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?: (tab: string) => void; onOpenAccountSummary?: (accountId: number) => void }) {
   const { service } = useBudget();
   const [year] = useState(new Date().getFullYear());
   const [month] = useState(new Date().getMonth() + 1);
@@ -131,6 +131,18 @@ export default function Home({ onNavigate }: { onNavigate?: (tab: string) => voi
             </div>
           </div>
         </div>
+
+        {onOpenAccountSummary && (
+          <div className="flex justify-end -mt-2">
+            <button
+              onClick={() => onOpenAccountSummary(account.id)}
+              className="flex items-center gap-0.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors"
+            >
+              Ver presupuesto
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     );
   };

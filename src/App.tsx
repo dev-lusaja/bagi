@@ -14,6 +14,8 @@ import { AnalyticsService } from './services/AnalyticsService';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
+  // Account preselected in Dashboard when opened from a Home shortcut
+  const [dashboardAccountId, setDashboardAccountId] = useState<string | null>(null);
   const mainRef = useRef<HTMLDivElement>(null);
   const [imgError, setImgError] = useState(false);
   const { isInitialized, isSyncing, hasPendingChanges, sync, userInfo, isAuthenticated, logout, isDemoMode } = useBudget();
@@ -40,6 +42,16 @@ export default function App() {
     // Track SPA navigation as a page_view event in GA4
     AnalyticsService.trackPageView(activeTab);
   }, [activeTab]);
+
+  useEffect(() => {
+    // Preselection only applies to the shortcut visit; regular navigation falls back to the default account
+    if (activeTab !== 'dashboard') setDashboardAccountId(null);
+  }, [activeTab]);
+
+  const openAccountSummary = (accountId: number) => {
+    setDashboardAccountId(accountId.toString());
+    setActiveTab('dashboard');
+  };
 
   if (!isInitialized) {
     return (
@@ -177,8 +189,8 @@ export default function App() {
       {/* Main Content Area */}
       <main ref={mainRef} className="flex-1 overflow-auto scroll-smooth overscroll-contain p-3 sm:p-4 md:p-8 pb-28 md:pb-8">
         <div className="max-w-[90rem] mx-auto">
-          {activeTab === 'home' && <Home onNavigate={setActiveTab} />}
-          {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} />}
+          {activeTab === 'home' && <Home onNavigate={setActiveTab} onOpenAccountSummary={openAccountSummary} />}
+          {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} initialAccountId={dashboardAccountId} />}
           {activeTab === 'transactions' && <Transactions />}
           {activeTab === 'intelligence' && <Intelligence onNavigate={setActiveTab} />}
           {activeTab === 'more' && <MoreView onNavigate={setActiveTab} />}
