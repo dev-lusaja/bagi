@@ -1290,7 +1290,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                                 <span className={`font-black tabular-nums ${isBudgetAboveIncome ? 'text-rose-200' : ''}`}>
                                   {formatCurrency(Math.abs(incomeGap), selectedAcc?.currency)}
                                 </span>{' '}
-                                <span className="opacity-80">{hasUnassignedIncome ? 'fuera del plan' : 'sin ingresos'}</span>
+                                <span className="opacity-80">{hasUnassignedIncome ? 'fuera del presupuesto' : 'sin ingresos'}</span>
                               </span>
                             </p>
                             {!isPastMonth && monthlyIncome > 0 && (
@@ -1395,7 +1395,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Servicios y Pagos</p>
+                      <p className="text-xs font-medium text-gray-500">Obligaciones del mes</p>
                       <p className="font-bold text-gray-700">{formatCurrency(totalServicesPlan, selectedAcc?.currency || selectedCard?.currency)}</p>
                     </div>
                   </div>
@@ -1410,7 +1410,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Reservas Tarjeta</p>
+                      <p className="text-xs font-medium text-gray-500">Reservas para tarjetas</p>
                       <p className="font-bold text-gray-700">{formatCurrency(totalCardsPlan, selectedAcc?.currency || selectedCard?.currency)}</p>
                     </div>
                   </div>
@@ -1425,7 +1425,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Límites en categorías</p>
+                      <p className="text-xs font-medium text-gray-500">Límites por categoría</p>
                       <p className="font-bold text-gray-700">{formatCurrency(totalVariableLimitsPlan, selectedAcc?.currency || selectedCard?.currency)}</p>
                     </div>
                   </div>
@@ -1436,7 +1436,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
 
                 <div className={`mt-6 p-4 rounded-xl border transition-all ${isOverPlannedArchitecture ? 'bg-rose-50 border-rose-100' : 'bg-indigo-50 border-indigo-100'}`}>
                   <div className="flex justify-between items-start mb-1">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Saldo Libre del Plan</p>
+                    <p className="text-xs font-medium text-gray-500">{isOverPlannedArchitecture ? 'Asignaste de más' : 'Por asignar'}</p>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isOverPlannedArchitecture ? 'bg-rose-100 text-rose-600' : 'bg-indigo-100 text-indigo-600'}`}>
                       {Math.round((theoreticalFreeBalance / globalBudget.total_amount) * 100)}%
                     </span>
@@ -1444,8 +1444,10 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                   <p className={`text-2xl font-black ${isOverPlannedArchitecture ? 'text-rose-600' : 'text-indigo-600'}`}>
                     {formatCurrency(theoreticalFreeBalance, selectedAcc?.currency || selectedCard?.currency)}
                   </p>
-                  <p className="text-[9px] text-gray-400 mt-1 italic leading-tight">
-                    *Monto total disponible tras cubrir todos tus límites y obligaciones proyectadas.
+                  <p className="text-xs text-gray-500 mt-1 leading-snug">
+                    {isOverPlannedArchitecture
+                      ? 'Tus límites y reservas superan el presupuesto. Reduce alguno para cuadrar.'
+                      : 'Lo que queda de tu presupuesto para asignar a categorías o tarjetas.'}
                   </p>
                 </div>
               </div>
@@ -1454,10 +1456,10 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
 
           {!isCard && !isPastMonth && (
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-1">
-              <h3 className="text-lg font-semibold mb-4">Asignar limites por categoría</h3>
+              <h3 className="text-lg font-semibold mb-4">Asignar límites por categoría</h3>
               <form onSubmit={addBudget} className="space-y-4">
                 <select className="w-full rounded-xl border border-gray-200 p-3 shadow-sm" value={newBgtCatId} onChange={e => setNewBgtCatId(e.target.value)} required>
-                  <option value="" disabled>Seleccionar Categoría</option>
+                  <option value="" disabled>Selecciona una categoría</option>
                   {categories
                     .filter((c: any) => c.type === 'EXPENSE' && c.name !== 'Servicios Recurrentes' && c.name !== 'Deudas Recurrentes')
                     .map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -1468,7 +1470,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                   disabled={!globalBudget || theoreticalFreeBalance <= 0}
                   className="w-full bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {!globalBudget ? 'Define Presupuesto mensual Primero' : (theoreticalFreeBalance <= 0 ? 'Presupuesto Agotado' : 'Asignar Límite')}
+                  {!globalBudget ? 'Define primero tu presupuesto' : (theoreticalFreeBalance <= 0 ? 'Ya asignaste todo tu presupuesto' : 'Asignar límite')}
                 </button>
               </form>
 
