@@ -197,7 +197,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     if (!globalBudget || !editGlobalAmt || !accountId) return;
 
     const amount = parseFloat(editGlobalAmt);
-    if (amount > monthlyIncome) {
+    if (service.getIncomeAllocation(monthlyIncome, amount).isBudgetAboveIncome) {
       showAlert('Presupuesto excede ingresos', `No puedes presupuestar más de tus ingresos. Máximo disponible: ${formatCurrency(monthlyIncome, selectedAcc?.currency)}`, 'error');
       return;
     }
@@ -209,12 +209,21 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     fetchDashboardData();
   };
 
+  const adjustGlobalBudgetToIncome = async () => {
+    if (!globalBudget || !accountId || monthlyIncome <= 0) return;
+
+    await service.updateGlobalBudget(globalBudget.id, {
+      year, month, total_amount: monthlyIncome, account_id: parseInt(accountId)
+    });
+    fetchDashboardData();
+  };
+
   const addGlobalBudget = async (e: any) => {
     e.preventDefault();
     if (!newGlobalAmt || !accountId) return;
 
     const amount = parseFloat(newGlobalAmt);
-    if (amount > monthlyIncome) {
+    if (service.getIncomeAllocation(monthlyIncome, amount).isBudgetAboveIncome) {
       showAlert('Presupuesto excede ingresos', `No puedes presupuestar más de tus ingresos. Máximo disponible: ${formatCurrency(monthlyIncome, selectedAcc?.currency)}`, 'error');
       return;
     }
@@ -566,24 +575,14 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
 
   // For the UI details and card-specific logic
   const totalSpent = totalSpentGlobal; // Alias for cleaner JSX reading
-  const monthlyReserved = cardBudgets.reduce((acc: number, b: any) => acc + b.amount, 0);
 
 
   // Remaining budget based on reality (Cash Flow)
   const remainingGlobal = globalBudget ? globalBudget.total_amount - totalSpentGlobal : 0;
 
-  // Planning Commitment: Sum of (Max(Budget, Spent)) for categories
-  // PLUS the remaining (unused) card reserve to see if the WHOLE plan fits the WHOLE budget
-  const totalRemainingCardReserve = linkedCards.reduce((acc: number, card: any) => {
-    const cardTx = (allMonthlyTransactions as any[]).filter((t: any) => t.card_id === card.id);
-    const grossSpent = cardTx.reduce((sum: number, tx: any) => {
-      const cat = (categories as any[]).find((c: any) => c.id === tx.category_id);
-      return cat?.type === 'EXPENSE' ? sum + tx.amount : sum;
-    }, 0);
-    const currentBgt = cardBudgets.find((b: any) => b.card_id === card.id);
-    const bgtAmt = currentBgt ? currentBgt.amount : 0;
-    return acc + Math.max(0, bgtAmt - grossSpent);
-  }, 0);
+  const { gap: incomeGap, hasUnassignedIncome, isBudgetAboveIncome } =
+    service.getIncomeAllocation(monthlyIncome, globalBudget ? globalBudget.total_amount : null);
+  const budgetBar = service.getBudgetBarSegments(monthlyIncome, globalBudget ? globalBudget.total_amount : 0, totalSpentGlobal);
 
   const filteredRecurring = (budgetObligations as any[]).filter(item => {
     if (item.card_id) return isCard && item.card_id === actualId;
@@ -591,24 +590,8 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     return !isCard; // Show items with no source only on accounts
   });
 
-  const totalPlannedCommitment = (categories as any[]).reduce((acc: number, cat: any) => {
-    if (cat.type !== 'EXPENSE') return acc;
-    let budgetAmt = 0;
-    if (cat.name === "Servicios Recurrentes" || cat.name === "Deudas Recurrentes") {
-      budgetAmt = (filteredRecurring as any[])
-        .filter((o: any) => o.category_id === cat.id)
-        .reduce((sum: number, o: any) => sum + o.amount, 0);
-    } else {
-      const b = (budgets as any[]).find((b: any) => b.category_id === cat.id);
-      budgetAmt = b ? b.amount : 0;
-    }
-    const actualAmt = actualsByCategory[cat.id] || 0;
-    return acc + Math.max(budgetAmt, actualAmt);
-  }, 0) + totalRemainingCardReserve;
-
   // Warning logic
   const isOverBudgeted = globalBudget && totalSpentGlobal > globalBudget.total_amount; // Current reality
-  const budgetDiff = globalBudget ? Math.abs(totalPlannedCommitment - globalBudget.total_amount) : 0;
 
   const categoriesWithoutLimit = (categories as any[]).filter((c: any) => {
     const hasBudget = budgets.some((b: any) => b.category_id === c.id);
@@ -1191,23 +1174,12 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
         <div className="flex flex-col gap-6">
           {/* Global Budget Card */}
           <div className={`p-6 rounded-2xl shadow-md text-white transition-all ${isOverBudgeted ? 'bg-gradient-to-br from-rose-500 to-orange-600 ring-4 ring-rose-200' : 'bg-gradient-to-br from-indigo-500 to-purple-600'}`}>
-            {isOverBudgeted && (() => {
-              const cardOverflow = monthlyReserved > globalBudget.total_amount;
-              return (
-                <div className="mb-4 p-3 bg-white/20 rounded-xl border border-white/30 text-xs font-bold space-y-1">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                    <span>Presupuesto insuficiente · Faltan {formatCurrency(budgetDiff, selectedAcc?.currency)}</span>
-                  </div>
-                  <p className="opacity-80 font-normal pl-6">
-                    {cardOverflow
-                      ? `La reserva de tarjeta (${formatCurrency(monthlyReserved, selectedAcc?.currency)}) supera tu presupuesto mensual. Aumenta el presupuesto o reduce la reserva.`
-                      : `Las categorías asignadas superan tu presupuesto mensual. Reduce límites o aumenta el presupuesto.`
-                    }
-                  </p>
-                </div>
-              );
-            })()}
+            {isOverBudgeted && (
+              <div className="mb-4 px-3 py-2 bg-white/20 rounded-xl border border-white/30 text-xs font-bold flex items-center gap-2">
+                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <span>Gastaste {formatCurrency(Math.abs(remainingGlobal), selectedAcc?.currency)} más que tu presupuesto</span>
+              </div>
+            )}
             {isCard ? (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold flex justify-between">
@@ -1270,24 +1242,74 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                       </form>
                     ) : (
                       <>
-                        <div className="text-4xl font-bold mb-6 tracking-tight">
+                        <div className="text-4xl font-bold mb-5 tracking-tight tabular-nums">
                           {formatCurrency(globalBudget.total_amount, selectedAcc?.currency || 'PEN')}
                         </div>
 
-                        <div className="space-y-4 pt-4 border-t border-white/20">
-                          <div className="flex justify-between items-baseline">
-                            <span className="text-sm font-medium opacity-80 uppercase tracking-tight">Gasto Total</span>
-                            <span className="text-xl font-black text-white">{formatCurrency(totalSpentGlobal, selectedAcc?.currency)}</span>
-                          </div>
+                        <div
+                          className="flex h-2.5 rounded-full overflow-hidden bg-white/10"
+                          role="img"
+                          aria-label={`Gastado ${formatCurrency(totalSpentGlobal, selectedAcc?.currency)} de ${formatCurrency(globalBudget.total_amount, selectedAcc?.currency)}. Ingresos del mes ${formatCurrency(monthlyIncome, selectedAcc?.currency)}.`}
+                        >
+                          {[
+                            { pct: budgetBar.spentPct, style: { backgroundColor: 'rgb(255,255,255)' } },
+                            { pct: budgetBar.availablePct, style: { backgroundColor: 'rgba(255,255,255,0.35)' } },
+                            { pct: budgetBar.unbackedPct, style: { backgroundImage: 'repeating-linear-gradient(135deg, rgba(253,164,175,0.95) 0 3px, transparent 3px 6px)' } },
+                            { pct: budgetBar.unassignedPct, style: { backgroundImage: 'repeating-linear-gradient(135deg, rgba(255,255,255,0.6) 0 3px, transparent 3px 6px)' } },
+                          ].map((segment, i) => (
+                            <div
+                              key={i}
+                              className="h-full transition-[width] duration-700 ease-out motion-reduce:transition-none"
+                              style={{ ...segment.style, width: `${segment.pct}%` }}
+                            />
+                          ))}
+                        </div>
 
-                          <div className="flex justify-between items-baseline pt-2 border-t border-white/10">
-                            <span className="text-sm font-medium opacity-80 uppercase tracking-tight">Disponible</span>
-                            <span className={`text-xl font-black ${remainingGlobal < 0 ? 'text-rose-200' : 'text-white'}`}>
+                        <div className="flex justify-between items-baseline gap-3 mt-3">
+                          <div>
+                            <p className="text-xs opacity-80">Gastado</p>
+                            <p className="text-lg font-black tabular-nums">{formatCurrency(totalSpentGlobal, selectedAcc?.currency)}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs opacity-80">Disponible</p>
+                            <p className={`text-lg font-black tabular-nums ${remainingGlobal < 0 ? 'text-rose-200' : ''}`}>
                               {formatCurrency(remainingGlobal, selectedAcc?.currency)}
-                            </span>
+                            </p>
                           </div>
                         </div>
 
+                        {(hasUnassignedIncome || isBudgetAboveIncome) && (
+                          <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-white/20">
+                            <p className="flex items-center gap-2 text-sm min-w-0">
+                              <span
+                                className="w-3 h-3 rounded-sm shrink-0"
+                                aria-hidden="true"
+                                style={{ backgroundImage: `repeating-linear-gradient(135deg, ${hasUnassignedIncome ? 'rgba(255,255,255,0.8)' : 'rgba(253,164,175,0.95)'} 0 2px, transparent 2px 4px)` }}
+                              />
+                              <span>
+                                <span className={`font-black tabular-nums ${isBudgetAboveIncome ? 'text-rose-200' : ''}`}>
+                                  {formatCurrency(Math.abs(incomeGap), selectedAcc?.currency)}
+                                </span>{' '}
+                                <span className="opacity-80">{hasUnassignedIncome ? 'fuera del plan' : 'sin ingresos'}</span>
+                              </span>
+                            </p>
+                            {!isPastMonth && monthlyIncome > 0 && (
+                              <button
+                                type="button"
+                                onClick={adjustGlobalBudgetToIncome}
+                                aria-label={hasUnassignedIncome
+                                  ? `Sumar ${formatCurrency(incomeGap, selectedAcc?.currency)} al presupuesto`
+                                  : `Ajustar el presupuesto a tus ingresos de ${formatCurrency(monthlyIncome, selectedAcc?.currency)}`}
+                                title={hasUnassignedIncome
+                                  ? 'Recibiste dinero después de definir tu presupuesto'
+                                  : 'Tus ingresos registrados son menores que tu presupuesto'}
+                                className="shrink-0 bg-white text-indigo-600 text-sm font-bold px-4 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                              >
+                                {hasUnassignedIncome ? 'Sumar' : 'Ajustar'}
+                              </button>
+                            )}
+                          </div>
+                        )}
 
                       </>
                     )}

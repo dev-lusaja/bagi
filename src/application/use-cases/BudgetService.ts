@@ -2,6 +2,9 @@ import { IBudgetRepository } from '../../domain/repositories/IBudgetRepository';
 import { GoogleDriveAdapter } from '../../infrastructure/adapters/GoogleDriveAdapter';
 import { ErrorLogger } from '../../services/SentryLogger';
 
+// Tolerance for floating-point noise when comparing money amounts
+const INCOME_GAP_EPSILON = 0.005;
+
 const DEFAULT_CATEGORIES = [
     { name: "Salida de dinero al exterior", type: "EXPENSE" },
     { name: "Servicios", type: "EXPENSE" },
@@ -360,6 +363,38 @@ export class BudgetService {
     async addGlobalBudget(b: any) { return this.performOperation(() => this.repo.saveGlobalBudget(b)); }
     async updateGlobalBudget(id: number, b: any) { return this.performOperation(() => this.repo.updateGlobalBudget(id, b)); }
     async deleteGlobalBudget(id: number) { return this.performOperation(() => this.repo.deleteGlobalBudget(id)); }
+
+    // Compares the month's registered income against a global budget amount.
+    // gap > 0: income received outside the plan; gap < 0: budget not backed by income.
+    getIncomeAllocation(income: number, budgetAmount: number | null) {
+        if (budgetAmount === null) return { gap: 0, hasUnassignedIncome: false, isBudgetAboveIncome: false };
+        const gap = income - budgetAmount;
+        return {
+            gap,
+            hasUnassignedIncome: gap > INCOME_GAP_EPSILON,
+            isBudgetAboveIncome: gap < -INCOME_GAP_EPSILON,
+        };
+    }
+
+    // Splits the budget bar into consecutive segments, as percentages of the largest of income, budget and spent:
+    // spent → available (backed by income) → unbacked (budget beyond income) → unassigned (income beyond budget).
+    getBudgetBarSegments(income: number, budgetAmount: number, spent: number) {
+        const scale = Math.max(income, budgetAmount, spent);
+        if (scale <= 0) return { spentPct: 0, availablePct: 0, unbackedPct: 0, unassignedPct: 0 };
+
+        const spentEnd = spent;
+        const backedEnd = Math.max(spentEnd, Math.min(budgetAmount, income));
+        const budgetEnd = Math.max(spentEnd, budgetAmount);
+        const incomeEnd = Math.max(budgetEnd, income);
+        const pct = (value: number) => (value / scale) * 100;
+
+        return {
+            spentPct: pct(spentEnd),
+            availablePct: pct(backedEnd - spentEnd),
+            unbackedPct: pct(budgetEnd - backedEnd),
+            unassignedPct: pct(incomeEnd - budgetEnd),
+        };
+    }
 
     async getCategoryBudgets(y: number, m: number) { return this.repo.getCategoryBudgets(y, m); }
     async addCategoryBudget(b: any) { return this.performOperation(() => this.repo.saveCategoryBudget(b)); }
