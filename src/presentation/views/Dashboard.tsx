@@ -6,6 +6,7 @@ import SmartAlertPanel from '../components/SmartAlertPanel';
 import BudgetDiagnosticWidget from '../components/BudgetDiagnosticWidget';
 import PromptModal from '../components/PromptModal';
 import AlertModal from '../components/AlertModal';
+import CategoryLimitEditor from '../components/CategoryLimitEditor';
 import { ErrorLogger } from '../../services/SentryLogger';
 
 export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (tab: string) => void }) {
@@ -52,6 +53,10 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
 
   // Inline card budget form
   const [inlineCardBgt, setInlineCardBgt] = useState<{ [key: number]: string }>({});
+
+  // Inline category limit editor (consumption card switches to edit mode)
+  const [editingLimitCatId, setEditingLimitCatId] = useState<number | null>(null);
+  const [editLimitAmt, setEditLimitAmt] = useState('');
 
   const [promptConfig, setPromptConfig] = useState<{
     isOpen: boolean;
@@ -170,7 +175,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     setIsDashboardDataReady(true);
   };
 
-  useEffect(() => { fetchDashboardData(); }, [year, month, accountId]);
+  useEffect(() => { fetchDashboardData(); setEditingLimitCatId(null); }, [year, month, accountId]);
 
   const toggleEditGlobal = () => {
     if (globalBudget) {
@@ -243,19 +248,39 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     const amt = parseFloat(newBgtAmt);
     const catId = parseInt(newBgtCatId);
 
-    // Reality-based validation: only check if the ADDITIONAL amount fits
+    // Reality-based validation: only check if the ADDITIONAL amount fits (an existing limit is being replaced)
     const actualAmt = actualsByCategory[catId] || 0;
-    const additionalCommitment = Math.max(0, amt - actualAmt);
+    const existingAmt = budgets.find(b => b.category_id === catId)?.amount || 0;
+    const additionalCommitment = Math.max(0, amt - actualAmt) - Math.max(0, existingAmt - actualAmt);
 
     if (globalBudget && additionalCommitment > remainingGlobal) {
       showAlert('Límite excedido', 'Este monto excede el presupuesto mensual disponible real.', 'error');
       return;
     }
 
-    await service.addCategoryBudget({
+    await service.saveCategoryLimit({
       year, month, amount: amt, category_id: catId, account_id: parseInt(accountId)
     });
     setNewBgtAmt(''); setNewBgtCatId(''); fetchDashboardData();
+  };
+
+  const startEditLimit = (catId: number) => {
+    const current = budgets.find(b => b.category_id === catId)?.amount || 0;
+    // The limit can't go below what's already spent, so start from whichever is higher
+    setEditLimitAmt(String(Math.round(Math.max(current, actualsByCategory[catId] || 0) * 100) / 100));
+    setEditingLimitCatId(catId);
+  };
+
+  const saveInlineLimit = async (catId: number, e: React.FormEvent) => {
+    e.preventDefault();
+    const amt = parseFloat(editLimitAmt);
+    if (getLimitEdit(catId, amt).error) return;
+
+    await service.saveCategoryLimit({
+      year, month, amount: amt, category_id: catId, account_id: parseInt(accountId)
+    });
+    setEditingLimitCatId(null);
+    fetchDashboardData();
   };
 
   const deleteBudget = async (id: number) => {
@@ -641,6 +666,15 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
   const theoreticalFreeBalance = globalBudget ? globalBudget.total_amount - totalPlannedArchitecture : 0;
   const isOverPlannedArchitecture = globalBudget && totalPlannedArchitecture > globalBudget.total_amount;
 
+  const getLimitEdit = (catId: number, proposed: number) => service.getCategoryLimitEdit({
+    currentLimit: budgets.find(b => b.category_id === catId)?.amount || 0,
+    spent: actualsByCategory[catId] || 0,
+    recurringInCategory: filteredRecurring
+      .filter(ri => ri.category_id === catId)
+      .reduce((s, ri) => s + ri.amount, 0),
+    freeBalance: theoreticalFreeBalance,
+  }, proposed);
+
   // --- Lógica de la Triple Barra Segmentada ---
   const totalVariableSpent = (categories as any[]).reduce((acc: number, cat: any) => {
     if (cat.type !== 'EXPENSE') return acc;
@@ -662,6 +696,8 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
   }, 0);
 
   const isPastMonth = year < new Date().getFullYear() || (year === new Date().getFullYear() && month < new Date().getMonth() + 1);
+  const canEditLimits = !isCard && !isPastMonth && !!globalBudget;
+  const selectedCatHasLimit = !!newBgtCatId && budgets.some(b => b.category_id === parseInt(newBgtCatId));
 
   return (
     <div className="space-y-8">
@@ -861,7 +897,22 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                   }
 
                   return (
-                    <div key={cat.id} className={`bg-white p-5 rounded-3xl shadow-sm border relative group hover:shadow-md transition-all ${isOver ? 'border-rose-200 ring-2 ring-rose-100' : 'border-gray-100'}`}>
+                    <div key={cat.id} className={`bg-white p-5 rounded-3xl shadow-sm border relative group hover:shadow-md transition-all ${editingLimitCatId === cat.id ? 'border-indigo-200 ring-2 ring-indigo-100' : isOver ? 'border-rose-200 ring-2 ring-rose-100' : 'border-gray-100'}`}>
+                      {editingLimitCatId === cat.id ? (
+                        <CategoryLimitEditor
+                          categoryName={cat.name}
+                          isNew={!b}
+                          currentLimit={b ? b.amount : 0}
+                          spent={actual}
+                          value={editLimitAmt}
+                          edit={getLimitEdit(cat.id, parseFloat(editLimitAmt))}
+                          currency={selectedAcc?.currency}
+                          onChange={setEditLimitAmt}
+                          onSlide={(raw) => setEditLimitAmt(String(service.snapCategoryLimit(raw, getLimitEdit(cat.id, raw))))}
+                          onSave={(e) => saveInlineLimit(cat.id, e)}
+                          onCancel={() => setEditingLimitCatId(null)}
+                        />
+                      ) : (<>
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex flex-col gap-1">
                           <span className="text-gray-800 text-lg leading-tight flex items-center gap-2">
@@ -904,6 +955,19 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                                   : 'Sin definir'}
                               </span>
                             </span>
+                            {canEditLimits && !isSpecialRecurring && (
+                              <button
+                                type="button"
+                                onClick={() => startEditLimit(cat.id)}
+                                className="-my-1.5 p-1.5 rounded-lg text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors font-black uppercase tracking-wider"
+                                title={b ? 'Editar límite' : 'Asignar límite'}
+                                aria-label={b ? `Editar límite de ${cat.name}` : `Asignar límite a ${cat.name}`}
+                              >
+                                {b ? (
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                ) : '+ Asignar'}
+                              </button>
+                            )}
                           </div>
                           {budgetAmt > 0 && (
                             <div className={`flex items-center gap-1.5 text-[10px]`}>
@@ -932,6 +996,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                           Excedido por {formatCurrency(actual - budgetAmt, selectedAcc?.currency || selectedCard?.currency)}
                         </div>
                       )}
+                      </>)}
                     </div>
                   )
                 })}
@@ -1467,10 +1532,10 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
                 <input type="number" step="0.01" className="w-full rounded-xl border border-gray-200 p-3 shadow-sm" placeholder={`Monto en ${selectedAcc?.currency || ''}`} value={newBgtAmt} onChange={e => setNewBgtAmt(e.target.value)} required />
                 <button
                   type="submit"
-                  disabled={!globalBudget || theoreticalFreeBalance <= 0}
+                  disabled={!globalBudget || (theoreticalFreeBalance <= 0 && !selectedCatHasLimit)}
                   className="w-full bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {!globalBudget ? 'Define primero tu presupuesto' : (theoreticalFreeBalance <= 0 ? 'Ya asignaste todo tu presupuesto' : 'Asignar límite')}
+                  {!globalBudget ? 'Define primero tu presupuesto' : selectedCatHasLimit ? 'Actualizar límite' : (theoreticalFreeBalance <= 0 ? 'Ya asignaste todo tu presupuesto' : 'Asignar límite')}
                 </button>
               </form>
 

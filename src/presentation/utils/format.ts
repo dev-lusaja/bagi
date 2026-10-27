@@ -21,3 +21,20 @@ export const formatCurrency = (amount: number, currency?: string) => {
   
   return symbol ? `${symbol} ${formatted}` : formatted;
 };
+
+// Normalizes what the user typed in an amount field to a plain numeric string ("1,234.5" → "1234.5").
+// Keeps a trailing dot and at most two decimals so partial input like "1234." survives while typing.
+export const parseAmountInput = (display: string) => {
+  const cleaned = display.replace(/[^\d.]/g, '');
+  const [intPart, ...rest] = cleaned.split('.');
+  if (rest.length === 0) return intPart;
+  return `${intPart}.${rest.join('').slice(0, 2)}`;
+};
+
+// Formats a plain numeric string with the same grouping as formatCurrency ("1234.5" → "1,234.5")
+export const formatAmountInput = (raw: string) => {
+  if (!raw) return '';
+  const [intPart, decPart] = raw.split('.');
+  const grouped = (intPart.replace(/^0+(?=\d)/, '') || '0').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return decPart !== undefined ? `${grouped}.${decPart}` : grouped;
+};

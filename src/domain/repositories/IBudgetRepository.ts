@@ -43,6 +43,7 @@ export interface IBudgetRepository {
 
     getCategoryBudgets(year: number, month: number): Promise<CategoryBudget[]>;
     saveCategoryBudget(budget: Omit<CategoryBudget, 'id'>): Promise<CategoryBudget>;
+    updateCategoryBudget(id: number, budget: Partial<CategoryBudget>): Promise<CategoryBudget>;
     deleteCategoryBudget(id: number): Promise<void>;
 
     getCardBudgets(year: number, month: number): Promise<CardBudget[]>;

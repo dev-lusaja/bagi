@@ -301,6 +301,16 @@ export class SqliteBudgetRepository implements IBudgetRepository {
         return { ...budget, id: this.getLastInsertId() };
     }
 
+    async updateCategoryBudget(id: number, budget: Partial<CategoryBudget>): Promise<CategoryBudget> {
+        const allowedKeys = ['year', 'month', 'amount', 'category_id', 'account_id', 'user_id'];
+        const keys = Object.keys(budget).filter(k => allowedKeys.includes(k));
+        const setClause = keys.map(k => `${k} = ?`).join(', ');
+        const values = keys.map(k => budget[k as keyof CategoryBudget]);
+        this.execute(`UPDATE category_budgets SET ${setClause} WHERE id = ?`, [...values, id]);
+        const res = this.query<CategoryBudget>('SELECT * FROM category_budgets WHERE id = ?', [id]);
+        return res[0];
+    }
+
     async deleteCategoryBudget(id: number): Promise<void> {
         this.execute('DELETE FROM category_budgets WHERE id = ?', [id]);
     }

@@ -1,4 +1,5 @@
 import { IBudgetRepository } from '../../domain/repositories/IBudgetRepository';
+import { CategoryBudget } from '../../domain/entities';
 import { GoogleDriveAdapter } from '../../infrastructure/adapters/GoogleDriveAdapter';
 import { ErrorLogger } from '../../services/SentryLogger';
 
@@ -399,6 +400,47 @@ export class BudgetService {
     async getCategoryBudgets(y: number, m: number) { return this.repo.getCategoryBudgets(y, m); }
     async addCategoryBudget(b: any) { return this.performOperation(() => this.repo.saveCategoryBudget(b)); }
     async deleteCategoryBudget(id: number) { return this.performOperation(() => this.repo.deleteCategoryBudget(id)); }
+
+    // Upsert: a category has at most one limit per month and account, so re-assigning updates it instead of duplicating
+    async saveCategoryLimit(b: Omit<CategoryBudget, 'id' | 'user_id'> & { user_id?: number }) {
+        return this.performOperation(async () => {
+            const existing = (await this.repo.getCategoryBudgets(b.year, b.month))
+                .find(e => e.category_id === b.category_id && e.account_id === b.account_id);
+            return existing
+                ? this.repo.updateCategoryBudget(existing.id, { amount: b.amount })
+                : this.repo.saveCategoryBudget(b as Omit<CategoryBudget, 'id'>);
+        });
+    }
+
+    // Business Logic: Editable range for a category limit and the impact of a proposed amount.
+    // Floor is what's already spent; ceiling is what the unassigned (free) balance can absorb.
+    // Mirrors the plan math, where a limit only commits the part not covered by recurring items in its category.
+    getCategoryLimitEdit(
+        ctx: { currentLimit: number; spent: number; recurringInCategory: number; freeBalance: number },
+        proposed: number
+    ) {
+        const { currentLimit, spent, recurringInCategory, freeBalance } = ctx;
+        const committed = (limit: number) => Math.max(0, limit - recurringInCategory);
+
+        const min = spent;
+        const max = Math.max(min, Math.max(currentLimit, recurringInCategory) + Math.max(0, freeBalance));
+        // ~100 steps across the range, rounded to a power of ten so amounts land on round numbers in any currency
+        const step = max > 0 ? Math.max(0.01, Math.pow(10, Math.floor(Math.log10(max)) - 2)) : 1;
+        const remainingFree = freeBalance - (committed(proposed) - committed(currentLimit));
+
+        let error: 'INVALID' | 'BELOW_SPENT' | 'ABOVE_FREE' | null = null;
+        if (isNaN(proposed) || proposed <= 0) error = 'INVALID';
+        else if (proposed < min - INCOME_GAP_EPSILON) error = 'BELOW_SPENT';
+        else if (proposed > max + INCOME_GAP_EPSILON) error = 'ABOVE_FREE';
+
+        return { min, max, step, remainingFree, error, isLocked: max - min < step };
+    }
+
+    // Rounds a raw slider value to the edit step, keeping it inside [min, max]
+    snapCategoryLimit(raw: number, edit: { min: number; max: number; step: number }) {
+        const snapped = Math.round(Math.round(raw / edit.step) * edit.step * 100) / 100;
+        return Math.min(edit.max, Math.max(edit.min, snapped));
+    }
 
     async getCardBudgets(y: number, m: number) { return this.repo.getCardBudgets(y, m); }
     async addCardBudget(b: any) { return this.performOperation(() => this.repo.saveCardBudget(b)); }
