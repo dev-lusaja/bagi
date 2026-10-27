@@ -56,7 +56,7 @@ export default function AlertModal({
           <div className="flex flex-col gap-2">
             <button
               onClick={onConfirm || onClose}
-              className={`w-full py-4 rounded-[1.5rem] text-sm font-black text-white transition-all active:scale-95 shadow-xl shadow-gray-200 uppercase tracking-widest ${
+              className={`w-full py-4 rounded-[1.5rem] text-sm font-black text-white transition-all active:scale-95 shadow-xl shadow-gray-200 ${
                 type === 'error' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-gray-900 hover:bg-indigo-600'
               }`}
             >
@@ -65,7 +65,7 @@ export default function AlertModal({
             {isConfirm && (
               <button
                 onClick={onClose}
-                className="w-full py-4 rounded-[1.5rem] text-sm font-black text-gray-400 hover:text-gray-600 transition-all uppercase tracking-widest"
+                className="w-full py-4 rounded-[1.5rem] text-sm font-black text-gray-400 hover:text-gray-600 transition-all"
               >
                 {cancelText}
               </button>

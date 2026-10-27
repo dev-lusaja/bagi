@@ -99,7 +99,7 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
             </div>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className={`text-2xl font-black tracking-tighter ${totalPercent > 100 ? 'text-rose-600' : 'text-gray-900'}`}>{totalPercent}%</span>
-              <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mt-0.5">Ejecución</span>
+              <span className="text-[8px] font-black text-gray-400 mt-0.5">Usado</span>
             </div>
           </div>
 
@@ -112,7 +112,7 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
                 <h3 className="text-xl font-black text-gray-800 tracking-tight">{account.name}</h3>
               </div>
               <div className="flex items-center justify-center sm:justify-start mb-1">
-                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em]">Saldo Libre</p>
+                <p className="text-gray-400 font-bold text-[10px]">Disponible</p>
               </div>
               <p className={`text-xl sm:text-2xl font-black tracking-tight break-all ${accountAvailable < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                 {formatCurrency(accountAvailable, account.currency)}
@@ -120,11 +120,11 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
             </div>
 
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 pt-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide break-words">
-                <span>Total Gastado:</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 break-words">
+                <span>Total gastado:</span>
                 <span className="text-gray-800">{formatCurrency(totalSpent, account.currency)}</span>
               </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wide break-words">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-bold text-gray-500 break-words">
                 <span>Presupuesto:</span>
                 <span className="text-gray-800">{formatCurrency(budgetLimit, account.currency)}</span>
               </div>
@@ -172,7 +172,6 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Inicio</h2>
-          <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">Control unificado de tus cuentas este mes.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto justify-between md:justify-end">
@@ -189,7 +188,7 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
              <div className="text-indigo-400">
                <CheckCircle2 className="w-4 h-4" />
              </div>
-             <span className="text-xs sm:text-sm font-black text-indigo-700 uppercase tracking-widest leading-none mt-0.5">{new Date().toLocaleString('es-ES', { month: 'long' })}</span>
+             <span className="text-xs sm:text-sm font-black text-indigo-700 capitalize leading-none mt-0.5">{new Date().toLocaleString('es-ES', { month: 'long' })}</span>
              <span className="text-indigo-600 font-black text-base sm:text-lg leading-none">{year}</span>
           </div>
         </div>
@@ -208,7 +207,7 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
           <div className="space-y-6">
             <div className="flex items-center gap-4 px-4">
               <div className="h-px flex-1 bg-gray-100" />
-              <h4 className="text-[10px] font-black text-gray-300 uppercase tracking-[0.4em]">Otras Tarjetas (Sin Vincular)</h4>
+              <h4 className="text-[10px] font-black text-gray-300">Otras tarjetas (sin vincular)</h4>
               <div className="h-px flex-1 bg-gray-100" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -226,10 +225,9 @@ export default function Home({ onNavigate, onOpenAccountSummary }: { onNavigate?
                       </div>
                       <AlertCircle className="w-5 h-5 text-amber-400" />
                     </div>
-                    <p className="text-xl font-black text-gray-800 mb-1">{card.name}</p>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Independiente</p>
+                    <p className="text-xl font-black text-gray-800 mb-6">{card.name}</p>
                     <div className="bg-gray-50 p-4 rounded-2xl space-y-1">
-                      <p className="text-[10px] font-black text-gray-400 uppercase">Consumo</p>
+                      <p className="text-[10px] font-black text-gray-400">Consumo</p>
                       <p className="text-2xl font-black text-gray-800">{formatCurrency(spent, card.currency)}</p>
                     </div>
                   </div>

@@ -1,9 +1,29 @@
-import { ShieldCheck, Database, ArrowRight, Heart, ChevronDown, Cloud, Lock, Smartphone, Sparkles, Mic, Bot, AlertCircle, FlaskConical } from 'lucide-react';
+import { ArrowRight, Heart, ChevronDown, Cloud, Lock, Smartphone, Mic, Bot, AlertCircle, FlaskConical } from 'lucide-react';
 import { useBudget } from '../context/BudgetContext';
 import { useState, useRef } from 'react';
 import { BudgetExplainer } from '../components/BudgetExplainer';
 import AlertModal from '../components/AlertModal';
 import { ErrorLogger } from '../../services/SentryLogger';
+
+function GoogleLoginButton({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="group relative flex items-center justify-between p-4 bg-indigo-600 hover:bg-indigo-700 rounded-2xl transition-all duration-500 transform hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full max-w-sm mx-auto"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm">
+          <img src="https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png" className="w-6 h-6" alt="" />
+        </div>
+        <span className="font-bold text-white text-sm">Continuar con Google</span>
+      </div>
+      <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-white group-hover:text-indigo-600 transition-all duration-500">
+        <ArrowRight className="w-4 h-4" />
+      </div>
+    </button>
+  );
+}
 
 export default function Login() {
   const { login, loginDemo, sessionExpired } = useBudget();
@@ -68,14 +88,14 @@ export default function Login() {
               <img src="/logo_full.png" className="w-20 h-20 sm:w-32 sm:h-32 object-contain" alt="Bagi Logo" />
             </div>
             <p className="text-gray-500 text-base sm:text-lg font-bold max-w-xs mx-auto leading-tight">
-              Finanzas personales, sin servidores propios. <br/>
+              Tus finanzas personales, en tu propia nube.
             </p>
           </div>
 
-          <div className="bg-white border border-gray-100 p-5 sm:p-8 rounded-2xl sm:rounded-[3rem] shadow-2xl shadow-gray-200/50 space-y-6 sm:space-y-8">
+          <div className="bg-white border border-gray-100 p-5 sm:p-8 rounded-2xl sm:rounded-[3rem] shadow-2xl shadow-gray-200/50">
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-6">Acceder al Presupuesto</h2>
+                <h2 className="text-[10px] font-black text-gray-400 mb-6">Acceder al presupuesto</h2>
               </div>
 
               {(sessionExpired || authIncomplete) && (
@@ -101,24 +121,7 @@ export default function Login() {
                 </div>
               )}
 
-              <button
-                onClick={() => handleLogin('google')}
-                disabled={loading || demoLoading}
-                className="group relative flex items-center justify-between p-4 bg-indigo-600 hover:bg-indigo-700 rounded-2xl transition-all duration-500 transform hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full max-w-sm mx-auto"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm">
-                    <img src="https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png" className="w-6 h-6" alt="Google" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-bold text-white text-sm">Google Drive</p>
-                    <p className="text-[9px] text-indigo-100 font-bold uppercase tracking-widest mt-0.5">Conectar nube segura</p>
-                  </div>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-white group-hover:text-indigo-600 transition-all duration-500">
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </button>
+              <GoogleLoginButton onClick={() => handleLogin('google')} disabled={loading || demoLoading} />
 
               <div className="text-center pt-2">
                 <button
@@ -143,29 +146,6 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="pt-8 border-t border-gray-50 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-              <div className="space-y-3 p-4 bg-indigo-50/50 rounded-3xl border border-indigo-100/50 hover:bg-indigo-50 transition-colors group">
-                  <div className="flex justify-center text-indigo-600 bg-white w-10 h-10 mx-auto rounded-xl items-center shadow-sm group-hover:scale-110 transition-transform"><ShieldCheck className="w-5 h-5" /></div>
-                  <div>
-                    <p className="text-[10px] font-black text-indigo-900 uppercase tracking-widest mb-1">Privacidad Total</p>
-                    <p className="text-[9px] text-indigo-600/70 font-bold leading-tight">Acceso exclusivo</p>
-                  </div>
-              </div>
-              <div className="space-y-3 p-4 bg-emerald-50/50 rounded-3xl border border-emerald-100/50 hover:bg-emerald-50 transition-colors group">
-                  <div className="flex justify-center text-emerald-600 bg-white w-10 h-10 mx-auto rounded-xl items-center shadow-sm group-hover:scale-110 transition-transform"><Database className="w-5 h-5" /></div>
-                  <div>
-                    <p className="text-[10px] font-black text-emerald-900 uppercase tracking-widest mb-1">Tus Datos</p>
-                    <p className="text-[9px] text-emerald-600/70 font-bold leading-tight">Sin servidores centrales</p>
-                  </div>
-              </div>
-              <div className="space-y-3 p-4 bg-purple-50/50 rounded-3xl border border-purple-100/50 hover:bg-purple-50 transition-colors group">
-                  <div className="flex justify-center text-purple-600 bg-white w-10 h-10 mx-auto rounded-xl items-center shadow-sm group-hover:scale-110 transition-transform"><Sparkles className="w-5 h-5" /></div>
-                  <div>
-                    <p className="text-[10px] font-black text-purple-900 uppercase tracking-widest mb-1">Bagi IA</p>
-                    <p className="text-[9px] text-purple-600/70 font-bold leading-tight">Alertas locales + voz opcional</p>
-                  </div>
-              </div>
-            </div>
           </div>
           <div className="mt-12 flex justify-center cursor-pointer opacity-40 hover:opacity-100 transition-opacity" onClick={scrollToMethodology}>
             <ChevronDown className="w-6 h-6 text-indigo-400 animate-bounce" />
@@ -179,7 +159,7 @@ export default function Login() {
 
         <div className="max-w-6xl w-full space-y-16">
           <div className="text-center space-y-4">
-            <h2 className="text-sm font-black text-indigo-600 uppercase tracking-[0.4em]">La Metodología</h2>
+            <h2 className="text-sm font-black text-indigo-600">La metodología</h2>
             <h3 className="text-5xl font-black text-gray-900 tracking-tighter">Sin intermediarios. <span className="text-indigo-600">Solo tú y tus finanzas.</span></h3>
           </div>
 
@@ -194,7 +174,7 @@ export default function Login() {
 
         <div className="max-w-4xl w-full space-y-16">
           <div className="text-center space-y-4">
-            <h2 className="text-sm font-black text-purple-600 uppercase tracking-[0.4em]">Conoce a Bagi IA</h2>
+            <h2 className="text-sm font-black text-purple-600">Conoce a Bagi IA</h2>
             <h3 className="text-4xl font-black text-gray-900 tracking-tighter">Tu asistente financiero personal. Inteligente, privado y rápido.</h3>
           </div>
 
@@ -204,12 +184,12 @@ export default function Login() {
                 <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
                   <Bot className="w-7 h-7" />
                 </div>
-                <span className="text-[9px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full uppercase tracking-widest">100% Local</span>
+                <span className="text-[9px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">Privado</span>
               </div>
               <div className="space-y-3">
-                <h4 className="text-xl font-bold text-gray-800 tracking-tight">Alertas Inteligentes</h4>
+                <h4 className="text-xl font-bold text-gray-800 tracking-tight">Alertas inteligentes</h4>
                 <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  Un modelo open-source corre directamente en tu navegador mediante WebAssembly. Detecta duplicados, gastos atípicos y vencimientos sin que tus datos toquen internet. Funciona siempre, sin configurar nada.
+                  Bagi revisa tus gastos en tu dispositivo y te avisa de duplicados, gastos inusuales y pagos por vencer. No hay nada que configurar.
                 </p>
               </div>
             </div>
@@ -219,12 +199,12 @@ export default function Login() {
                 <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform">
                   <Mic className="w-7 h-7" />
                 </div>
-                <span className="text-[9px] font-black text-purple-700 bg-purple-50 border border-purple-100 px-2.5 py-1 rounded-full uppercase tracking-widest">Requiere proveedor</span>
+                <span className="text-[9px] font-black text-purple-700 bg-purple-50 border border-purple-100 px-2.5 py-1 rounded-full">Opcional</span>
               </div>
               <div className="space-y-3">
-                <h4 className="text-xl font-bold text-gray-800 tracking-tight">Voz y Chat</h4>
+                <h4 className="text-xl font-bold text-gray-800 tracking-tight">Voz y chat</h4>
                 <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  Conecta tu propia API Key gratuita de <b>Gemini</b> u <b>OpenRouter</b> y registra transacciones hablando o chateando. <i>"Gasté 45 mil en mercado con Visa"</i>. Tú decides si compartes tus datos: esta función es opcional.
+                  Registra gastos hablando o escribiendo: <i>"Gasté 45 mil en mercado con Visa"</i>. Solo necesitas una clave gratuita de <b>Gemini</b> u <b>OpenRouter</b>.
                 </p>
               </div>
             </div>
@@ -239,7 +219,7 @@ export default function Login() {
 
         <div className="max-w-4xl w-full space-y-16">
           <div className="text-center space-y-4">
-            <h2 className="text-sm font-black text-indigo-600 uppercase tracking-[0.4em]">Tu Privacidad es Primero</h2>
+            <h2 className="text-sm font-black text-indigo-600">Tu privacidad es primero</h2>
             <h3 className="text-4xl font-black text-gray-900 tracking-tighter">Tú tienes el control absoluto de tu información.</h3>
           </div>
 
@@ -249,9 +229,9 @@ export default function Login() {
                 <Smartphone className="w-7 h-7" />
               </div>
               <div className="space-y-3">
-                <h4 className="text-xl font-bold text-gray-800 tracking-tight">Privacidad Local</h4>
+                <h4 className="text-xl font-bold text-gray-800 tracking-tight">En tu dispositivo</h4>
                 <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  Tus transacciones viven en una base de datos local en tu dispositivo. Bagi <b>no almacena</b> tu información en servidores propios ni tiene acceso a tus datos financieros.
+                  Tus movimientos se guardan en tu dispositivo. Bagi <b>no guarda</b> tu información ni puede verla.
                 </p>
               </div>
             </div>
@@ -261,9 +241,9 @@ export default function Login() {
                 <Cloud className="w-7 h-7" />
               </div>
               <div className="space-y-3">
-                <h4 className="text-xl font-bold text-gray-800 tracking-tight">Sincronización Directa</h4>
+                <h4 className="text-xl font-bold text-gray-800 tracking-tight">Copia en tu Google Drive</h4>
                 <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  Bagi utiliza tu cuenta de <b>Google Drive</b> como bóveda de seguridad. La sincronización es directa entre tu dispositivo y tu nube, sin intermediarios.
+                  Bagi guarda una copia en tu <b>Google Drive</b> para que la uses desde cualquier dispositivo.
                 </p>
               </div>
             </div>
@@ -273,38 +253,21 @@ export default function Login() {
                 <Lock className="w-7 h-7" />
               </div>
               <div className="space-y-3">
-                <h4 className="text-xl font-bold text-gray-800 tracking-tight">Control Total</h4>
+                <h4 className="text-xl font-bold text-gray-800 tracking-tight">Tú decides</h4>
                 <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  No existen bases de datos centrales. Las alertas inteligentes corren en tu navegador vía WebAssembly — sin internet. La voz y el chat son opcionales: solo si los activas, tu mensaje y el contexto necesario (categorías, cuentas, movimientos recientes) viajan directo a Gemini u OpenRouter con tu propia API Key — nunca pasan por un servidor de Bagi. Tú decides si compartes esos datos.
+                  La voz y el chat son opcionales. Si los usas, tu mensaje va directo a Gemini u OpenRouter, nunca a Bagi.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="pt-8 flex flex-col items-center gap-6">
-            <button
-              onClick={() => handleLogin('google')}
-              disabled={loading}
-              className="group relative flex items-center justify-between p-4 bg-indigo-600 hover:bg-indigo-700 rounded-2xl transition-all duration-500 transform hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full max-w-sm mx-auto"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm">
-                  <img src="https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png" className="w-6 h-6" alt="Google" />
-                </div>
-                <div className="text-left">
-                  <p className="font-bold text-white text-sm">Google Drive</p>
-                  <p className="text-[9px] text-indigo-100 font-bold uppercase tracking-widest mt-0.5">Conectar nube segura</p>
-                </div>
-              </div>
-              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-white group-hover:text-indigo-600 transition-all duration-500">
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </button>
+            <GoogleLoginButton onClick={() => handleLogin('google')} disabled={loading || demoLoading} />
             <button onClick={scrollToTop} className="text-xs text-gray-400 hover:text-gray-600 transition-colors underline underline-offset-2">
               Volver al inicio
             </button>
 
-            <div className="flex items-center justify-center space-x-2 text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+            <div className="flex items-center justify-center space-x-2 text-gray-400 text-[10px] font-black opacity-60">
               <span>Hecho con el</span>
               <Heart className="w-3 h-3 text-rose-500 fill-rose-500 animate-pulse" />
               <span>por devlusaja</span>

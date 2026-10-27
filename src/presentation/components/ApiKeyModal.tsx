@@ -76,7 +76,7 @@ export default function ApiKeyModal({
                   Configurar Bagi IA
                 </h3>
                 <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-                  Para registrar transacciones con tu voz, necesitamos conectar con <strong>{copy.modelLabel}</strong> usando tu propia API Key. Es 100% gratuito.
+                  Para registrar movimientos con tu voz, necesitamos conectar con <strong>{copy.modelLabel}</strong> usando tu propia API Key. Es 100% gratuito.
                 </p>
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function ApiKeyModal({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 block">{copy.keyLabel}</label>
+              <label className="text-[10px] font-bold text-gray-400 ml-1 block">{copy.keyLabel}</label>
               <div className="relative">
                 <Key className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input

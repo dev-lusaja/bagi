@@ -34,7 +34,7 @@ export default function TransactionConfirmForm({
 
       {/* Descripción */}
       <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Descripción</label>
+        <label className="text-[10px] font-bold text-gray-400 ml-1">Descripción</label>
         <input
           type="text"
           value={tx.description}
@@ -46,7 +46,7 @@ export default function TransactionConfirmForm({
 
       {/* Monto */}
       <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Monto</label>
+        <label className="text-[10px] font-bold text-gray-400 ml-1">Monto</label>
         <input
           type="number"
           step="0.01"
@@ -59,7 +59,7 @@ export default function TransactionConfirmForm({
 
       {/* Categoría */}
       <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Categoría</label>
+        <label className="text-[10px] font-bold text-gray-400 ml-1">Categoría</label>
         <select
           className={`rounded-xl border px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all ${
             !tx.category_id ? 'border-rose-200 bg-rose-50/40 text-rose-600' : 'border-gray-100 bg-gray-50/50'
@@ -94,7 +94,7 @@ export default function TransactionConfirmForm({
 
       {/* Origen (Cuenta / Tarjeta) */}
       <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Origen</label>
+        <label className="text-[10px] font-bold text-gray-400 ml-1">Origen</label>
         <select
           className={`rounded-xl border px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all ${
             !tx.account_id && !tx.card_id ? 'border-rose-200 bg-rose-50/40 text-rose-600' : 'border-gray-100 bg-gray-50/50'
@@ -129,7 +129,7 @@ export default function TransactionConfirmForm({
 
       {/* Fecha */}
       <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Fecha</label>
+        <label className="text-[10px] font-bold text-gray-400 ml-1">Fecha</label>
         <input
           type="date"
           value={tx.date.split('T')[0]}

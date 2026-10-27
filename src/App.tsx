@@ -61,7 +61,7 @@ export default function App() {
         </div>
         <div className="flex items-center space-x-2 text-gray-400">
           <Loader2 className="w-5 h-5 animate-spin" />
-          <span className="font-bold uppercase tracking-widest text-[10px]">Cargando Bagi...</span>
+          <span className="font-bold text-[10px]">Cargando Bagi...</span>
         </div>
       </div>
     );
@@ -85,7 +85,7 @@ export default function App() {
           </div>
           <button
             onClick={logout}
-            className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors shrink-0 active:scale-95"
+            className="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg text-[10px] font-black transition-colors shrink-0 active:scale-95"
           >
             Salir
           </button>
@@ -134,7 +134,7 @@ export default function App() {
             onClick={() => setActiveTab('transactions')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'transactions' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <Receipt className="w-5 h-5" />
-            <span>Transacciones</span>
+            <span>Movimientos</span>
           </button>
           <button
             onClick={() => setActiveTab('intelligence')}
@@ -173,7 +173,7 @@ export default function App() {
               )}
               <div className="overflow-hidden">
                 <p className="text-xs font-bold text-gray-800 truncate">{userInfo.name}</p>
-                <p className="text-[10px] text-gray-400">Google Account</p>
+                <p className="text-[10px] text-gray-400">Cuenta de Google</p>
               </div>
             </div>
           )}
@@ -181,7 +181,7 @@ export default function App() {
             onClick={logout}
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors">
             <LogOut className="w-5 h-5" />
-            <span>Cerrar Sesión</span>
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </aside>
@@ -208,11 +208,11 @@ export default function App() {
         </button>
         <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'dashboard' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
           <LayoutDashboard className="w-5 h-5" />
-          <span className="text-[11px] font-bold tracking-tight">Resumen</span>
+          <span className="text-[11px] font-bold tracking-tight">Presupuesto</span>
         </button>
         <button onClick={() => setActiveTab('transactions')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'transactions' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
           <Receipt className="w-5 h-5" />
-          <span className="text-[11px] font-bold tracking-tight">Registro</span>
+          <span className="text-[11px] font-bold tracking-tight">Movimientos</span>
         </button>
         <button onClick={() => setActiveTab('intelligence')} className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${activeTab === 'intelligence' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
           <Sparkles className="w-5 h-5" />

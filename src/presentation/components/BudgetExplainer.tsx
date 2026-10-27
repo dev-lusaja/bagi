@@ -7,7 +7,7 @@ export const BudgetExplainer: React.FC = () => {
       {/* Pillar 1: Global Budget */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <div className="space-y-6 order-2 md:order-1">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-100">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black border border-indigo-100">
             <Wallet className="w-3 h-3" />
             Presupuesto
           </div>
@@ -29,11 +29,11 @@ export const BudgetExplainer: React.FC = () => {
             
             <div className="space-y-3 pt-4 border-t border-white/20">
               <div className="flex justify-between items-baseline">
-                <span className="text-[9px] font-black uppercase tracking-widest opacity-70">Gasto Total</span>
+                <span className="text-[9px] font-black opacity-70">Gasto total</span>
                 <span className="text-lg font-black">$2,150.00</span>
               </div>
               <div className="flex justify-between items-baseline pt-2 border-t border-white/10">
-                <span className="text-[9px] font-black uppercase tracking-widest opacity-70">Disponible</span>
+                <span className="text-[9px] font-black opacity-70">Disponible</span>
                 <span className="text-lg font-black text-emerald-300">$1,350.00</span>
               </div>
             </div>
@@ -86,7 +86,7 @@ export const BudgetExplainer: React.FC = () => {
           </div>
         </div>
         <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black border border-emerald-100">
             <Tag className="w-3 h-3" />
             Categorías
           </div>
@@ -102,7 +102,7 @@ export const BudgetExplainer: React.FC = () => {
       {/* Pillar 3: Snapshots (Obligations) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <div className="space-y-6 order-2 md:order-1">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-purple-100">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-full text-[10px] font-black border border-purple-100">
             <Repeat className="w-3 h-3" />
             Obligaciones mensuales
           </div>
@@ -118,7 +118,7 @@ export const BudgetExplainer: React.FC = () => {
             </div>
             <div>
               <p className="font-bold text-gray-800 text-sm">Netflix (Junio)</p>
-              <p className="text-[10px] font-bold text-purple-600 uppercase">Pagado • $15.99</p>
+              <p className="text-[10px] font-bold text-purple-600">Pagado • $15.99</p>
             </div>
             <div className="ml-auto flex -space-x-2">
                <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-[8px] font-bold">MAY</div>
@@ -152,14 +152,14 @@ export const BudgetExplainer: React.FC = () => {
           <div className="space-y-4 relative scale-90 md:scale-100">
              <div className="bg-gradient-to-br from-gray-800 to-black p-5 rounded-xl shadow-2xl text-white w-48 transform -rotate-12">
                 <CreditCard className="w-6 h-6 mb-3 opacity-50" />
-                <p className="text-[8px] font-bold tracking-[0.3em] opacity-40 uppercase">Credit Card</p>
+                <p className="text-[8px] font-bold opacity-40">Credit card</p>
                 <p className="text-base font-black mt-1">•••• 4242</p>
              </div>
              <div className="bg-white p-5 rounded-xl shadow-xl border border-gray-100 w-48 translate-x-10 -translate-y-6">
                 <div className="flex items-center gap-3">
                    <div className="p-1.5 bg-amber-50 text-amber-600 rounded-lg"><Landmark className="w-4 h-4" /></div>
                    <div>
-                      <p className="text-[8px] font-black text-gray-400 uppercase">Cuenta Sueldo</p>
+                      <p className="text-[8px] font-black text-gray-400">Cuenta sueldo</p>
                       <p className="font-bold text-xs">$2,450.00</p>
                    </div>
                 </div>
@@ -167,9 +167,9 @@ export const BudgetExplainer: React.FC = () => {
           </div>
         </div>
         <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-100">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black border border-amber-100">
             <Landmark className="w-3 h-3" />
-            Flujo Unificado
+            Flujo unificado
           </div>
           <h3 className="text-4xl font-black text-gray-900 tracking-tighter leading-tight">
             Control <span className="text-amber-600">Multi-cuenta</span>

@@ -218,7 +218,7 @@ export default function SmartAlertPanel({
           {dismissedCount > 0 && (
             <button
               onClick={undoDismissAll}
-              className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 hover:text-indigo-500 transition-colors uppercase tracking-widest"
+              className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 hover:text-indigo-500 transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
               Restaurar ({dismissedCount})
@@ -271,7 +271,7 @@ export default function SmartAlertPanel({
           {dismissedCount > 0 && (
             <button
               onClick={e => { e.stopPropagation(); undoDismissAll(); }}
-              className="flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-indigo-500 transition-colors uppercase tracking-widest"
+              className="flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-indigo-500 transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
               <span className="hidden sm:inline">Restaurar ({dismissedCount})</span>

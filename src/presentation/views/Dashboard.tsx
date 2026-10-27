@@ -189,7 +189,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
     if (!globalBudget) return;
     showConfirm(
       'Eliminar Presupuesto del Mes',
-      '¿Estás seguro de que deseas eliminar el presupuesto de este mes? El mes volverá al estado "Sin Presupuesto", pero tus transacciones registradas no se modificarán.',
+      '¿Estás seguro de que deseas eliminar el presupuesto de este mes? El mes volverá al estado "Sin Presupuesto", pero tus movimientos registrados no se modificarán.',
       async () => {
         await service.deleteGlobalBudget(globalBudget.id);
         setIsEditingGlobal(false);
@@ -353,7 +353,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
   const payRecurring = (item: any) => {
     setPromptConfig({
       isOpen: true,
-      title: 'Registrar Pago',
+      title: 'Pagar',
       message: `Confirmar monto para ${item.name}`,
       defaultValue: item.amount.toString(),
       inputType: 'number',
@@ -404,7 +404,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
   const updateObligationAmount = (item: any) => {
     setPromptConfig({
       isOpen: true,
-      title: 'Actualizar Monto',
+      title: 'Actualizar monto',
       message: `Nuevo monto para ${item.name} (${item.year}-${item.month})`,
       defaultValue: item.amount.toString(),
       inputType: 'number',
@@ -437,8 +437,8 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
     const defaultAmt = netSpent > 0 ? netSpent.toString() : '';
     setPromptConfig({
       isOpen: true,
-      title: 'Abono a Tarjeta',
-      message: `Confirmar monto a abonar a ${card.name}`,
+      title: 'Pagar tarjeta',
+      message: `Confirmar monto a pagar a ${card.name}`,
       defaultValue: defaultAmt,
       inputType: 'number',
       onConfirm: async (confirmAmt) => {
@@ -515,7 +515,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
   const handleQuickSalary = () => {
     setPromptConfig({
       isOpen: true,
-      title: 'Registrar Salario',
+      title: 'Registrar salario',
       message: 'Ingresa el monto de tu salario para este mes.',
       defaultValue: '',
       inputType: 'number',
@@ -731,13 +731,12 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6 mb-6 sm:mb-8">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Presupuesto</h2>
-          <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">Controla tus límites y gastos recurrentes.</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full md:w-auto">
           <div className="flex items-center justify-between bg-indigo-50 rounded-2xl border border-indigo-100 p-1 shadow-sm min-h-[44px]">
             <select
-              className="flex-1 bg-transparent text-xs font-black text-indigo-700 uppercase tracking-wider px-3 py-1.5 outline-none cursor-pointer text-center"
+              className="flex-1 bg-transparent text-xs font-black text-indigo-700 px-3 py-1.5 outline-none cursor-pointer text-center"
               value={year}
               onChange={e => setYear(parseInt(e.target.value))}
             >
@@ -745,7 +744,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
             </select>
             <div className="w-px h-4 bg-indigo-200"></div>
             <select
-              className="flex-1 bg-transparent text-xs font-black text-indigo-700 uppercase tracking-wider px-3 py-1.5 outline-none cursor-pointer text-center"
+              className="flex-1 bg-transparent text-xs font-black text-indigo-700 px-3 py-1.5 outline-none cursor-pointer text-center"
               value={month}
               onChange={e => setMonth(parseInt(e.target.value))}
             >
@@ -800,13 +799,13 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-9">
                   {hasMissingCards && (
                     <div className="bg-white/50 p-2.5 rounded-lg border border-amber-100">
-                      <p className="text-[10px] uppercase font-black text-amber-500 tracking-wider mb-1">Tarjetas sin reserva</p>
+                      <p className="text-[10px] font-black text-amber-500 mb-1">Tarjetas sin reserva</p>
                       <p className="text-sm font-bold">{missingCards.map((c: any) => c.name).join(', ')}</p>
                     </div>
                   )}
                   {hasMissingCats && (
                     <div className="bg-white/50 p-2.5 rounded-lg border border-amber-100">
-                      <p className="text-[10px] uppercase font-black text-amber-500 tracking-wider mb-1">Categorías sin límite</p>
+                      <p className="text-[10px] font-black text-amber-500 mb-1">Categorías sin límite</p>
                       <p className="text-sm font-bold">{categoriesWithoutLimit.map((c: any) => c.name).join(', ')}</p>
                     </div>
                   )}
@@ -870,7 +869,6 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
 
           {activeTab === 'diagnostic' && (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-6">
-              <h3 className="text-xl font-semibold">Resumen</h3>
               <BudgetDiagnosticWidget
                 globalBudget={globalBudget}
                 totalSpentGlobal={totalSpentGlobal}
@@ -888,13 +886,13 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                 totalObligationsCount={totalObligationsCount}
                 cardsPlan={totalCardsPlan}
                 cardsSpent={totalCardsSpent}
+                onAdjustLimits={canEditLimits ? () => setActiveTab('consumption') : undefined}
               />
             </div>
           )}
 
           {activeTab === 'consumption' && (
             <>
-              <h3 className="text-xl font-semibold mb-6">Consumo por categoría</h3>
               {categoriesToShow.length === 0 && <div className="p-8 text-center text-gray-400 bg-white border border-gray-100 rounded-2xl">No hay gastos registrados ni presupuestos para este mes.</div>}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -951,7 +949,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                             )}
                           </span>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Usado</span>
+                            <span className="text-[10px] font-black text-gray-400">Usado</span>
                             <span className="text-sm font-medium text-gray-700">{formatCurrency(actual, selectedAcc?.currency || selectedCard?.currency)}</span>
                           </div>
                         </div>
@@ -975,7 +973,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-1.5 text-[10px]">
                             <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
-                            <span className="font-semibold text-gray-400 uppercase tracking-wider gap-1">
+                            <span className="font-semibold text-gray-400 gap-1">
                               Límite: <span className="text-gray-500">
                                 {budgetAmt > 0
                                   ? `${formatCurrency(budgetAmt, selectedAcc?.currency || selectedCard?.currency)}${isSpecialRecurring ? ' (Fijo/Obligaciones)' : ''}`
@@ -986,7 +984,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                               <button
                                 type="button"
                                 onClick={() => startEditLimit(cat.id)}
-                                className="-my-1.5 p-1.5 rounded-lg text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors font-black uppercase tracking-wider"
+                                className="-my-1.5 p-1.5 rounded-lg text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors font-black"
                                 title={b ? 'Editar límite' : 'Asignar límite'}
                                 aria-label={b ? `Editar límite de ${cat.name}` : `Asignar límite a ${cat.name}`}
                               >
@@ -999,26 +997,26 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                           {budgetAmt > 0 && (
                             <div className={`flex items-center gap-1.5 text-[10px]`}>
                               <div className={`w-1.5 h-1.5 rounded-full ${isOver ? 'bg-rose-500 animate-pulse' : 'bg-emerald-400'}`}></div>
-                              <span className={`font-semibold uppercase tracking-wider gap-1 ${isOver ? 'text-rose-500' : 'text-emerald-600'}`}>
-                                Disp: <span className={isOver ? 'text-rose-600 font-bold' : 'text-emerald-700 font-bold'}>{isOver ? '$0.00' : formatCurrency(budgetAmt - actual, selectedAcc?.currency || selectedCard?.currency)}</span>
+                              <span className={`font-semibold gap-1 ${isOver ? 'text-rose-500' : 'text-emerald-600'}`}>
+                                Disponible: <span className={isOver ? 'text-rose-600 font-bold' : 'text-emerald-700 font-bold'}>{isOver ? '$0.00' : formatCurrency(budgetAmt - actual, selectedAcc?.currency || selectedCard?.currency)}</span>
                               </span>
                             </div>
                           )}
                         </div>
-                        <span className={`font-black text-[10px] uppercase px-2.5 py-1 rounded-lg mt-0.5 ${isOver ? 'bg-rose-500 text-white animate-pulse shadow-md shadow-rose-200' : percent > 80 ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'}`}>
+                        <span className={`font-black text-[10px] px-2.5 py-1 rounded-lg mt-0.5 ${isOver ? 'bg-rose-500 text-white animate-pulse shadow-md shadow-rose-200' : percent > 80 ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'}`}>
                           {percent}%
                         </span>
                       </div>
 
                       <button
                         onClick={() => setSelectedCatDetail(cat)}
-                        className="mt-4 w-full py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-indigo-600 bg-indigo-50/50 hover:bg-indigo-50 transition-all border border-transparent hover:border-indigo-100 active:scale-95"
+                        className="mt-4 w-full py-2.5 px-4 rounded-xl text-[10px] font-black text-indigo-400 hover:text-indigo-600 bg-indigo-50/50 hover:bg-indigo-50 transition-all border border-transparent hover:border-indigo-100 active:scale-95"
                       >
                         Ver movimientos
                       </button>
 
                       {isOver && (
-                        <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] font-extrabold text-rose-600 bg-rose-50 px-3 py-2 rounded-xl border border-rose-100 uppercase tracking-widest shadow-sm">
+                        <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] font-extrabold text-rose-600 bg-rose-50 px-3 py-2 rounded-xl border border-rose-100 shadow-sm">
                           <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
                           Excedido por {formatCurrency(actual - budgetAmt, selectedAcc?.currency || selectedCard?.currency)}
                         </div>
@@ -1033,7 +1031,6 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
 
           {activeTab === 'obligations' && (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <h3 className="text-xl font-semibold mb-6">Obligaciones del mes</h3>
               {obligationsStatus.length === 0 && (
                 <div className="p-8 text-center text-gray-400 bg-white border border-gray-100 rounded-2xl">
                   No tienes obligaciones recurrentes configuradas para este origen.
@@ -1051,7 +1048,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                         </div>
                         <div className="flex items-center gap-2 text-gray-400 pl-4">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                          <span className="text-[10px] font-black uppercase tracking-widest">Día {item.due_day}</span>
+                          <span className="text-[10px] font-black">Día {item.due_day}</span>
                         </div>
                       </div>
                       <button
@@ -1082,7 +1079,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                     <div className="mt-auto flex flex-col gap-4">
                       <div className="flex justify-between items-end bg-gray-50/30 p-4 rounded-3xl border border-gray-50">
                         <div className="flex flex-col">
-                          <p className="text-[10px] font-medium text-gray-400 uppercase mb-1">Presupuestado</p>
+                          <p className="text-[10px] font-medium text-gray-400 mb-1">Presupuestado</p>
                           <p className="text-xl font-medium text-gray-900">
                             {formatCurrency(item.amount, item.itemCurrencyCode)}
                           </p>
@@ -1099,14 +1096,14 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                         <div className="text-right">
                           {item.isPaid ? (
                             <>
-                              <p className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter mb-1">Pagado Real</p>
+                              <p className="text-[10px] font-black text-emerald-500 mb-1">Pagado</p>
                               <p className="text-2xl font-medium text-emerald-600">
                                 {formatCurrency(item.paidAmount, item.itemCurrencyCode)}
                               </p>
                             </>
                           ) : (
                             <>
-                              <p className="text-[10px] font-black text-amber-500 uppercase tracking-tighter mb-1">Pendiente</p>
+                              <p className="text-[10px] font-black text-amber-500 mb-1">Pendiente</p>
                               <p className="text-2xl font-medium text-gray-300 italic">
                                 --
                               </p>
@@ -1119,20 +1116,20 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                         <div className="flex flex-col gap-2">
                           <button
                             onClick={() => payRecurring(item)}
-                            className="w-full flex items-center justify-center gap-3 py-4 bg-gray-900 text-white rounded-[1.5rem] hover:bg-indigo-600 transition-all shadow-xl shadow-gray-200 active:scale-95 font-black text-xs uppercase tracking-[0.2em]"
+                            className="w-full flex items-center justify-center gap-3 py-4 bg-gray-900 text-white rounded-[1.5rem] hover:bg-indigo-600 transition-all shadow-xl shadow-gray-200 active:scale-95 font-black text-xs"
                           >
-                            <span>REGISTRAR PAGO</span>
+                            <span>Pagar</span>
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                           </button>
                         </div>
                       ) : !item.isPaid && isPastMonth ? (
-                        <div className="flex items-center justify-center gap-2 py-3 bg-gray-50 text-gray-400 rounded-2xl border border-gray-100 font-black text-[10px] uppercase tracking-[0.2em]">
-                          <span>NO DISPONIBLE</span>
+                        <div className="flex items-center justify-center gap-2 py-3 bg-gray-50 text-gray-400 rounded-2xl border border-gray-100 font-black text-[10px]">
+                          <span>No disponible</span>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center gap-2 py-3 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100 font-black text-[10px] uppercase tracking-[0.2em]">
+                        <div className="flex items-center justify-center gap-2 py-3 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100 font-black text-[10px]">
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                          <span>OBLIGACIÓN CUBIERTA</span>
+                          <span>Pagado</span>
                         </div>
                       )}
                     </div>
@@ -1144,10 +1141,6 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
 
           {activeTab === 'cards' && !isCard && (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold">Tarjetas asociadas</h3>
-              </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {linkedCards.map((card: any) => {
                   const cardTx = (allMonthlyTransactions as any[]).filter((t: any) => t.card_id === card.id);
@@ -1175,7 +1168,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                       <div className="flex justify-between items-start mb-5">
                         <div>
                           <p className="text-xl text-gray-800 leading-tight mb-1">{card.name}</p>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 font-black uppercase tracking-widest border border-indigo-100">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 font-black border border-indigo-100">
                             {card.type === 'CREDIT' ? 'Crédito' : 'Débito'}
                           </span>
                         </div>
@@ -1189,11 +1182,11 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                           <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 mt-2">
                             <div className="flex justify-between items-end mb-2">
                               <div>
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Consumo del mes</p>
+                                <p className="text-[10px] font-black text-gray-400">Consumo del mes</p>
                                 <p className="text-lg font-medium text-gray-800">{formatCurrency(grossSpent, card.currency)}</p>
                               </div>
                               <div className="text-right">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Reserva</p>
+                                <p className="text-[10px] font-black text-gray-400">Reserva</p>
                                 <div className="flex items-center gap-1">
                                   <p className="text-sm font-medium text-gray-600">{formatCurrency(monthlyBudget, card.currency)}</p>
                                   {!isPastMonth && (
@@ -1214,7 +1207,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                           </div>
                         ) : (
                           <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-100 mt-2 shadow-inner">
-                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-tighter mb-2">Asignar Límite</p>
+                            <p className="text-[10px] font-black text-amber-600 mb-2">Asignar reserva</p>
                             <form onSubmit={(e) => addInlineCardBudget(card.id, e)} className="flex gap-2">
                               <input
                                 type="number"
@@ -1234,14 +1227,14 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
 
                         <div className="flex justify-between items-end">
                           <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter mb-1">Deuda Pendiente</p>
+                            <p className="text-[10px] font-black text-gray-400 mb-1">Deuda pendiente</p>
                             <p className={`text-3xl font-medium bg-clip-text text-transparent ${pendingDebt > 0 ? 'bg-gradient-to-r from-gray-900 to-gray-600' : 'bg-gray-400'}`}>
                               {formatCurrency(pendingDebt, card.currency)}
                             </p>
                           </div>
                           {card.type === 'CREDIT' && card.credit_limit && (
                             <div className="text-right">
-                              <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Disp. Crédito</p>
+                              <p className="text-[10px] font-black text-gray-400">Crédito disponible</p>
                               <p className="text-sm font-medium text-gray-600">{formatCurrency(card.credit_limit - netSpent, card.currency)}</p>
                             </div>
                           )}
@@ -1252,7 +1245,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                           disabled={pendingDebt <= 0}
                           className={`w-full py-3 mt-2 text-white rounded-xl font-medium transition-all shadow-sm ${pendingDebt > 0 ? "bg-gray-900 hover:bg-gray-800 active:scale-95 hover:-translate-y-0.5" : "bg-gray-400 opacity-60 cursor-not-allowed"}`}
                         >
-                          Realizar Abono
+                          Pagar
                         </button>
                       </div>
                     </div>
@@ -1276,7 +1269,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold flex justify-between">
                   <span>Estado de Tarjeta</span>
-                  <span className="text-xs uppercase bg-white/20 px-2 py-1 rounded-full">{selectedCard?.type === 'CREDIT' ? 'Crédito' : 'Débito'}</span>
+                  <span className="text-xs bg-white/20 px-2 py-1 rounded-full">{selectedCard?.type === 'CREDIT' ? 'Crédito' : 'Débito'}</span>
                 </h3>
                 <div className="text-4xl font-bold bg-clip-text">
                   {formatCurrency(totalSpent, selectedCard?.currency)}
@@ -1288,11 +1281,11 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                     </div>
                     <div className="flex justify-between pt-4 border-t border-white/20 mt-4">
                       <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-black opacity-70 tracking-wider">Límite</span>
+                        <span className="text-[10px] font-black opacity-70">Límite</span>
                         <span className="text-sm font-bold">{formatCurrency(selectedCard.credit_limit, selectedCard.currency)}</span>
                       </div>
                       <div className="flex flex-col text-right">
-                        <span className="text-[10px] uppercase font-black opacity-70 tracking-wider">Disponible</span>
+                        <span className="text-[10px] font-black opacity-70">Disponible</span>
                         <span className="text-sm font-bold">{formatCurrency(selectedCard.credit_limit - totalSpent, selectedCard.currency)}</span>
                       </div>
                     </div>
@@ -1363,7 +1356,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                             <p className="text-lg font-black tabular-nums">{formatCurrency(totalSpentGlobal, selectedAcc?.currency)}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs opacity-80">Por gastar</p>
+                            <p className="text-xs opacity-80">Disponible</p>
                             <p className={`text-lg font-black tabular-nums ${remainingGlobal < 0 ? 'text-rose-200' : ''}`}>
                               {formatCurrency(remainingGlobal, selectedAcc?.currency)}
                             </p>
@@ -1412,7 +1405,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold mb-2">Definir Presupuesto mensual</h3>
                         <div className="p-4 bg-white/10 rounded-xl border border-white/20 space-y-2">
-                          <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Ingresos detectados este mes</p>
+                          <p className="text-[10px] font-black opacity-70">Ingresos detectados este mes</p>
                           <p className="text-3xl font-black tracking-tight">{formatCurrency(monthlyIncome, selectedAcc?.currency || 'PEN')}</p>
                         </div>
                         <button
@@ -1430,7 +1423,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                         </button>
                         <div className="relative">
                           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/20"></div></div>
-                          <div className="relative flex justify-center"><span className="bg-indigo-500 px-3 text-[10px] font-black uppercase tracking-widest opacity-80">o ajustar</span></div>
+                          <div className="relative flex justify-center"><span className="bg-indigo-500 px-3 text-[10px] font-black opacity-80">o ajustar</span></div>
                         </div>
                         {!isPastMonth ? (
                           <form onSubmit={addGlobalBudget} className="space-y-3">
@@ -1602,7 +1595,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
             <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-white">
               <div>
                 <h3 className="text-xl font-black text-gray-800 tracking-tight">{selectedCatDetail.name}</h3>
-                <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-0.5">Desglose de movimientos</p>
+                <p className="text-[10px] text-gray-400 font-black mt-0.5">Desglose de movimientos</p>
               </div>
               <button
                 onClick={() => setSelectedCatDetail(null)}
@@ -1615,7 +1608,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
             <div className="p-8 overflow-y-auto custom-scrollbar">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+                  <tr className="text-[10px] font-black text-gray-400 border-b border-gray-100">
                     <th className="text-left pb-4">Fecha</th>
                     <th className="text-left pb-4">Descripción</th>
                     <th className="text-left pb-4">Origen</th>
@@ -1630,7 +1623,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                         <td className="py-4 text-gray-400 font-medium">{new Date(t.date).toLocaleDateString()}</td>
                         <td className="py-4 font-bold text-gray-800">{t.description}</td>
                         <td className="py-4 text-gray-400">
-                          <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-lg bg-gray-100 border border-gray-200">
+                          <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-gray-100 border border-gray-200">
                             {t.account?.name || t.card?.name}
                           </span>
                         </td>
@@ -1652,7 +1645,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
 
             <div className="p-8 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
               <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total acumulado</p>
+                <p className="text-[10px] font-black text-gray-400">Total acumulado</p>
                 <p className="text-sm font-bold text-gray-500">{selectedCatDetail.name}</p>
               </div>
               <span className="text-2xl font-black text-gray-900">
@@ -1675,7 +1668,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
             <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <div>
                 <h3 className="text-2xl font-black text-gray-800 tracking-tight">{selectedObligationDetail.name}</h3>
-                <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Detalle de obligación mensual</p>
+                <p className="text-[10px] text-gray-400 font-black mt-1">Detalle de obligación mensual</p>
               </div>
               <button
                 onClick={() => setSelectedObligationDetail(null)}
@@ -1688,22 +1681,22 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
             <div className="p-8 space-y-6">
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Monto Estimado</p>
+                  <p className="text-[10px] font-black text-gray-400 mb-1">Monto estimado</p>
                   <p className="text-xl font-black text-indigo-600">{formatCurrency(selectedObligationDetail.amount, selectedObligationDetail.itemCurrencyCode)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Día de pago</p>
+                  <p className="text-[10px] font-black text-gray-400 mb-1">Día de pago</p>
                   <p className="text-xl font-black text-gray-800">Día {selectedObligationDetail.due_day}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Categoría</p>
+                  <p className="text-[10px] font-black text-gray-400 mb-1">Categoría</p>
                   <p className="text-sm font-bold text-gray-700">{selectedObligationDetail.category?.name}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Medio de Pago</p>
+                  <p className="text-[10px] font-black text-gray-400 mb-1">Medio de pago</p>
                   <p className="text-sm font-bold text-gray-700">
                     {selectedObligationDetail.account?.name || selectedObligationDetail.card?.name || 'No definido'}
                   </p>
@@ -1712,7 +1705,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
 
               {selectedObligationDetail.notes && (
                 <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100/50">
-                  <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Observaciones / Notas</p>
+                  <p className="text-[10px] font-black text-amber-600 mb-1">Observaciones / notas</p>
                   <p className="text-sm text-amber-900/80 font-medium italic leading-relaxed">
                     {selectedObligationDetail.notes}
                   </p>
@@ -1727,7 +1720,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
                   )}
                 </div>
-                <p className="text-xs font-black uppercase tracking-widest text-gray-500">
+                <p className="text-xs font-black text-gray-500">
                   Estado: <span className={selectedObligationDetail.isPaid ? 'text-emerald-600' : 'text-rose-600'}>
                     {selectedObligationDetail.isPaid ? 'Pagado este mes' : 'Pendiente de pago'}
                   </span>
@@ -1738,7 +1731,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
             <div className="p-8 bg-gray-50 border-t border-gray-100 flex justify-end">
               <button
                 onClick={() => setSelectedObligationDetail(null)}
-                className="px-8 py-3 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-800 transition-all active:scale-95 shadow-lg shadow-gray-200"
+                className="px-8 py-3 bg-gray-900 text-white rounded-xl text-xs font-black hover:bg-gray-800 transition-all active:scale-95 shadow-lg shadow-gray-200"
               >
                 Entendido
               </button>

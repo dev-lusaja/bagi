@@ -2,13 +2,56 @@ import { useState, useEffect } from 'react';
 import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, ArrowLeftRight, Filter, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowLeftRight, Filter } from 'lucide-react';
 import { Account, Card, Category, Transaction } from '../../domain/entities';
 
 const MONTH_NAMES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
+
+const YEARS = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+
+interface PeriodPickerProps {
+  label: string;
+  dotClass: string;
+  month: number;
+  year: number;
+  onMonthChange: (month: number) => void;
+  onYearChange: (year: number) => void;
+}
+
+function PeriodPicker({ label, dotClass, month, year, onMonthChange, onYearChange }: PeriodPickerProps) {
+  const selectClass = 'bg-white border border-gray-200 text-xs font-bold text-gray-700 px-3 py-2 rounded-xl outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer min-h-[40px]';
+  return (
+    <div className="flex items-center gap-2">
+      <span className="flex items-center gap-1.5 w-28 sm:w-auto shrink-0 text-xs font-semibold text-gray-500">
+        <span className={`w-2 h-2 rounded-full ${dotClass}`} />
+        {label}
+      </span>
+      <select
+        aria-label={`${label}: mes`}
+        className={`flex-1 sm:flex-none ${selectClass}`}
+        value={month}
+        onChange={e => onMonthChange(parseInt(e.target.value))}
+      >
+        {MONTH_NAMES.map((m, i) => (
+          <option key={i + 1} value={i + 1}>{m}</option>
+        ))}
+      </select>
+      <select
+        aria-label={`${label}: año`}
+        className={`w-24 ${selectClass}`}
+        value={year}
+        onChange={e => onYearChange(parseInt(e.target.value))}
+      >
+        {YEARS.map(y => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
 export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   if (onNavigate) {
@@ -156,11 +199,8 @@ export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) =
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">
-            Analítica Comparativa
+            Analítica
           </h2>
-          <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">
-            Compara tus hábitos de gasto entre periodos (Mes Base vs. Mes Comparado).
-          </p>
         </div>
 
         {/* Account Filter */}
@@ -184,67 +224,23 @@ export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) =
       </div>
 
       {/* Period Selection Controls */}
-      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
-        <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs uppercase tracking-wider">
-          <Calendar className="w-4 h-4" />
-          <span>Selección de Periodos a Comparar</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Period A Selector (Mes Base) */}
-          <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100/60 space-y-2">
-            <span className="text-[10px] font-black uppercase text-indigo-600 tracking-widest block">
-              Mes Base (Mes A)
-            </span>
-            <div className="flex items-center gap-2">
-              <select
-                className="flex-1 bg-white border border-indigo-200 text-xs font-bold text-gray-700 px-3 py-2 rounded-xl outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer"
-                value={monthA}
-                onChange={e => setMonthA(parseInt(e.target.value))}
-              >
-                {MONTH_NAMES.map((m, i) => (
-                  <option key={i + 1} value={i + 1}>{m}</option>
-                ))}
-              </select>
-              <select
-                className="w-24 bg-white border border-indigo-200 text-xs font-bold text-gray-700 px-3 py-2 rounded-xl outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer"
-                value={yearA}
-                onChange={e => setYearA(parseInt(e.target.value))}
-              >
-                {[2024, 2025, 2026, 2027, 2028, 2029, 2030].map(y => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Period B Selector (Mes Comparado) */}
-          <div className="bg-purple-50/50 p-4 rounded-2xl border border-purple-100/60 space-y-2">
-            <span className="text-[10px] font-black uppercase text-purple-600 tracking-widest block">
-              Mes Comparado (Mes B)
-            </span>
-            <div className="flex items-center gap-2">
-              <select
-                className="flex-1 bg-white border border-purple-200 text-xs font-bold text-gray-700 px-3 py-2 rounded-xl outline-none focus:ring-2 focus:ring-purple-200 cursor-pointer"
-                value={monthB}
-                onChange={e => setMonthB(parseInt(e.target.value))}
-              >
-                {MONTH_NAMES.map((m, i) => (
-                  <option key={i + 1} value={i + 1}>{m}</option>
-                ))}
-              </select>
-              <select
-                className="w-24 bg-white border border-purple-200 text-xs font-bold text-gray-700 px-3 py-2 rounded-xl outline-none focus:ring-2 focus:ring-purple-200 cursor-pointer"
-                value={yearB}
-                onChange={e => setYearB(parseInt(e.target.value))}
-              >
-                {[2024, 2025, 2026, 2027, 2028, 2029, 2030].map(y => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-8">
+        <PeriodPicker
+          label="Mes"
+          dotClass="bg-indigo-500"
+          month={monthA}
+          year={yearA}
+          onMonthChange={setMonthA}
+          onYearChange={setYearA}
+        />
+        <PeriodPicker
+          label="Comparar con"
+          dotClass="bg-purple-500"
+          month={monthB}
+          year={yearB}
+          onMonthChange={setMonthB}
+          onYearChange={setYearB}
+        />
       </div>
 
       {/* KPI Cards Executive Summary */}
@@ -252,7 +248,7 @@ export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) =
         {/* Total Variation Card */}
         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between group hover:shadow-md transition-all">
           <div className="flex justify-between items-start mb-4">
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Variación Total Gastos</span>
+            <span className="text-[10px] font-black text-gray-400">Variación total de gastos</span>
             <div className={`p-2.5 rounded-2xl ${totalDiff > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
               <ArrowLeftRight className="w-5 h-5" />
             </div>
@@ -276,7 +272,7 @@ export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) =
         {/* Highest Increase Card */}
         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between group hover:shadow-md transition-all">
           <div className="flex justify-between items-start mb-4">
-            <span className="text-[10px] font-black uppercase tracking-widest text-rose-500">Mayor Incremento</span>
+            <span className="text-[10px] font-black text-rose-500">Mayor incremento</span>
             <div className="p-2.5 rounded-2xl bg-rose-50 text-rose-600">
               <TrendingUp className="w-5 h-5" />
             </div>
@@ -306,7 +302,7 @@ export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) =
         {/* Highest Savings Card */}
         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between group hover:shadow-md transition-all">
           <div className="flex justify-between items-start mb-4">
-            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Mayor Ahorro</span>
+            <span className="text-[10px] font-black text-emerald-600">Mayor ahorro</span>
             <div className="p-2.5 rounded-2xl bg-emerald-50 text-emerald-600">
               <TrendingDown className="w-5 h-5" />
             </div>
@@ -337,7 +333,7 @@ export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) =
       {/* Main Chart Section: Category Side-by-Side Comparison */}
       <div className="bg-white p-5 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
         <div>
-          <h3 className="text-xl font-black text-gray-800 tracking-tight">Comparativa por Categorías</h3>
+          <h3 className="text-xl font-black text-gray-800 tracking-tight">Comparativa por categorías</h3>
           <p className="text-xs text-gray-400 font-medium mt-0.5">
             Gasto acumulado en {monthLabelA} vs. {monthLabelB}, ordenado por mayor impacto en la diferencia.
           </p>
@@ -393,8 +389,8 @@ export default function Analytics({ onNavigate }: { onNavigate?: (tab: string) =
 
             {/* Detailed Category Table / Breakdown List */}
             <div className="pt-6 border-t border-gray-100">
-              <h4 className="text-xs font-black uppercase text-gray-400 tracking-wider mb-4">
-                Detalle y Variación por Categoría
+              <h4 className="text-xs font-black text-gray-400 mb-4">
+                Detalle y variación por categoría
               </h4>
               <div className="space-y-3">
                 {chartData.map((item, idx) => {

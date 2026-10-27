@@ -17,36 +17,36 @@ Cada tarea es independiente. Esfuerzo: **(S)** rápido · **(M)** unas horas. Ma
 
 ## 1. Textos
 
-- [ ] **T1 (S): Quitar los subtítulos de cabecera de cada vista.** El título basta.
+- [x] **T1 (S): Quitar los subtítulos de cabecera de cada vista.** El título basta.
   - `views/Home.tsx:175`, `views/Dashboard.tsx:734`, `views/Transactions.tsx:195`, `views/MoreView.tsx:14`, `views/Analytics.tsx:162`, `views/Settings.tsx:368`, `views/Intelligence.tsx:187`
-- [ ] **T2 (S): Quitar los `<h3>` que repiten el nombre de la pestaña en Presupuesto.**
+- [x] **T2 (S): Quitar los `<h3>` que repiten el nombre de la pestaña en Presupuesto.**
   - `views/Dashboard.tsx:873`, `:897`, `:1036`, `:1148`
-- [ ] **T3 (M): Reducir "Análisis del Desvío" a una frase y una acción.**
+- [x] **T3 (M): Reducir "Análisis del Desvío" a una frase y una acción.**
   - Ejemplo: *"Te pasaste S/ 120, sobre todo en Comida."* + botón "Ajustar límites".
   - Quitar la etiqueta "Plan vs Realidad" y los paréntesis en los nombres ("Consumo Variable (Límites)" → "Categorías").
   - `components/BudgetDiagnosticWidget.tsx`
 - [ ] **T4 (S): Resumir el banner "Acción Requerida: Configuración Pendiente" en una línea.**
   - Ejemplo: *"Sin límite: Comida, Ocio"* + botón "Asignar".
   - `views/Dashboard.tsx:791-814`
-- [ ] **T5 (S): Quitar los párrafos introductorios de las secciones de Configuración.**
-  - `views/Settings.tsx:462`, `:509`, `:588`, `:871`, `:905` (este último depende de F4)
-- [ ] **T6 (S): Convertir "Más opciones" en una lista simple** (ícono + nombre + flecha, sin descripciones). "Analítica Comparativa" → "Analítica".
+- [x] **T5 (S): Quitar los párrafos introductorios de las secciones de Configuración.**
+  - `views/Settings.tsx:462`, `:509`, `:588`, `:871` y el de Categorías. La nota bajo el selector de proveedor ("Cambiar este selector solo te deja ver/editar…") se quita en F4.
+- [x] **T6 (S): Convertir "Más opciones" en una lista simple** (ícono + nombre + flecha, sin descripciones). "Analítica Comparativa" → "Analítica".
   - `views/MoreView.tsx`
-- [ ] **T7 (S): Quitar el lenguaje "Mes A / Mes B" de Analítica.** Usar "Este mes" y "Comparar con" en una sola fila; quitar "Selección de Periodos a Comparar".
+- [x] **T7 (S): Quitar el lenguaje "Mes A / Mes B" de Analítica.** Usar "Mes" y "Comparar con" en una sola fila; quitar "Selección de Periodos a Comparar". ("Mes" en vez de "Este mes" porque el primer periodo también es editable.)
   - `views/Analytics.tsx:187-248`
-- [ ] **T8 (M): Reescribir el Login para un usuario no técnico.**
+- [x] **T8 (M): Reescribir el Login para un usuario no técnico.**
   - Botón "Google Drive / CONECTAR NUBE SEGURA" → "Continuar con Google".
   - Quitar las 3 mini-tarjetas en 9px dentro de la tarjeta de login.
   - Quitar jerga de las secciones de abajo ("WebAssembly", "open-source", "API Key"); acortar el párrafo de `:278`.
   - `views/Login.tsx:75-168`
-- [ ] **T9 (M): Unificar el vocabulario en toda la app.**
-  - [ ] Navegación: desktop "Presupuesto"/"Transacciones" vs móvil "Resumen"/"Registro" (`App.tsx:206-215`) → un solo nombre.
-  - [ ] "Saldo Libre" / "Por gastar" / "Disp:" → "Disponible".
-  - [ ] Tarjetas: "Reserva" vs "Asignar Límite" (`views/Dashboard.tsx:1196` vs `:1217`) → un solo término.
-  - [ ] "REGISTRAR PAGO" / "Realizar Abono" / "OBLIGACIÓN CUBIERTA" / "Pagado Real" → "Pagar" → "Pagado".
-  - [ ] "Google Account" (`App.tsx:156`) → "Cuenta de Google".
-  - [ ] Reemplazar "Ejecución", "fallback", "Independiente" por lenguaje simple.
-- [ ] **T10 (M): Etiquetas en minúscula normal.** Eliminar `uppercase tracking-widest` en etiquetas, botones y chips (~150 usos; la mayoría en `views/Dashboard.tsx` y `views/Settings.tsx`).
+- [x] **T9 (M): Unificar el vocabulario en toda la app.**
+  - [x] Navegación: desktop "Presupuesto"/"Transacciones" vs móvil "Resumen"/"Registro" (`App.tsx:206-215`) → un solo nombre: "Presupuesto" y "Movimientos" (también en títulos y textos: "transacción" → "movimiento").
+  - [x] "Saldo Libre" / "Por gastar" / "Disp:" → "Disponible".
+  - [x] Tarjetas: "Reserva" vs "Asignar Límite" (`views/Dashboard.tsx:1196` vs `:1217`) → un solo término: "Reserva".
+  - [x] "REGISTRAR PAGO" / "Realizar Abono" / "OBLIGACIÓN CUBIERTA" / "Pagado Real" → "Pagar" → "Pagado".
+  - [x] "Google Account" (`App.tsx:156`) → "Cuenta de Google".
+  - [x] Reemplazar "Ejecución", "fallback", "Independiente" por lenguaje simple.
+- [x] **T10 (M): Etiquetas en minúscula normal.** Eliminar `uppercase tracking-widest` en etiquetas, botones y chips (~150 usos; la mayoría en `views/Dashboard.tsx` y `views/Settings.tsx`).
 
 ## 2. Colores
 
@@ -103,6 +103,7 @@ Cada tarea es independiente. Esfuerzo: **(S)** rápido · **(M)** unas horas. Ma
 - [ ] **F3 (M): Formulario de transacción más corto.** "Período Presupuestario" detrás de "Más opciones"; no dejarlo siempre abierto en desktop; opcional botón flotante "+" en móvil.
   - `views/Transactions.tsx:203-300`
 - [ ] **F4 (M): Un solo selector de "Proveedor de IA"** que se active directamente si ya tiene clave guardada.
+  - Al hacerlo, quitar la nota bajo el selector que explica que cambiarlo no lo activa (pendiente de T5).
   - `views/Settings.tsx:874-907`
 - [ ] **F5 (S): Quitar el selector de idioma con una sola opción.**
   - `views/Intelligence.tsx:235-245`
@@ -112,7 +113,7 @@ Cada tarea es independiente. Esfuerzo: **(S)** rápido · **(M)** unas horas. Ma
 - [ ] **D1 (S): Usar la moneda de la cuenta en lugar de `'$0.00'` fijo.**
   - `views/Dashboard.tsx:1003`
 - [ ] **D2 (S): Generar los años de los selectores a partir del año actual** (hoy 2024–2030, 2025–2030 y 2025–2028).
-  - `views/Dashboard.tsx:744`, `views/Analytics.tsx:214`, `:241`, `views/Settings.tsx:645`, `:674`, `:716`, `:792`
+  - `views/Dashboard.tsx:744`, `views/Analytics.tsx` (constante `YEARS`), `views/Settings.tsx:645`, `:674`, `:716`, `:792`
 - [ ] **D3 (S): Mostrar nombres de meses en los selectores de obligaciones** (hoy 1–12).
   - `views/Settings.tsx:639`, `:668`, `:710`, `:785`
 - [ ] **D4 (S): El error genérico debe nombrar el proveedor activo** (hoy dice "Gemini" siempre).

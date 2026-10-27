@@ -49,11 +49,11 @@ const Section = ({ id, title, icon, children, openSection, setOpenSection }: any
 const ModelCapabilityBadge = ({ supportsImage }: { supportsImage: boolean }) => {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="inline-flex items-center gap-1 w-fit px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-500">
+      <span className="inline-flex items-center gap-1 w-fit px-2 py-1 rounded-lg text-[10px] font-bold bg-gray-100 text-gray-500">
         <Type className="w-3 h-3" /> Texto
       </span>
       {supportsImage && (
-        <span className="inline-flex items-center gap-1 w-fit px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide bg-emerald-50 text-emerald-600">
+        <span className="inline-flex items-center gap-1 w-fit px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-600">
           <Camera className="w-3 h-3" /> Imagen
         </span>
       )}
@@ -365,7 +365,6 @@ export default function SettingsView() {
 
       <div>
         <h2 className="text-3xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500">Configuración</h2>
-        <p className="text-gray-500 mt-2">Personaliza tu experiencia y gestiona tus recursos financieros.</p>
       </div>
 
       <div className="flex flex-col gap-4 max-w-4xl">
@@ -376,8 +375,7 @@ export default function SettingsView() {
           setOpenSection={setOpenSection}
           icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>}
         >
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-sm text-gray-500 font-medium">Define cómo quieres clasificar tus movimientos.</p>
+          <div className="flex justify-end items-center mb-6">
             <button 
               onClick={() => setShowCatHelp(!showCatHelp)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
@@ -385,7 +383,7 @@ export default function SettingsView() {
               }`}
             >
               <HelpCircle className="w-3.5 h-3.5" />
-              {showCatHelp ? 'Cerrar Guía' : 'Guía de Tipos'}
+              {showCatHelp ? 'Cerrar guía' : 'Guía de tipos'}
             </button>
           </div>
 
@@ -394,7 +392,7 @@ export default function SettingsView() {
               <div className="p-4 bg-rose-50 rounded-2xl border border-rose-100/50">
                 <div className="flex items-center gap-2 mb-2 text-rose-600">
                   <TrendingDown className="w-4 h-4" />
-                  <span className="font-black text-xs uppercase tracking-wider">Gasto</span>
+                  <span className="font-black text-xs">Gasto</span>
                 </div>
                 <p className="text-[11px] text-rose-800/70 leading-relaxed font-medium">
                   Reduce el saldo de tus cuentas y se descuenta de tu presupuesto mensual. Es la base para el seguimiento de tus límites.
@@ -404,7 +402,7 @@ export default function SettingsView() {
               <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100/50">
                 <div className="flex items-center gap-2 mb-2 text-emerald-600">
                   <TrendingUp className="w-4 h-4" />
-                  <span className="font-black text-xs uppercase tracking-wider">Ingreso</span>
+                  <span className="font-black text-xs">Ingreso</span>
                 </div>
                 <p className="text-[11px] text-emerald-800/70 leading-relaxed font-medium">
                   Cualquier entrada de dinero (sueldo, ventas, premios). Aumenta tu disponibilidad de fondos en la cuenta seleccionada.
@@ -414,7 +412,7 @@ export default function SettingsView() {
               <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100/50">
                 <div className="flex items-center gap-2 mb-2 text-blue-600">
                   <ArrowRightLeft className="w-4 h-4" />
-                  <span className="font-black text-xs uppercase tracking-wider">Transferencia</span>
+                  <span className="font-black text-xs">Transferencia</span>
                 </div>
                 <p className="text-[11px] text-blue-800/70 leading-relaxed font-medium">
                   Movimientos entre tus propios recursos. No afectan tu gasto real ni ingreso total, solo cambian la ubicación del dinero.
@@ -437,7 +435,7 @@ export default function SettingsView() {
                 <div key={c.id} className="p-3 bg-gray-50 rounded-xl flex justify-between items-center group hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100">
                     <div className="flex flex-col">
                         <span className="font-semibold text-gray-700">{c.name}</span>
-                        <span className={`text-[10px] uppercase font-black tracking-tighter ${
+                        <span className={`text-[10px] font-black ${
                             c.type === 'INCOME' ? 'text-emerald-500' : 
                             c.type === 'TRANSFER' ? 'text-blue-500' : 'text-rose-500'
                         }`}>
@@ -459,7 +457,6 @@ export default function SettingsView() {
           setOpenSection={setOpenSection}
           icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>}
         >
-          <p className="text-sm text-gray-500 font-medium mb-6">Registra las cuentas donde recibes tus ingresos y mantienes tu dinero. Son el origen de fondos para todos tus pagos.</p>
           <form onSubmit={addAccount} className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-8">
               <input className="rounded-xl border-gray-200 shadow-sm p-3 border sm:col-span-2 min-h-[44px]" placeholder="Nombre de la Cuenta" value={accName} onChange={e => setAccName(e.target.value)} required />
               <select 
@@ -484,9 +481,9 @@ export default function SettingsView() {
                       <div className="min-w-0 flex-1">
                           <p className="font-bold text-indigo-900 text-base sm:text-lg break-words">{a.name}</p>
                           <div className="flex gap-2 items-center flex-wrap">
-                            <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest">{a.country}</p>
+                            <p className="text-xs font-bold text-indigo-400">{a.country}</p>
                             <span className="text-[10px] text-indigo-300">•</span>
-                            <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest">{a.currency}</p>
+                            <p className="text-xs font-bold text-indigo-400">{a.currency}</p>
                           </div>
                       </div>
                       <div className="flex items-center gap-6">
@@ -506,7 +503,6 @@ export default function SettingsView() {
           setOpenSection={setOpenSection}
           icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>}
         >
-          <p className="text-sm text-gray-500 font-medium mb-6">Gestiona tus plásticos de débito o crédito. Bagi te ayudará a controlar los pagos mensuales y el uso de tus cupos.</p>
           <form onSubmit={addCard} className="flex flex-col space-y-4 mb-10 bg-gray-50 p-6 rounded-2xl border border-gray-100">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input className="rounded-xl border-gray-200 shadow-sm p-3 border" placeholder="Nombre de la Tarjeta" value={cardName} onChange={e => setCardName(e.target.value)} required />
@@ -539,8 +535,8 @@ export default function SettingsView() {
                           <div>
                               <p className="font-black text-gray-800 text-xl leading-none mb-1">{c.name}</p>
                               <div className="flex gap-2 items-center">
-                                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase ${c.type==='CREDIT'?'bg-purple-100 text-purple-600':'bg-amber-100 text-amber-600'}`}>{c.type === 'CREDIT'?'Crédito':'Débito'}</span>
-                                  <span className="text-[10px] text-gray-400 font-bold uppercase">{c.currency}</span>
+                                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-black ${c.type==='CREDIT'?'bg-purple-100 text-purple-600':'bg-amber-100 text-amber-600'}`}>{c.type === 'CREDIT'?'Crédito':'Débito'}</span>
+                                  <span className="text-[10px] text-gray-400 font-bold">{c.currency}</span>
                                   {c.payment_account && (
                                       <span className="text-[9px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-500 font-bold border border-indigo-100 italic">Pagada desde: {c.payment_account.name}</span>
                                   )}
@@ -585,33 +581,32 @@ export default function SettingsView() {
           setOpenSection={setOpenSection}
           icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>}
         >
-          <p className="text-sm text-gray-500 font-medium mb-6">Configura tus pagos recurrentes y suscripciones. Bagi los incluirá automáticamente en tu presupuesto de cada mes para evitar olvidos.</p>
           <form onSubmit={addRecurring} className="flex flex-col space-y-4 mb-8 bg-emerald-50/30 p-6 rounded-2xl border border-emerald-100">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1 uppercase">Nombre de la obligación</label>
+                      <label className="text-xs font-bold text-gray-400 ml-1">Nombre de la obligación</label>
                       <input className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Netflix, Agua, Préstamo..." value={recName} onChange={e => setRecName(e.target.value)} required />
                   </div>
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1 uppercase">Notas / Detalle</label>
+                      <label className="text-xs font-bold text-gray-400 ml-1">Notas / detalle</label>
                       <input className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-emerald-500 outline-none font-medium" placeholder="Opcional: Nro contrato, plan, etc." value={recNotes} onChange={e => setRecNotes(e.target.value)} />
                   </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1">MONTO APROXIMADO</label>
+                      <label className="text-xs font-bold text-gray-400 ml-1">Monto aproximado</label>
                       <input type="number" step="0.01" className="rounded-xl border-gray-200 shadow-sm p-3 border" value={recAmount} onChange={e => setRecAmount(e.target.value)} required />
-                      <p className="text-[9px] text-emerald-600 font-bold ml-1 uppercase tracking-tighter">Este será el monto predeterminado al inicializar cada mes.</p>
+                      <p className="text-[9px] text-emerald-600 font-bold ml-1">Este será el monto predeterminado al inicializar cada mes.</p>
                   </div>
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1">DÍA DE VENCIMIENTO</label>
+                      <label className="text-xs font-bold text-gray-400 ml-1">Día de vencimiento</label>
                       <input type="number" min="1" max="31" className="rounded-xl border-gray-200 shadow-sm p-3 border" value={recDay} onChange={e => setRecDay(e.target.value)} required />
                   </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1">CATEGORÍA</label>
+                      <label className="text-xs font-bold text-gray-400 ml-1">Categoría</label>
                       <select className="rounded-xl border-gray-200 shadow-sm p-3 border" value={recCatId} onChange={e => setRecCatId(e.target.value)} required>
                           <option value="" disabled>Seleccionar</option>
                           {categories
@@ -620,7 +615,7 @@ export default function SettingsView() {
                       </select>
                   </div>
                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-400 ml-1">CUENTA DE PAGO DEFECTO</label>
+                      <label className="text-xs font-bold text-gray-400 ml-1">Cuenta de pago por defecto</label>
                       <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-emerald-700" value={recSourceId} onChange={e => setRecSourceId(e.target.value)} required>
                           <option value="" disabled>Seleccionar Origen</option>
                           <optgroup label="Cuentas">
@@ -634,13 +629,13 @@ export default function SettingsView() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t border-emerald-100/50 pt-4">
                   <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-black text-emerald-600 ml-1 uppercase tracking-widest">Mes de Inicio</label>
+                      <label className="text-[10px] font-black text-emerald-600 ml-1">Mes de inicio</label>
                       <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold" value={recStartMonth} onChange={e => setRecStartMonth(parseInt(e.target.value))} required>
                           {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
                   </div>
                   <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-black text-emerald-600 ml-1 uppercase tracking-widest">Año de Inicio</label>
+                      <label className="text-[10px] font-black text-emerald-600 ml-1">Año de inicio</label>
                       <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold" value={recStartYear} onChange={e => setRecStartYear(parseInt(e.target.value))} required>
                           {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
                       </select>
@@ -663,20 +658,20 @@ export default function SettingsView() {
               {hasEndDate && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t border-emerald-100/50 pt-4 animate-in slide-in-from-top-2 duration-300">
                     <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black text-rose-600 ml-1 uppercase tracking-widest">Mes de Finalización</label>
+                        <label className="text-[10px] font-black text-rose-600 ml-1">Mes de finalización</label>
                         <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-rose-700" value={recEndMonth} onChange={e => setRecEndMonth(parseInt(e.target.value))} required>
                             {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                     </div>
                     <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black text-rose-600 ml-1 uppercase tracking-widest">Año de Finalización</label>
+                        <label className="text-[10px] font-black text-rose-600 ml-1">Año de finalización</label>
                         <select className="rounded-xl border-gray-200 shadow-sm p-3 border font-bold text-rose-700" value={recEndYear} onChange={e => setRecEndYear(parseInt(e.target.value))} required>
                             {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                     </div>
                 </div>
               )}
-              <button type="submit" className="bg-emerald-600 text-white px-6 py-4 rounded-xl hover:bg-emerald-700 font-bold shadow-lg shadow-emerald-100 transition-all active:scale-95 uppercase tracking-widest text-xs">Guardar Obligación</button>
+              <button type="submit" className="bg-emerald-600 text-white px-6 py-4 rounded-xl hover:bg-emerald-700 font-bold shadow-lg shadow-emerald-100 transition-all active:scale-95 text-xs">Guardar obligación</button>
           </form>
           <div className="space-y-4">
               {recurringItems.map((r: any) => (
@@ -685,33 +680,33 @@ export default function SettingsView() {
                         <div className="space-y-4 animate-in fade-in duration-200">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400 uppercase">Nombre</label>
+                              <label className="text-[10px] font-black text-indigo-400">Nombre</label>
                               <input className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.name} onChange={e => setEditRecData({...editRecData, name: e.target.value})} />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400 uppercase">Notas / Detalle</label>
+                              <label className="text-[10px] font-black text-indigo-400">Notas / detalle</label>
                               <input className="rounded-xl border-gray-200 p-2 text-sm border outline-none focus:ring-2 focus:ring-indigo-100 italic" value={editRecData.notes || ''} onChange={e => setEditRecData({...editRecData, notes: e.target.value})} />
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400 uppercase">Monto</label>
+                              <label className="text-[10px] font-black text-indigo-400">Monto</label>
                               <input type="number" step="0.01" className="rounded-xl border-gray-200 p-2 text-sm font-black border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.amount} onChange={e => setEditRecData({...editRecData, amount: e.target.value})} />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400 uppercase">Día Vencimiento</label>
+                              <label className="text-[10px] font-black text-indigo-400">Día de vencimiento</label>
                               <input type="number" min="1" max="31" className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.due_day} onChange={e => setEditRecData({...editRecData, due_day: e.target.value})} />
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Mes Inicio</label>
+                              <label className="text-[10px] font-black text-indigo-400">Mes de inicio</label>
                               <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.start_month} onChange={e => setEditRecData({...editRecData, start_month: parseInt(e.target.value)})}>
                                 {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
                               </select>
                             </div>
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Año Inicio</label>
+                              <label className="text-[10px] font-black text-indigo-400">Año de inicio</label>
                               <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" value={editRecData.start_year} onChange={e => setEditRecData({...editRecData, start_year: parseInt(e.target.value)})}>
                                  {[2025, 2026, 2027, 2028].map(y => <option key={y} value={y}>{y}</option>)}
                               </select>
@@ -732,12 +727,12 @@ export default function SettingsView() {
                                   }
                                 }}
                              />
-                             <label htmlFor={`editHasEndDate-${r.id}`} className="text-[10px] font-black text-indigo-900 uppercase tracking-widest cursor-pointer">Definir fecha de finalización</label>
+                             <label htmlFor={`editHasEndDate-${r.id}`} className="text-[10px] font-black text-indigo-900 cursor-pointer">Definir fecha de finalización</label>
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400 uppercase">Categoría</label>
+                              <label className="text-[10px] font-black text-indigo-400">Categoría</label>
                               <select 
                                 className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" 
                                 value={editRecData.category_id} 
@@ -753,7 +748,7 @@ export default function SettingsView() {
                               </select>
                             </div>
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-black text-indigo-400 uppercase">Origen</label>
+                              <label className="text-[10px] font-black text-indigo-400">Origen</label>
                               <select 
                                 className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-100" 
                                 value={editRecData.card_id ? `c-${editRecData.card_id}` : editRecData.account_id} 
@@ -779,14 +774,14 @@ export default function SettingsView() {
                           {editRecData.end_year && (
                             <div className="grid grid-cols-2 gap-4 border-t border-indigo-50 pt-4">
                               <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Mes Fin</label>
+                                <label className="text-[10px] font-black text-rose-400">Mes de fin</label>
                                 <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-rose-100" value={editRecData.end_month || ''} onChange={e => setEditRecData({...editRecData, end_month: e.target.value})}>
                                   <option value="">Indefinido</option>
                                   {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m}</option>)}
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Año Fin</label>
+                                <label className="text-[10px] font-black text-rose-400">Año de fin</label>
                                 <select className="rounded-xl border-gray-200 p-2 text-sm font-bold border outline-none focus:ring-2 focus:ring-rose-100" value={editRecData.end_year || ''} onChange={e => setEditRecData({...editRecData, end_year: e.target.value})}>
                                    <option value="">Indefinido</option>
                                    {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={y}>{y}</option>)}
@@ -796,8 +791,8 @@ export default function SettingsView() {
                           )}
 
                           <div className="flex gap-2 pt-2">
-                            <button onClick={() => saveRecEdit(r)} className="flex-1 bg-indigo-600 text-white py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-100">Guardar</button>
-                            <button onClick={() => {setEditingRecId(null); setEditRecData(null);}} className="px-6 bg-gray-100 text-gray-400 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95">X</button>
+                            <button onClick={() => saveRecEdit(r)} className="flex-1 bg-indigo-600 text-white py-2 rounded-xl text-xs font-black hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-100">Guardar</button>
+                            <button onClick={() => {setEditingRecId(null); setEditRecData(null);}} className="px-6 bg-gray-100 text-gray-400 py-2 rounded-xl text-xs font-black hover:bg-gray-200 transition-all active:scale-95">X</button>
                           </div>
                         </div>
                       ) : (
@@ -817,9 +812,9 @@ export default function SettingsView() {
                                     )}
                                   </p>
                                   <div className="flex gap-2 items-center mt-0.5 flex-wrap">
-                                      <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Vence día {r.due_day}</p>
+                                      <p className="text-[10px] text-gray-400 font-black">Vence día {r.due_day}</p>
                                       <span className="text-[10px] text-gray-200">•</span>
-                                      <span className="text-[10px] px-2 py-0.5 rounded-lg bg-gray-50 text-gray-500 font-black uppercase border border-gray-100 tracking-tighter shadow-sm truncate max-w-[150px]">
+                                      <span className="text-[10px] px-2 py-0.5 rounded-lg bg-gray-50 text-gray-500 font-black border border-gray-100 shadow-sm truncate max-w-[150px]">
                                           {(accounts as any[]).find(a => a.id === r.account_id)?.name || 
                                           (cards as any[]).find(c => c.id === r.card_id)?.name}
                                       </span>
@@ -848,7 +843,7 @@ export default function SettingsView() {
                           </div>
                           {r.notes && (
                             <div className="mt-4 pt-4 border-t border-dashed border-gray-100 flex items-start gap-2">
-                                <span className="text-[10px] font-black uppercase text-amber-500/60 tracking-widest mt-0.5">Nota:</span>
+                                <span className="text-[10px] font-black text-amber-500/60 mt-0.5">Nota:</span>
                                 <p className="text-xs text-gray-500 font-medium italic leading-relaxed">{r.notes}</p>
                             </div>
                           )}
@@ -867,17 +862,13 @@ export default function SettingsView() {
           icon={<Sparkles className="w-6 h-6" />}
         >
           <div className="space-y-6">
-            <p className="text-sm text-gray-500 font-medium">
-              Elige qué proveedor de IA usa Bagi para procesar tu voz, chat y recibos, y con qué modelos.
-            </p>
-
             <div className={`border rounded-2xl p-3 flex items-center gap-2 text-xs font-bold ${activeProvider ? 'bg-indigo-50/60 border-indigo-100 text-indigo-900' : 'bg-amber-50 border-amber-100 text-amber-800'}`}>
               <span className={`w-2 h-2 rounded-full shrink-0 ${activeProvider ? 'bg-emerald-500' : 'bg-amber-500'}`} />
               Proveedor activo ahora mismo: {activeProvider ? PROVIDER_LABELS[activeProvider] : 'ninguno configurado'}
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Viendo configuración de</label>
+              <label className="text-[10px] font-bold text-gray-400 ml-1">Viendo configuración de</label>
               <div className="flex flex-wrap items-center gap-3">
                 <select
                   className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold max-w-xs"
@@ -907,7 +898,7 @@ export default function SettingsView() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Tu {PROVIDER_LABELS[aiProvider]} API Key</label>
+              <label className="text-[10px] font-bold text-gray-400 ml-1">Tu {PROVIDER_LABELS[aiProvider]} API Key</label>
               <div className="flex gap-2">
                 <input
                   type="password"
@@ -940,7 +931,7 @@ export default function SettingsView() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Modelo principal</label>
+                <label className="text-[10px] font-bold text-gray-400 ml-1">Modelo principal</label>
                 <select
                   className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                   value={primaryModelId}
@@ -954,7 +945,7 @@ export default function SettingsView() {
                 {aiProvider === 'openrouter' && primaryOption && <ModelCapabilityBadge supportsImage={primaryOption.supportsImage} />}
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Modelo de respaldo (fallback)</label>
+                <label className="text-[10px] font-bold text-gray-400 ml-1">Modelo de respaldo</label>
                 <select
                   className="rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                   value={fallbackModelId}
@@ -979,7 +970,7 @@ export default function SettingsView() {
                 <button
                   type="button"
                   onClick={loadOpenRouterModels}
-                  className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider"
+                  className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800"
                 >
                   <RefreshCw className="w-3 h-3" /> Actualizar lista
                 </button>

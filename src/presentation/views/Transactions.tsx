@@ -135,11 +135,11 @@ export default function Transactions() {
   const getTxTypeBadge = (type: string) => {
     switch (type) {
       case 'INCOME':
-        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-50 text-emerald-600 border border-emerald-100">Ingreso</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-100">Ingreso</span>;
       case 'EXPENSE':
-        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-rose-50 text-rose-600 border border-rose-100">Gasto</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-100">Gasto</span>;
       case 'TRANSFER':
-        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-50 text-blue-600 border border-blue-100">Transf</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-50 text-blue-600 border border-blue-100">Transf</span>;
       default:
         return null;
     }
@@ -191,11 +191,10 @@ export default function Transactions() {
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-end gap-4">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Transacciones</h2>
-          <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">Controla cada movimiento de tu flujo de caja.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 tracking-tight">Movimientos</h2>
         </div>
         {/* <div className="bg-indigo-50 px-3.5 sm:px-4 py-2 rounded-2xl border border-indigo-100 text-right shrink-0">
-          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">Mostrando</p>
+          <p className="text-[10px] font-black text-indigo-400 mb-0.5">Mostrando</p>
           <p className="text-lg sm:text-xl font-black text-indigo-600 leading-none">{transactions.length}</p>
         </div> */}
       </div>
@@ -220,15 +219,15 @@ export default function Transactions() {
 
         <form onSubmit={addTx} className={`${isFormExpanded ? 'flex flex-col' : 'hidden'} md:grid grid-cols-1 md:grid-cols-6 gap-4 sm:gap-5 mt-4 md:mt-0`}>
            <div className="md:col-span-2 flex flex-col gap-2">
-             <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Descripción</label>
+             <label className="text-[10px] font-bold text-gray-400 ml-1">Descripción</label>
              <input className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" placeholder="Ej: Supermercado..." value={desc} onChange={e=>setDesc(e.target.value)} required />
            </div>
            <div className="flex flex-col gap-2">
-             <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Monto</label>
+             <label className="text-[10px] font-bold text-gray-400 ml-1">Monto</label>
              <input type="number" step="0.01" className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-bold min-h-[44px]" placeholder="0.00" value={amt} onChange={e=>setAmt(e.target.value)} required />
            </div>
            <div className="flex flex-col gap-2">
-             <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Origen</label>
+             <label className="text-[10px] font-bold text-gray-400 ml-1">Origen</label>
              <select className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" value={sourceId} onChange={e=>setSourceId(e.target.value)} required>
                <option value="" disabled>Seleccionar...</option>
                <optgroup label="Cuentas">
@@ -240,7 +239,7 @@ export default function Transactions() {
              </select>
            </div>
            <div className="md:col-span-2 flex flex-col gap-2">
-             <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Categoría</label>
+             <label className="text-[10px] font-bold text-gray-400 ml-1">Categoría</label>
              <select className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" value={catId} onChange={e=>setCatId(e.target.value)} required>
                <option value="" disabled>Seleccionar...</option>
                <optgroup label="Ingresos">
@@ -256,7 +255,7 @@ export default function Transactions() {
            </div>
 
            <div className="md:col-span-2 flex flex-col gap-2">
-             <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Fecha de Registro</label>
+             <label className="text-[10px] font-bold text-gray-400 ml-1">Fecha de registro</label>
              <input type="date" className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px]" value={date} onChange={e => {
                const newDate = e.target.value;
                setDate(newDate);
@@ -272,7 +271,7 @@ export default function Transactions() {
            </div>
            <div className="md:col-span-2 flex flex-col gap-2">
              <div className="flex items-center justify-between">
-               <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Período Presupuestario</label>
+               <label className="text-[10px] font-bold text-gray-400 ml-1">Período presupuestario</label>
              </div>
              <input type="month" className={`rounded-xl border border-gray-100 p-2.5 text-sm focus:ring-2 focus:ring-indigo-100 outline-none transition-all min-h-[44px] ${overrideBudgetPeriod ? 'bg-white' : 'bg-gray-50/50 text-gray-400'}`} value={budgetPeriod} onChange={e=>setBudgetPeriod(e.target.value)} disabled={!overrideBudgetPeriod} />
              <label className="flex items-center gap-1.5 cursor-pointer select-none ml-1">
@@ -293,7 +292,7 @@ export default function Transactions() {
            </div>
            <div className="md:col-span-2 flex flex-col gap-2 justify-end pt-2 md:pt-0">
              <button type="submit" className="bg-gray-900 text-white py-2.5 rounded-xl hover:bg-gray-800 transition-all font-bold shadow-lg shadow-gray-200 active:scale-[0.98] text-sm min-h-[44px] h-[44px]">
-               Guardar Transacción
+               Guardar movimiento
              </button>
            </div>
          </form>
@@ -355,10 +354,10 @@ export default function Transactions() {
           <table className="min-w-full divide-y divide-gray-100 text-sm">
             <thead>
               <tr className="bg-gray-50/50">
-                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Información</th>
-                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Tipo / Categoría</th>
-                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Origen</th>
-                <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Monto</th>
+                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400">Información</th>
+                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400">Tipo / Categoría</th>
+                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400">Origen</th>
+                <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400">Monto</th>
                 <th className="px-6 py-4 text-right"></th>
               </tr>
             </thead>
@@ -369,7 +368,7 @@ export default function Transactions() {
                     <td colSpan={5} className="px-6 py-2">
                        <div className="flex items-center gap-2">
                          <div className="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
-                         <span className="text-[11px] font-black uppercase tracking-widest text-indigo-500">{dateGroup}</span>
+                         <span className="text-[11px] font-black text-indigo-500">{dateGroup}</span>
                        </div>
                     </td>
                   </tr>
@@ -400,7 +399,7 @@ export default function Transactions() {
                         <button 
                           onClick={() => requestDelete(t.id)} 
                           className="p-2 text-gray-200 group-hover:text-rose-300 hover:text-white hover:bg-rose-500 rounded-xl transition-all shadow-sm"
-                          title="Eliminar transacción"
+                          title="Eliminar movimiento"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -418,7 +417,7 @@ export default function Transactions() {
                         <Filter className="w-10 h-10 opacity-20" />
                       </div>
                       <div className="text-center">
-                        <p className="font-black uppercase tracking-widest text-xs">Sin resultados</p>
+                        <p className="font-black text-xs">Sin resultados</p>
                         <p className="text-sm mt-1">No encontramos movimientos que coincidan con los filtros.</p>
                       </div>
                     </div>
@@ -435,7 +434,7 @@ export default function Transactions() {
                <Fragment key={dateGroup}>
                   <div className="bg-gray-50/80 px-4 py-2 flex items-center gap-2 border-y border-gray-100">
                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
-                     <span className="text-[11px] font-black uppercase tracking-widest text-indigo-500">{dateGroup}</span>
+                     <span className="text-[11px] font-black text-indigo-500">{dateGroup}</span>
                   </div>
                   <div className="flex flex-col">
                     {txs.map((t: any) => (
@@ -479,7 +478,7 @@ export default function Transactions() {
                     <Filter className="w-8 h-8 opacity-20" />
                   </div>
                   <div className="text-center">
-                    <p className="font-black uppercase tracking-widest text-xs">Sin resultados</p>
+                    <p className="font-black text-xs">Sin resultados</p>
                     <p className="text-xs mt-1 text-gray-400">No encontramos movimientos.</p>
                   </div>
                 </div>
@@ -492,7 +491,7 @@ export default function Transactions() {
             <button 
               onClick={() => fetchFilters(true)}
               disabled={loadingMore}
-              className="px-8 py-3 bg-white border border-gray-200 rounded-2xl text-xs font-black uppercase tracking-[0.2em] text-gray-500 hover:text-indigo-600 hover:border-indigo-100 hover:shadow-lg shadow-black/5 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
+              className="px-8 py-3 bg-white border border-gray-200 rounded-2xl text-xs font-black text-gray-500 hover:text-indigo-600 hover:border-indigo-100 hover:shadow-lg shadow-black/5 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
             >
               {loadingMore ? (
                 <>
@@ -507,8 +506,8 @@ export default function Transactions() {
       
       <AlertModal 
         isOpen={deleteConfirmId !== null}
-        title="Eliminar transacción"
-        message="¿Estás seguro de eliminar esta transacción? Esta acción no se puede deshacer."
+        title="Eliminar movimiento"
+        message="¿Estás seguro de eliminar este movimiento? Esta acción no se puede deshacer."
         type="error"
         confirmText="Eliminar"
         cancelText="Cancelar"
@@ -519,7 +518,7 @@ export default function Transactions() {
       <AlertModal
         isOpen={showSuccessAlert}
         title="¡Movimiento registrado!"
-        message="La transacción se ha guardado correctamente en tu presupuesto."
+        message="El movimiento se ha guardado correctamente en tu presupuesto."
         type="success"
         confirmText="Entendido"
         onClose={() => setShowSuccessAlert(false)}

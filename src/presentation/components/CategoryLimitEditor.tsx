@@ -60,7 +60,7 @@ export default function CategoryLimitEditor({
       <div className="flex justify-between items-start gap-3">
         <div className="flex flex-col gap-1 min-w-0">
           <span className="text-gray-800 text-lg leading-tight truncate">{categoryName}</span>
-          <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">
+          <span className="text-[10px] font-black text-indigo-500">
             {isNew ? 'Asignar límite' : 'Editar límite'}
           </span>
         </div>
@@ -122,7 +122,7 @@ export default function CategoryLimitEditor({
             className="limit-slider absolute inset-0 w-full"
           />
         </div>
-        <div className="flex justify-between mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+        <div className="flex justify-between mt-1.5 text-[10px] font-semibold text-gray-400">
           <span>Gastado <span className="text-gray-600">{fmt(spent)}</span></span>
           <span>Máx. <span className="text-gray-600">{fmt(edit.max)}</span></span>
         </div>

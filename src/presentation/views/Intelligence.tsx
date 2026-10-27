@@ -167,7 +167,7 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
           {new Intl.NumberFormat(lang.startsWith('en') ? 'en-US' : 'es-CO').format(editedTx.amount)}
         </p>
       </div>
-      <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-white/20 px-2 py-1.5 rounded-lg flex-shrink-0 ml-3">
+      <div className="flex items-center gap-1.5 text-[10px] font-black bg-white/20 px-2 py-1.5 rounded-lg flex-shrink-0 ml-3">
         {editedTx.type === 'INCOME' && <><TrendingUp className="w-3.5 h-3.5 text-emerald-300" /> Ingreso</>}
         {editedTx.type === 'EXPENSE' && <><TrendingDown className="w-3.5 h-3.5 text-rose-300" /> Gasto</>}
         {editedTx.type === 'TRANSFER' && <><ArrowLeftRight className="w-3.5 h-3.5 text-blue-300" /> Traspaso</>}
@@ -184,7 +184,6 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
           <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-500 animate-pulse" />
           Bagi IA
         </h2>
-        <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">Controla tus finanzas hablando con inteligencia artificial.</p>
       </div>
 
       {/* ─── Banner de navegador incompatible ─── */}
@@ -209,7 +208,7 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
           <div className="w-full flex justify-between items-center px-2 border-b border-gray-50 pb-3">
             <div className="flex items-center gap-2" title={!activeProvider ? "Sin proveedor de IA configurado" : apiKey ? "API Key configurada" : "API Key no configurada"}>
               <span className={`w-2.5 h-2.5 rounded-full ${apiKey ? 'bg-emerald-500 animate-ping' : 'bg-rose-500'}`} />
-              <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
+              <span className="text-[10px] font-black text-gray-400">
                 {!activeProvider
                   ? 'Sin proveedor'
                   : `${activeProvider === 'gemini' ? 'Gemini' : 'OpenRouter'}`}
@@ -443,9 +442,9 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
               <button
                 type="button"
                 onClick={() => onNavigate?.('settings')}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black transition-all"
               >
-                Ir a Configuración
+                Ir a configuración
               </button>
             </div>
           )}
@@ -462,7 +461,7 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
               <button
                 type="button"
                 onClick={() => setIsKeyModalOpen(true)}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black transition-all"
               >
                 Configurar
               </button>
@@ -532,7 +531,7 @@ export default function Intelligence({ onNavigate }: { onNavigate?: (tab: string
           subtitle="Revisión de Bagi IA"
           headerContent={transactionHeaderContent}
           isSuccess={isSaveSuccess}
-          successMessage="¡Transacción registrada!"
+          successMessage="¡Movimiento registrado!"
           successDetail={`${editedTx?.description ?? ''} guardada exitosamente en tu historial.`}
           successAutoCloseMs={2800}
         >

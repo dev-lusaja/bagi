@@ -92,7 +92,7 @@ export default function BagiActionModal({
           </button>
 
           {subtitle && (
-            <p className="text-[9px] font-black uppercase tracking-widest opacity-60 mb-1.5">
+            <p className="text-[9px] font-black opacity-60 mb-1.5">
               {subtitle}
             </p>
           )}

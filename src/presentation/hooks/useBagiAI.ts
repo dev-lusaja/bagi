@@ -538,7 +538,7 @@ export function useBagiAI(onApiKeyMissing: () => void, onProviderMissing?: () =>
       user_id: 1 // Default
     });
 
-    const confirmText = `Transacción registrada: ${customTx.description}`;
+    const confirmText = `Movimiento registrado: ${customTx.description}`;
     const confirmMsg: ChatMessage = {
       id: Date.now().toString(),
       sender: 'assistant',
