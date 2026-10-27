@@ -55,13 +55,15 @@ src/
     ├── context/
     │   └── BudgetContext.tsx        # Contexto global: instancia BudgetService y maneja auth
     ├── hooks/
-    │   └── useBagiAI.ts            # Hook de voz + Gemini: graba, parsea y confirma transacciones
+    │   └── useBagiAI.ts            # Hook de voz, chat e imagen con el proveedor de IA activo: graba, parsea y confirma transacciones
     ├── views/                       # Páginas principales de la SPA
     │   ├── Login.tsx
     │   ├── Home.tsx
     │   ├── Dashboard.tsx
     │   ├── Transactions.tsx
     │   ├── Intelligence.tsx
+    │   ├── Analytics.tsx
+    │   ├── MoreView.tsx
     │   └── Settings.tsx
     ├── components/                  # Componentes reutilizables
     │   ├── SmartAlertPanel.tsx
@@ -69,7 +71,7 @@ src/
     │   ├── BudgetExplainer.tsx
     │   ├── TransactionConfirmForm.tsx
     │   ├── BagiActionModal.tsx
-    │   ├── GeminiKeyModal.tsx
+    │   ├── ApiKeyModal.tsx
     │   ├── AlertModal.tsx
     │   ├── OnboardingChecklist.tsx
     │   ├── PromptModal.tsx
