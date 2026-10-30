@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useBudget } from '../context/BudgetContext';
-import { Filter, Repeat, AlertTriangle, Pencil, Plus, Trash2, Banknote, BarChart3, Calendar, Check, CheckCircle2, CreditCard, Eye, Info, Layers, X, XCircle } from 'lucide-react';
+import { Filter, Repeat, AlertTriangle, Pencil, Plus, Trash2, Banknote, BarChart3, Calendar, Check, CheckCircle2, CreditCard, Eye, Info, Layers, Nfc, X } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import { CONCEPT_COLORS } from '../utils/conceptColors';
+import { getCardFaceGradient } from '../utils/cardFaceColors';
 import SmartAlertPanel from '../components/SmartAlertPanel';
 import BudgetDiagnosticWidget from '../components/BudgetDiagnosticWidget';
 import PromptModal from '../components/PromptModal';
@@ -1100,7 +1101,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
           {activeTab === 'cards' && !isCard && (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {linkedCards.map((card: any) => {
+                {linkedCards.map((card: any, cardIndex: number) => {
                   const cardTx = (allMonthlyTransactions as any[]).filter((t: any) => t.card_id === card.id);
                   const grossSpent = cardTx.reduce((sum: number, tx: any) => {
                     const cat = (categories as any[]).find((c: any) => c.id === tx.category_id);
@@ -1122,89 +1123,76 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                   const isOverBudget = monthlyBudget > 0 && grossSpent > monthlyBudget;
 
                   return (
-                    <div key={card.id} className={`bg-white p-6 rounded-card shadow-sm border transition-all ${isOverBudget ? 'border-rose-200 shadow-rose-50/50' : 'border-gray-100 hover:shadow-md'}`}>
-                      <div className="flex justify-between items-start mb-5">
-                        <div>
-                          <p className="text-xl text-gray-800 leading-tight mb-1">{card.name}</p>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 font-black border border-indigo-100">
-                            {card.type === 'CREDIT' ? 'Crédito' : 'Débito'}
-                          </span>
+                    // Everything lives on the card face (85.6 × 54 mm proportions); it grows taller only if the content needs it
+                    <div key={card.id} className={`relative overflow-hidden w-4/5 mx-auto aspect-[1.586/1] rounded-card p-4 flex flex-col justify-between gap-3 text-white shadow-lg ${getCardFaceGradient(cardIndex)} ${isOverBudget ? 'ring-2 ring-rose-400 ring-offset-2' : ''}`}>
+                      <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/10" aria-hidden="true" />
+                      <div className="absolute -bottom-20 -left-10 w-56 h-56 rounded-full bg-white/5" aria-hidden="true" />
+
+                      <div className="relative flex justify-between items-start gap-3">
+                        <div className="min-w-0 space-y-2">
+                          <p className="text-base font-semibold leading-tight break-words">{card.name}</p>
+                          <div className="flex items-center gap-2" aria-hidden="true">
+                            <div className="w-8 h-6 rounded-md bg-gradient-to-br from-amber-200 to-amber-400 border border-amber-500/40" />
+                            <Nfc className="w-4 h-4 text-white/70" />
+                          </div>
                         </div>
-                        <div className={`p-3 rounded-control shadow-inner ${CONCEPT_COLORS.cards.solid}`}>
-                          <CreditCard className="w-6 h-6" />
+                        <div className="text-right shrink-0">
+                          <p className="text-xs font-semibold text-white/80">{card.type === 'CREDIT' ? 'Crédito' : 'Débito'}</p>
+                          {card.type === 'CREDIT' && card.credit_limit && (
+                            <p className="text-xs text-white/70 mt-1">Disponible <span className="font-semibold text-white">{formatCurrency(card.credit_limit - netSpent, card.currency)}</span></p>
+                          )}
                         </div>
                       </div>
 
-                      <div className="space-y-5">
-                        {monthlyBudget > 0 ? (
-                          <div className="p-4 bg-gray-50 rounded-control border border-gray-100 mt-2">
-                            <div className="flex justify-between items-end mb-2">
-                              <div>
-                                <p className="text-[10px] font-black text-gray-500">Consumo del mes</p>
-                                <p className="text-lg font-medium text-gray-800">{formatCurrency(grossSpent, card.currency)}</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-[10px] font-black text-gray-500">Reserva</p>
-                                <div className="flex items-center gap-1">
-                                  <p className="text-sm font-medium text-gray-600">{formatCurrency(monthlyBudget, card.currency)}</p>
-                                  {!isPastMonth && (
-                                    <button type="button" onClick={() => deleteCardBudget(currentCardBudget.id)} className="p-1.5 rounded-control text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors" title="Eliminar reserva" aria-label={`Eliminar reserva de ${card.name}`}><Trash2 className="w-4 h-4" /></button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mb-1.5">
-                              <div className={`h-full rounded-full transition-all duration-500 ${isOverBudget ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, budgetPercent)}%` }}></div>
-                            </div>
-                            {isOverBudget && (
-                              <p className="text-[10px] text-rose-600 font-bold flex items-center gap-1">
-                                <XCircle className="w-3 h-3" />
-                                Excedido por {formatCurrency(grossSpent - monthlyBudget, card.currency)}
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="p-4 bg-amber-50/50 rounded-control border border-amber-100 mt-2 shadow-inner">
-                            <p className="text-[10px] font-black text-amber-600 mb-2">Asignar reserva</p>
-                            <form onSubmit={(e) => addInlineCardBudget(card.id, e)} className="flex gap-2">
-                              <input
-                                type="number"
-                                step="0.01"
-                                placeholder={`Monto reserva`}
-                                className="w-full rounded-control bg-white border border-amber-200 p-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all font-semibold"
-                                value={inlineCardBgt[card.id] || ''}
-                                onChange={e => setInlineCardBgt({ ...inlineCardBgt, [card.id]: e.target.value })}
-                                required
-                              />
-                              <button type="submit" disabled={!globalBudget || theoreticalFreeBalance <= 0} className="px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-control text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                                {theoreticalFreeBalance <= 0 ? 'Agotado' : 'Guardar'}
-                              </button>
-                            </form>
-                          </div>
-                        )}
-
-                        <div className="flex justify-between items-end">
-                          <div>
-                            <p className="text-[10px] font-black text-gray-500 mb-1">Deuda pendiente</p>
-                            <p className={`text-3xl font-medium ${pendingDebt > 0 ? 'text-gray-900' : 'text-gray-500'}`}>
-                              {formatCurrency(pendingDebt, card.currency)}
-                            </p>
-                          </div>
-                          {card.type === 'CREDIT' && card.credit_limit && (
-                            <div className="text-right">
-                              <p className="text-[10px] font-black text-gray-500">Crédito disponible</p>
-                              <p className="text-sm font-medium text-gray-600">{formatCurrency(card.credit_limit - netSpent, card.currency)}</p>
-                            </div>
-                          )}
+                      <div className="relative flex justify-between items-end gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs text-white/70">Deuda</p>
+                          <p className="text-[19px] sm:text-[23px] font-black tracking-tight truncate">{formatCurrency(pendingDebt, card.currency)}</p>
                         </div>
-
                         <button
+                          type="button"
                           onClick={() => payCard(card, pendingDebt)}
                           disabled={pendingDebt <= 0}
-                          className={`w-full py-3 mt-2 text-white rounded-control font-medium transition-all shadow-sm ${pendingDebt > 0 ? "bg-gray-900 hover:bg-gray-800 active:scale-95 hover:-translate-y-0.5" : "bg-gray-400 opacity-60 cursor-not-allowed"}`}
+                          className={`shrink-0 px-4 py-2 rounded-control text-sm font-semibold transition-all ${pendingDebt > 0 ? 'bg-white text-gray-900 hover:bg-gray-100 active:scale-95' : 'bg-white/15 text-white/60 cursor-not-allowed'}`}
                         >
                           Pagar
                         </button>
+                      </div>
+
+                      <div className="relative">
+                        {monthlyBudget > 0 ? (
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between items-center gap-2">
+                              <p className="text-xs text-white/80 truncate">
+                                {isOverBudget
+                                  ? <>Excedido por <span className="font-semibold text-white">{formatCurrency(grossSpent - monthlyBudget, card.currency)}</span></>
+                                  : <><span className="font-semibold text-white">{formatCurrency(grossSpent, card.currency)}</span> de {formatCurrency(monthlyBudget, card.currency)} reservado</>}
+                              </p>
+                              {!isPastMonth && (
+                                <button type="button" onClick={() => deleteCardBudget(currentCardBudget.id)} className="w-8 h-8 shrink-0 flex items-center justify-center rounded-control bg-white/15 text-white/80 hover:bg-white/25 hover:text-white transition-colors active:scale-95" title="Eliminar reserva" aria-label={`Eliminar reserva de ${card.name}`}><Trash2 className="w-4 h-4" /></button>
+                              )}
+                            </div>
+                            <div className="w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
+                              <div className={`h-full rounded-full transition-all duration-500 ${isOverBudget ? 'bg-rose-400' : 'bg-white'}`} style={{ width: `${Math.min(100, budgetPercent)}%` }}></div>
+                            </div>
+                          </div>
+                        ) : (
+                          <form onSubmit={(e) => addInlineCardBudget(card.id, e)} className="flex gap-2">
+                            <input
+                              type="number"
+                              step="0.01"
+                              placeholder="Reserva del mes"
+                              aria-label={`Reserva del mes para ${card.name}`}
+                              className="w-full min-w-0 rounded-control bg-white/15 border border-white/30 px-3 py-1.5 text-sm text-white placeholder:text-white/60 outline-none focus:border-white focus:ring-2 focus:ring-white/30 transition-all font-semibold"
+                              value={inlineCardBgt[card.id] || ''}
+                              onChange={e => setInlineCardBgt({ ...inlineCardBgt, [card.id]: e.target.value })}
+                              required
+                            />
+                            <button type="submit" disabled={!globalBudget || theoreticalFreeBalance <= 0} className="shrink-0 px-3 bg-white/90 hover:bg-white text-gray-900 font-semibold rounded-control text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                              {theoreticalFreeBalance <= 0 ? 'Agotado' : 'Reservar'}
+                            </button>
+                          </form>
+                        )}
                       </div>
                     </div>
                   );
