@@ -75,7 +75,7 @@ src/
     │   ├── AlertModal.tsx
     │   ├── OnboardingChecklist.tsx
     │   ├── PromptModal.tsx
-    │   └── SavingOverlay.tsx
+    │   └── SyncStatusButton.tsx      # Nube de estado de sincronización (menú lateral y barra superior móvil)
     └── utils/
 ```
 
@@ -165,7 +165,7 @@ Es el único punto de contacto que la capa de presentación tiene con los datos.
 **Propiedades de sincronización:**
 - `syncStrategy: 'immediate' | 'deferred'` — por defecto `deferred`.
 - `SYNC_INTERVAL = 8000ms` — debounce de 8 segundos antes de sincronizar a Drive.
-- `pendingChanges` — flag que indica si hay cambios sin sincronizar.
+- `pendingChanges` — flag que indica si hay cambios sin sincronizar. Se limpia justo antes de exportar la BD en `syncToDrive()` (no al terminar), así que cualquier cambio hecho durante la subida lo vuelve a marcar.
 - `lastKnownRemoteTime` — timestamp del archivo en Drive al momento de la última sync exitosa.
 
 **Ciclo de vida:**
@@ -208,8 +208,13 @@ El flujo completo de una mutación:
    b. **Si el `modifiedTime` del Drive difiere del `lastKnownRemoteTime` local** → alguien modificó el archivo desde otro dispositivo.
       - Se descarga el blob actualizado y se reinicializa la BD local.
       - Se muestra una alerta nativa al usuario y se recarga la página (`window.location.reload()`).
-   c. **Si no hay conflicto** → se exporta la BD con `repo.exportDatabase()` y se sube via `uploadFile()`.
+   c. **Si no hay conflicto** → se limpia `pendingChanges`, se exporta la BD con `repo.exportDatabase()` y se sube via `uploadFile()`.
    d. Se actualiza `lastKnownRemoteTime` con el nuevo `modifiedTime`.
+   e. Al terminar:
+      - **Si hubo cambios durante la subida** (`pendingChanges` volvió a `true`) → se programa otra subida (`scheduleSave`).
+      - **Si la subida falló** → `pendingChanges` vuelve a `true`. No hay reintento automático: se reintenta con el siguiente cambio o tocando la nube.
+
+La UI no bloquea la pantalla durante la subida: `SyncStatusButton` muestra el estado (verde = sincronizado, ámbar con punto que late = pendiente, girando = subiendo) en el menú lateral de escritorio y en la barra superior móvil. Tocarlo fuerza `syncToDrive()`. En modo demo no se muestra. `beforeunload` avisa si hay cambios pendientes o una subida en curso.
 
 > **Resolución de conflictos**: en la versión actual el Drive siempre gana. Los cambios locales no sincronizados se descartan y la página se recarga para limpiar el estado de React.
 

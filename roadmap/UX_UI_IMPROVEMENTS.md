@@ -101,8 +101,9 @@ Cada tarea es independiente. Esfuerzo: **(S)** rápido · **(M)** unas horas. Ma
 
 ## 5. Flujo e interacción
 
-- [ ] **F1 (M): Cambiar el aviso de sincronización a pantalla completa por un ícono de nube en la cabecera** (también en móvil, que hoy no tiene indicador).
-  - `components/SavingOverlay.tsx`
+- [x] **F1 (M): Cambiar el aviso de sincronización a pantalla completa por un ícono de nube en la cabecera** (también en móvil, que hoy no tiene indicador).
+  - Hecho: `SavingOverlay` eliminado; `components/SyncStatusButton.tsx` en el menú lateral y en una barra superior delgada solo en móvil (logo + nube). Pendiente = ámbar con punto que late; tocar sincroniza. Oculto en modo demo.
+  - Requirió corregir `BudgetService.syncToDrive()`: `pendingChanges` se limpia antes de exportar, y si hubo cambios durante la subida se vuelve a subir (ver `implementation_plan.md`).
 - [ ] **F2 (S): Toast en vez del modal "¡Movimiento registrado!"** tras guardar una transacción.
   - `views/Transactions.tsx:519-526`
 - [ ] **F3 (M): Formulario de transacción más corto.** "Período Presupuestario" detrás de "Más opciones"; no dejarlo siempre abierto en desktop; opcional botón flotante "+" en móvil.

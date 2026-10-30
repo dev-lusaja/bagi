@@ -36,7 +36,10 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     useEffect(() => {
         const init = async () => {
             try {
-                service.setOnSyncStateChange(setIsSyncing);
+                service.setOnSyncStateChange((syncing) => {
+                    setIsSyncing(syncing);
+                    setHasPendingChanges(service.getHasPendingChanges());
+                });
                 service.setOnAuthError(async () => {
                     setSessionExpired(true);
                     await logout();

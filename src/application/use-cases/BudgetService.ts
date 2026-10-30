@@ -306,6 +306,8 @@ export class BudgetService {
         if (this.isSyncing || this.isDemoMode) return;
         this.onSyncStateChange(true);
         this.isSyncing = true;
+        // Stays true unless the upload succeeds (or Drive wins and the page reloads)
+        let stillPending = true;
         try {
             if (this.fileId) {
                 const currentRemoteTime = await this.drive.getFileModifiedTime(this.fileId);
@@ -316,7 +318,9 @@ export class BudgetService {
                     await this.repo.initializeDatabase(buffer);
                     this.lastKnownRemoteTime = currentRemoteTime;
                     this.pendingChanges = false;
-                    
+                    stillPending = false;
+                    this.isSyncing = false;
+
                     // Alerta nativa y recarga para limpiar el estado de React y forzar el re-render de todo
                     alert("Se ha actualizado Bagi con cambios realizados desde otro dispositivo.\n\nPara evitar conflictos, tus cambios locales no sincronizados han sido descartados. La página se recargará.");
                     window.location.reload();
@@ -324,12 +328,14 @@ export class BudgetService {
                 }
             }
 
+            // Cleared right before the snapshot: any change made during the upload marks it pending again
+            this.pendingChanges = false;
             const data = await this.repo.exportDatabase();
             this.fileId = await this.drive.uploadFile(this.fileName, data, this.fileId, this.folderId);
             if (this.fileId) {
                 this.lastKnownRemoteTime = await this.drive.getFileModifiedTime(this.fileId);
             }
-            this.pendingChanges = false;
+            stillPending = false;
         } catch (error: any) {
             ErrorLogger.capture(error, { source: 'BudgetService - syncToDrive' });
             if (error.message === 'AUTH_ERROR') {
@@ -337,8 +343,11 @@ export class BudgetService {
                 throw error;
             }
         } finally {
+            if (stillPending) this.pendingChanges = true;
             this.isSyncing = false;
             this.onSyncStateChange(false);
+            // Changes made while uploading need another upload; a failed upload waits for the next change or a manual sync
+            if (!stillPending && this.pendingChanges) this.scheduleSave();
         }
     }
 

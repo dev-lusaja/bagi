@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LayoutDashboard, Receipt, Settings, LogOut, Home as HomeIcon, Loader2, CloudCheck, CloudAlert, User, Sparkles, FlaskConical, BarChart3, MoreHorizontal } from 'lucide-react';
+import { LayoutDashboard, Receipt, Settings, LogOut, Home as HomeIcon, Loader2, User, Sparkles, FlaskConical, BarChart3, MoreHorizontal } from 'lucide-react';
 import Home from './presentation/views/Home';
 import Dashboard from './presentation/views/Dashboard';
 import Transactions from './presentation/views/Transactions';
@@ -9,7 +9,7 @@ import Analytics from './presentation/views/Analytics';
 import MoreView from './presentation/views/MoreView';
 import Login from './presentation/views/Login';
 import { useBudget } from './presentation/context/BudgetContext';
-import { SavingOverlay } from './presentation/components/SavingOverlay';
+import { SyncStatusButton } from './presentation/components/SyncStatusButton';
 import { AnalyticsService } from './services/AnalyticsService';
 
 export default function App() {
@@ -18,22 +18,24 @@ export default function App() {
   const [dashboardAccountId, setDashboardAccountId] = useState<string | null>(null);
   const mainRef = useRef<HTMLDivElement>(null);
   const [imgError, setImgError] = useState(false);
-  const { isInitialized, isSyncing, hasPendingChanges, sync, userInfo, isAuthenticated, logout, isDemoMode } = useBudget();
+  const { service, isInitialized, isSyncing, hasPendingChanges, sync, userInfo, isAuthenticated, logout, isDemoMode } = useBudget();
 
   useEffect(() => {
     setImgError(false);
   }, [userInfo]);
 
   useEffect(() => {
+    // Reads the service directly: React state may lag, and an upload in progress also counts as unsaved
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasPendingChanges) {
+      if (service.getIsDemoMode()) return;
+      if (service.getHasPendingChanges() || service.getIsSyncing()) {
         e.preventDefault();
         e.returnValue = '';
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasPendingChanges]);
+  }, [service]);
 
   useEffect(() => {
     if (mainRef.current) {
@@ -75,8 +77,6 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-gray-50 font-sans text-gray-900 overflow-hidden w-full">
-      <SavingOverlay isVisible={isSyncing} />
-
       {isDemoMode && (
         <div className="w-full bg-gray-900 text-white shrink-0 shadow-sm py-2 px-3.5 text-xs font-bold flex flex-wrap items-center justify-between gap-2 z-50">
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -92,6 +92,15 @@ export default function App() {
         </div>
       )}
 
+      {/* Top bar (Mobile): the only always-visible place for the sync status */}
+      <header className="md:hidden shrink-0 h-12 bg-white border-b border-gray-200 px-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <img src="/logo_circle.png" className="w-8 h-8 object-contain" alt="" />
+          <span className="text-lg font-black text-gray-800 tracking-tighter">Bagi</span>
+        </div>
+        {!isDemoMode && <SyncStatusButton isSyncing={isSyncing} hasPendingChanges={hasPendingChanges} onSync={sync} />}
+      </header>
+
       <div className="flex flex-1 overflow-hidden relative w-full">
       {/* Sidebar Navigation (Desktop) */}
       <aside className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col shadow-sm">
@@ -102,19 +111,7 @@ export default function App() {
             </div>
             <h1 className="text-xl font-black text-gray-800 tracking-tighter">Bagi</h1>
           </div>
-          <button
-            onClick={sync}
-            disabled={isSyncing}
-            className={`p-2 rounded-control transition-all ${isSyncing ? 'text-indigo-400' :
-                hasPendingChanges ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' :
-                  'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
-              }`}
-            title={isSyncing ? 'Sincronizando...' : hasPendingChanges ? 'Cambios pendientes - Clic para sincronizar' : 'Todo sincronizado'}
-          >
-            {isSyncing ? <Loader2 className="w-5 h-5 animate-spin" /> :
-              hasPendingChanges ? <CloudAlert className="w-5 h-5" /> :
-                <CloudCheck className="w-5 h-5" />}
-          </button>
+          {!isDemoMode && <SyncStatusButton isSyncing={isSyncing} hasPendingChanges={hasPendingChanges} onSync={sync} />}
         </div>
 
         <nav className="flex-1 p-4 space-y-2">
