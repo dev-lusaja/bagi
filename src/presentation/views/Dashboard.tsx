@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useBudget } from '../context/BudgetContext';
-import { Filter, Repeat, AlertTriangle, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Filter, Repeat, AlertTriangle, Pencil, Plus, Trash2, Banknote, BarChart3, Calendar, Check, CheckCircle2, CreditCard, Eye, Info, Layers, X, XCircle } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import { CONCEPT_COLORS } from '../utils/conceptColors';
 import SmartAlertPanel from '../components/SmartAlertPanel';
@@ -632,17 +632,17 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
     {
       key: 'obligations', index: 0, label: 'Obligaciones del mes', amount: totalServicesPlan,
       bar: CONCEPT_COLORS.obligations.bar, iconBox: CONCEPT_COLORS.obligations.iconBox, chip: CONCEPT_COLORS.obligations.chip,
-      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      icon: <Info className="w-4 h-4" />,
     },
     {
       key: 'cards', index: 1, label: 'Reservas para tarjetas', amount: totalCardsPlan,
       bar: CONCEPT_COLORS.cards.bar, iconBox: CONCEPT_COLORS.cards.iconBox, chip: CONCEPT_COLORS.cards.chip,
-      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>,
+      icon: <CreditCard className="w-4 h-4" />,
     },
     {
       key: 'limits', index: 2, label: 'Límites por categoría', amount: totalVariableLimitsPlan,
       bar: CONCEPT_COLORS.categories.bar, iconBox: CONCEPT_COLORS.categories.iconBox, chip: CONCEPT_COLORS.categories.chip,
-      icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+      icon: <BarChart3 className="w-4 h-4" />,
     },
   ];
 
@@ -765,7 +765,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
             return (
               <div className="mb-6 bg-amber-50 border border-amber-200 p-4 rounded-control space-y-3 text-amber-800 shadow-sm transition-all border-l-4 border-l-amber-500">
                 <div className="flex items-start gap-3">
-                  <svg className="w-6 h-6 shrink-0 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                  <AlertTriangle className="w-6 h-6 shrink-0 text-amber-500" />
                   <div>
                     <h4 className="font-bold text-lg leading-none">Acción Requerida: Configuración Pendiente</h4>
                     <p className="text-sm mt-1 text-amber-700/80 font-medium">Revisa estos puntos para que tu presupuesto sea preciso:</p>
@@ -999,25 +999,29 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                           <p className="text-xl text-gray-800 leading-tight">{item.name}</p>
                         </div>
                         <div className="flex items-center gap-2 text-gray-500 pl-4">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          <Calendar className="w-3 h-3" />
                           <span className="text-[10px] font-black">Día {item.due_day}</span>
                         </div>
                       </div>
-                      <div className="flex items-center shrink-0 -mr-2 -mt-2">
+                      <div className="flex items-center gap-2 shrink-0">
                         <button
+                          type="button"
                           onClick={() => setSelectedObligationDetail(item)}
-                          className="p-3 text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-control transition-all active:scale-90 border border-transparent hover:border-indigo-100"
-                          title="Ver detalles completo"
+                          className="w-10 h-10 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors active:scale-95"
+                          title="Ver detalle"
+                          aria-label={`Ver detalle de ${item.name}`}
                         >
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                          <Eye className="w-4 h-4" />
                         </button>
                         {!isPastMonth && (
                           <button
+                            type="button"
                             onClick={() => deleteObligation(item.id)}
-                            className="p-3 text-gray-300 hover:text-rose-600 hover:bg-rose-50 rounded-control transition-all active:scale-90 border border-transparent hover:border-rose-100"
-                            title="Eliminar esta instancia"
+                            className="w-10 h-10 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors active:scale-95"
+                            title="Eliminar"
+                            aria-label={`Eliminar ${item.name}`}
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         )}
                       </div>
@@ -1073,7 +1077,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                             className="w-full flex items-center justify-center gap-3 py-4 bg-gray-900 text-white rounded-card hover:bg-indigo-600 transition-all shadow-xl shadow-gray-200 active:scale-95 font-black text-xs"
                           >
                             <span>Pagar</span>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                            <Banknote className="w-5 h-5" />
                           </button>
                         </div>
                       ) : !item.isPaid && isPastMonth ? (
@@ -1082,7 +1086,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                         </div>
                       ) : (
                         <div className="flex items-center justify-center gap-2 py-3 bg-emerald-50 text-emerald-600 rounded-control border border-emerald-100 font-black text-[10px]">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                          <CheckCircle2 className="w-4 h-4" />
                           <span>Pagado</span>
                         </div>
                       )}
@@ -1127,7 +1131,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                           </span>
                         </div>
                         <div className={`p-3 rounded-control shadow-inner ${CONCEPT_COLORS.cards.solid}`}>
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                          <CreditCard className="w-6 h-6" />
                         </div>
                       </div>
 
@@ -1144,7 +1148,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                                 <div className="flex items-center gap-1">
                                   <p className="text-sm font-medium text-gray-600">{formatCurrency(monthlyBudget, card.currency)}</p>
                                   {!isPastMonth && (
-                                    <button onClick={() => deleteCardBudget(currentCardBudget.id)} className="text-gray-300 hover:text-rose-500 transition-colors" title="Eliminar reserva"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                                    <button type="button" onClick={() => deleteCardBudget(currentCardBudget.id)} className="p-1.5 rounded-control text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors" title="Eliminar reserva" aria-label={`Eliminar reserva de ${card.name}`}><Trash2 className="w-4 h-4" /></button>
                                   )}
                                 </div>
                               </div>
@@ -1154,7 +1158,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                             </div>
                             {isOverBudget && (
                               <p className="text-[10px] text-rose-600 font-bold flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+                                <XCircle className="w-3 h-3" />
                                 Excedido por {formatCurrency(grossSpent - monthlyBudget, card.currency)}
                               </p>
                             )}
@@ -1215,7 +1219,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
           <div className={`p-6 rounded-card shadow-md text-white transition-all ${isOverBudgeted ? 'bg-rose-600 ring-4 ring-rose-200' : 'bg-indigo-600'}`}>
             {isOverBudgeted && (
               <div className="mb-4 px-3 py-2 bg-white/20 rounded-control border border-white/30 text-xs font-bold flex items-center gap-2">
-                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
                 <span>Gastaste {formatCurrency(Math.abs(remainingGlobal), selectedAcc?.currency)} más que tu presupuesto</span>
               </div>
             )}
@@ -1256,10 +1260,10 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                       {!isPastMonth && (
                         <div className="flex items-center gap-1">
                           <button onClick={toggleEditGlobal} className="p-1 hover:bg-white/20 rounded-control transition-colors" title="Editar presupuesto">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            <Pencil className="w-5 h-5" />
                           </button>
                           <button onClick={handleDeleteGlobalBudget} className="p-1 hover:bg-rose-500/30 text-rose-200 hover:text-white rounded-control transition-colors" title="Eliminar presupuesto del mes">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            <Trash2 className="w-5 h-5" />
                           </button>
                         </div>
                       )}
@@ -1269,13 +1273,13 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                         <input type="number" step="0.01" className="w-full rounded-control bg-white text-gray-900 p-2 outline-none" value={editGlobalAmt} onChange={e => setEditGlobalAmt(e.target.value)} required autoFocus />
                         <div className="flex gap-2">
                           <button type="submit" className="flex-1 bg-white text-indigo-600 rounded-control py-2 flex justify-center items-center hover:bg-indigo-50 transition-all shadow-sm" title="Guardar">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                            <Check className="w-5 h-5" />
                           </button>
                           <button type="button" onClick={handleDeleteGlobalBudget} className="px-3 py-2 bg-rose-500/20 border border-rose-400/40 rounded-control text-rose-100 hover:bg-rose-500/40 transition-all flex justify-center items-center" title="Eliminar presupuesto del mes">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            <Trash2 className="w-5 h-5" />
                           </button>
                           <button type="button" onClick={() => setIsEditingGlobal(false)} className="px-4 py-2 bg-white/10 border border-white/30 rounded-control text-white hover:bg-white/20 transition-all flex justify-center items-center" title="Cancelar">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                            <X className="w-5 h-5" />
                           </button>
                         </div>
                       </form>
@@ -1367,7 +1371,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
             <div className="p-6 bg-white rounded-card shadow-sm border border-gray-100 transition-all hover:shadow-md animate-in fade-in slide-in-from-bottom-2 duration-500">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-control">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                  <Layers className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-800">Planificación mensual</h3>
               </div>
@@ -1432,7 +1436,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
 
                 {planDistribution.status === 'COMPLETE' && (
                   <div className="flex items-center gap-2 pt-5 border-t border-dashed border-gray-200 text-sm font-semibold text-emerald-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                    <Check className="w-4 h-4" aria-hidden="true" />
                     Plan completo: todo tu presupuesto está asignado.
                   </div>
                 )}
@@ -1500,7 +1504,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                 onClick={() => setSelectedCatDetail(null)}
                 className="p-2 sm:p-3 hover:bg-gray-100 rounded-control transition-all text-gray-300 hover:text-gray-600 active:scale-90 shrink-0"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -1573,7 +1577,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                 onClick={() => setSelectedObligationDetail(null)}
                 className="p-2.5 sm:p-3 hover:bg-gray-200 rounded-control transition-all font-bold text-gray-500 bg-gray-100 active:scale-90 shrink-0"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                <X className="w-6 h-6" />
               </button>
             </div>
 
@@ -1614,9 +1618,9 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
               <div className="flex items-center gap-3 p-4 rounded-control bg-gray-50 border border-gray-100">
                 <div className={`p-2 rounded-control ${selectedObligationDetail.isPaid ? 'bg-emerald-500' : 'bg-rose-500'} text-white`}>
                   {selectedObligationDetail.isPaid ? (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                    <Check className="w-5 h-5" />
                   ) : (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <X className="w-5 h-5" />
                   )}
                 </div>
                 <p className="text-xs font-black text-gray-500">

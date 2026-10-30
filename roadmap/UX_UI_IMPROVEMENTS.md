@@ -89,9 +89,10 @@ Cada tarea es independiente. Esfuerzo: **(S)** rápido · **(M)** unas horas. Ma
 - [ ] **R1 (S): Mostrar primero la tarjeta "Presupuesto mensual" en móvil y tablet** (`order-first xl:order-none`; la vista pasa a 3 columnas desde `xl`).
   - `views/Dashboard.tsx:778` y `:1266`
 - [x] **R2 (S): Pestañas de Presupuesto con nombres cortos:** "Resumen", "Categorías", "Pagos fijos", "Tarjetas" (sin scroll horizontal ni flecha parpadeante).
-- [ ] **R3 (S): Hacer visibles los botones de borrar en pantallas táctiles** (hoy `text-gray-200` + `group-hover`).
+- [x] **R3 (S): Hacer visibles los botones de borrar en pantallas táctiles** (hoy `text-gray-200` + `group-hover`).
+  - Mismo estilo que el borrar de la tarjeta de categoría (A2): 40×40, `bg-gray-100 text-gray-500`, rojo al pasar el cursor. También los botones de editar junto a ellos (tarjetas y pagos fijos en Configuración). Además: ver/borrar en Pagos fijos y borrar reserva de tarjeta; todos los `<svg>` inline de `presentation/` pasados a `lucide-react` con grosor por defecto (sin `strokeWidth` propio).
   - `views/Dashboard.tsx:962`, `views/Settings.tsx:447`, `:493`, `:555`
-- [ ] **R4 (S): Permitir el zoom y corregir el idioma.** Quitar `maximum-scale=1, user-scalable=0`; `lang="en"` → `"es"`.
+- [x] **R4 (S): Permitir el zoom y corregir el idioma.** Quitar `maximum-scale=1, user-scalable=0`; `lang="en"` → `"es"`.
   - `index.html:2-6`
 - [ ] **R5 (S): Modal de detalle de categoría como lista en móvil** (hoy tabla de 4 columnas con `p-8`).
   - `views/Dashboard.tsx:1600-1667`

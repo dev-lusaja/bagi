@@ -112,7 +112,7 @@ export default function BagiActionModal({
             <div className="p-10 flex flex-col items-center justify-center gap-5 text-center animate-in fade-in zoom-in-95 duration-300">
               <div className="relative">
                 <div className="relative w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <Check className="w-10 h-10 text-emerald-600" strokeWidth={2.5} />
+                  <Check className="w-10 h-10 text-emerald-600" />
                 </div>
               </div>
               <div className="space-y-1">

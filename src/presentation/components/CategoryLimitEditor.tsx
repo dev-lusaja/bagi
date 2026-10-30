@@ -73,7 +73,7 @@ export default function CategoryLimitEditor({
             title="Cancelar"
             className="w-10 h-10 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors active:scale-95"
           >
-            <X className="w-4 h-4" strokeWidth={2.5} />
+            <X className="w-4 h-4" />
           </button>
           <button
             type="submit"
@@ -82,7 +82,7 @@ export default function CategoryLimitEditor({
             title="Guardar"
             className="w-10 h-10 flex items-center justify-center rounded-control bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100"
           >
-            <Check className="w-4 h-4" strokeWidth={3} />
+            <Check className="w-4 h-4" />
           </button>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { useBudget } from '../context/BudgetContext';
 import { formatCurrency } from '../utils/format';
 import { COUNTRY_CURRENCIES, CURRENCY_CODES } from '../utils/currencies';
 import { CONCEPT_COLORS } from '../utils/conceptColors';
-import { HelpCircle, ArrowRightLeft, TrendingUp, TrendingDown, User, LogOut, Sparkles, RefreshCw, Camera, Type, AlertTriangle, CheckCircle2, Save, Trash2 } from 'lucide-react';
+import { HelpCircle, ArrowRightLeft, TrendingUp, TrendingDown, User, LogOut, Sparkles, RefreshCw, Camera, Type, AlertTriangle, CheckCircle2, Save, Trash2, Pencil, Banknote, Calendar, ChevronDown, CreditCard, Info, LayoutGrid } from 'lucide-react';
 import AlertModal from '../components/AlertModal';
 import {
   AIProviderId,
@@ -39,7 +39,7 @@ const Section = ({ id, title, icon, children, openSection, setOpenSection }: any
             </span>
             <span className={`text-xl font-bold ${isOpen ? 'text-indigo-900' : 'text-gray-700'}`}>{title}</span>
           </div>
-          <svg className={`w-6 h-6 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
+          <ChevronDown className={`w-6 h-6 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
         {isOpen && <div className="p-6 border-t border-gray-50 bg-white">{children}</div>}
       </div>
@@ -376,7 +376,7 @@ export default function SettingsView() {
           title="Categorías" 
           openSection={openSection}
           setOpenSection={setOpenSection}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>}
+          icon={<LayoutGrid className="w-6 h-6" />}
         >
           <div className="flex justify-end items-center mb-6">
             <button 
@@ -445,8 +445,8 @@ export default function SettingsView() {
                             {c.type === 'INCOME' ? 'Ingreso' : c.type === 'TRANSFER' ? 'Transferencia' : 'Gasto'}
                         </span>
                     </div>
-                    <button onClick={() => deleteItem('categories', c.id)} className="text-gray-200 group-hover:text-rose-400 hover:text-rose-600 transition-all p-2 bg-white rounded-control shadow-sm border border-transparent hover:border-rose-100">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <button type="button" onClick={() => deleteItem('categories', c.id)} className="w-10 h-10 shrink-0 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors active:scale-95" title="Eliminar" aria-label={`Eliminar ${c.name}`}>
+                        <Trash2 className="w-4 h-4" />
                     </button>
                 </div>
             ))}
@@ -458,7 +458,7 @@ export default function SettingsView() {
           title="Cuentas de sueldo" 
           openSection={openSection}
           setOpenSection={setOpenSection}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>}
+          icon={<CreditCard className="w-6 h-6" />}
         >
           <form onSubmit={addAccount} className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-8">
               <input className="rounded-control border-gray-200 shadow-sm p-3 border sm:col-span-2 min-h-[44px]" placeholder="Nombre de la Cuenta" value={accName} onChange={e => setAccName(e.target.value)} required />
@@ -490,8 +490,8 @@ export default function SettingsView() {
                           </div>
                       </div>
                       <div className="flex items-center gap-6">
-                           <button onClick={() => deleteItem('accounts', a.id)} className="p-2 bg-white rounded-control shadow-sm border border-transparent hover:border-rose-100 text-gray-200 group-hover:text-rose-400 hover:text-rose-600 transition-all">
-                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                           <button type="button" onClick={() => deleteItem('accounts', a.id)} className="w-10 h-10 shrink-0 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors active:scale-95" title="Eliminar" aria-label={`Eliminar ${a.name}`}>
+                               <Trash2 className="w-4 h-4" />
                            </button>
                       </div>
                   </div>
@@ -504,7 +504,7 @@ export default function SettingsView() {
           title="Mis tarjetas" 
           openSection={openSection}
           setOpenSection={setOpenSection}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>}
+          icon={<Banknote className="w-6 h-6" />}
         >
           <form onSubmit={addCard} className="flex flex-col space-y-4 mb-10 bg-gray-50 p-6 rounded-control border border-gray-100">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -547,12 +547,12 @@ export default function SettingsView() {
                           </div>
                            <div className="flex items-center gap-1 relative z-10">
                                {c.type === 'CREDIT' && (
-                                   <button onClick={() => { setEditingCardId(c.id); setEditCardLimit(c.credit_limit || ''); }} className="text-gray-300 hover:text-indigo-500 transition-all p-1.5 rounded-control hover:bg-indigo-50">
-                                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                   <button type="button" onClick={() => { setEditingCardId(c.id); setEditCardLimit(c.credit_limit || ''); }} className="w-10 h-10 shrink-0 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors active:scale-95" title="Editar" aria-label={`Editar ${c.name}`}>
+                                       <Pencil className="w-4 h-4" />
                                    </button>
                                )}
-                               <button onClick={() => deleteItem('cards', c.id)} className="text-gray-200 group-hover:text-rose-400 hover:text-rose-600 transition-all p-1.5 rounded-control hover:bg-rose-50">
-                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                               <button type="button" onClick={() => deleteItem('cards', c.id)} className="w-10 h-10 shrink-0 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors active:scale-95" title="Eliminar" aria-label={`Eliminar ${c.name}`}>
+                                   <Trash2 className="w-4 h-4" />
                                </button>
                            </div>
                       </div>
@@ -582,7 +582,7 @@ export default function SettingsView() {
           title="Obligaciones" 
           openSection={openSection}
           setOpenSection={setOpenSection}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>}
+          icon={<Calendar className="w-6 h-6" />}
         >
           <form onSubmit={addRecurring} className={`flex flex-col space-y-4 mb-8 p-6 rounded-control border ${OBLIGATION.panel}`}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -803,14 +803,14 @@ export default function SettingsView() {
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                               <div className="p-2.5 sm:p-3 rounded-control bg-indigo-50 text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
-                                   <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                   <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
                               </div>
                               <div className="text-sm min-w-0 flex-1">
                                   <p className="font-black text-gray-800 text-base flex items-center gap-2 break-words">
                                     {r.name}
                                     {r.notes && (
                                       <span className="p-1 rounded-control bg-amber-50 text-amber-500 shrink-0" title={r.notes}>
-                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
+                                        <Info className="w-3.5 h-3.5" />
                                       </span>
                                     )}
                                   </p>
@@ -835,11 +835,11 @@ export default function SettingsView() {
                                   </span>
                               </div>
                               <div className="flex gap-1">
-                                  <button onClick={() => {setEditingRecId(r.id); setEditRecData(r);}} className="p-2 text-gray-200 hover:text-indigo-500 hover:bg-indigo-50 rounded-control transition-all active:scale-90">
-                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                  <button type="button" onClick={() => {setEditingRecId(r.id); setEditRecData(r);}} className="w-10 h-10 shrink-0 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors active:scale-95" title="Editar" aria-label={`Editar ${r.name}`}>
+                                      <Pencil className="w-4 h-4" />
                                   </button>
-                                  <button onClick={() => deleteItem('recurring_items', r.id)} className="p-2 text-gray-200 hover:text-rose-500 hover:bg-rose-50 rounded-control transition-all active:scale-90">
-                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                  <button type="button" onClick={() => deleteItem('recurring_items', r.id)} className="w-10 h-10 shrink-0 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors active:scale-95" title="Eliminar" aria-label={`Eliminar ${r.name}`}>
+                                      <Trash2 className="w-4 h-4" />
                                   </button>
                               </div>
                             </div>
