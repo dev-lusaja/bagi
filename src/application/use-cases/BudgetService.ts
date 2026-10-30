@@ -6,6 +6,30 @@ import { ErrorLogger } from '../../services/SentryLogger';
 // Tolerance for floating-point noise when comparing money amounts
 const INCOME_GAP_EPSILON = 0.005;
 
+// Categories whose limit is the sum of the month's recurring obligations instead of a category budget
+const RECURRING_CATEGORY_NAMES = ['Servicios Recurrentes', 'Deudas Recurrentes'];
+
+export type BudgetPillar = 'CATEGORIES' | 'OBLIGATIONS' | 'CARDS';
+
+export type BudgetDiagnosisStatus =
+    | 'OVER_BUDGET'         // spent > budget
+    | 'SPENT_ABOVE_INCOME'  // spent > registered income
+    | 'PILLAR_OVERRUN'      // a pillar spent more than planned
+    | 'OVER_PLANNED'        // assigned > budget
+    | 'PLAN_NOT_COVERED'    // closed month whose income didn't reach the budget
+    | 'HEALTHY';
+
+export interface BudgetDiagnosis {
+    status: BudgetDiagnosisStatus;
+    amount: number;                 // main (positive) amount of the status; remaining balance when HEALTHY
+    unassigned: number;             // HEALTHY only: budget not yet assigned to the plan
+    extra: number;                  // HEALTHY only: income received beyond the budget
+    categoryNames: string[];        // categories behind the status (OVER_BUDGET, OVER_PLANNED)
+    pillars: BudgetPillar[];        // pillars behind the status (PILLAR_OVERRUN)
+    figures: { key: 'INCOME' | 'SPENT' | 'BUDGET' | 'PLANNED'; amount: number }[];
+    action: 'ADJUST_LIMITS' | 'ADD_INCOME' | 'ADD_EXTRA' | null;
+}
+
 const DEFAULT_CATEGORIES = [
     { name: "Salida de dinero al exterior", type: "EXPENSE" },
     { name: "Servicios", type: "EXPENSE" },
@@ -389,6 +413,88 @@ export class BudgetService {
         return {
             spentPct: pct(spent),
             availablePct: pct(Math.max(0, budgetAmount - spent)),
+        };
+    }
+
+    // Business Logic: Health of the month's plan (Summary tab). Crosses the plan with what was spent and what was
+    // received. Statuses are checked in priority order. While the month is open, income not yet registered is not
+    // a problem by itself; it only matters once spending goes above it, or when the month closes without covering the plan.
+    getBudgetDiagnosis(ctx: {
+        budget: number;
+        planned: number;
+        spent: number;
+        income: number;
+        isPastMonth: boolean;
+        pillars: { key: BudgetPillar; plan: number; spent: number }[];
+        categories: { id: number; name: string; type: string }[];
+        categoryLimits: { category_id: number; amount: number }[];
+        recurring: { category_id: number; amount: number }[];
+        actualsByCategory: Record<number, number>;
+    }): BudgetDiagnosis {
+        const { budget, planned, spent, income, isPastMonth, pillars, categories, categoryLimits, recurring, actualsByCategory } = ctx;
+        const exceeds = (a: number, b: number) => a - b > INCOME_GAP_EPSILON;
+        const base = { unassigned: 0, extra: 0, categoryNames: [] as string[], pillars: [] as BudgetPillar[] };
+
+        const expenseCategories = categories.filter(c => c.type === 'EXPENSE');
+        const limitFor = (cat: { id: number; name: string }) => RECURRING_CATEGORY_NAMES.includes(cat.name)
+            ? recurring.filter(o => o.category_id === cat.id).reduce((s, o) => s + o.amount, 0)
+            : categoryLimits.find(b => b.category_id === cat.id)?.amount ?? 0;
+
+        if (exceeds(spent, budget)) {
+            // Top two categories that went over their limit, by overspend
+            const categoryNames = expenseCategories
+                .map(cat => ({ name: cat.name, diff: (actualsByCategory[cat.id] || 0) - limitFor(cat) }))
+                .filter(d => d.diff > 0)
+                .sort((a, b) => b.diff - a.diff)
+                .slice(0, 2)
+                .map(d => d.name);
+            return {
+                ...base, status: 'OVER_BUDGET', amount: spent - budget, categoryNames,
+                figures: [{ key: 'SPENT', amount: spent }, { key: 'BUDGET', amount: budget }], action: 'ADJUST_LIMITS',
+            };
+        }
+
+        if (exceeds(spent, income)) {
+            return {
+                ...base, status: 'SPENT_ABOVE_INCOME', amount: spent - income,
+                figures: [{ key: 'INCOME', amount: income }, { key: 'SPENT', amount: spent }], action: 'ADD_INCOME',
+            };
+        }
+
+        const overruns = pillars.filter(p => exceeds(p.spent, p.plan));
+        if (overruns.length > 0) {
+            return {
+                ...base, status: 'PILLAR_OVERRUN', amount: overruns.reduce((s, p) => s + p.spent - p.plan, 0),
+                pillars: overruns.map(p => p.key),
+                figures: [{ key: 'SPENT', amount: spent }, { key: 'BUDGET', amount: budget }], action: 'ADJUST_LIMITS',
+            };
+        }
+
+        if (exceeds(planned, budget)) {
+            // Suggest trimming the category with the highest limit
+            const highest = expenseCategories
+                .map(cat => ({ name: cat.name, limit: limitFor(cat) }))
+                .sort((a, b) => b.limit - a.limit)[0];
+            return {
+                ...base, status: 'OVER_PLANNED', amount: planned - budget,
+                categoryNames: highest && highest.limit > 0 ? [highest.name] : [],
+                figures: [{ key: 'PLANNED', amount: planned }, { key: 'BUDGET', amount: budget }], action: 'ADJUST_LIMITS',
+            };
+        }
+
+        if (isPastMonth && exceeds(budget, income)) {
+            return {
+                ...base, status: 'PLAN_NOT_COVERED', amount: budget - income,
+                figures: [{ key: 'INCOME', amount: income }, { key: 'BUDGET', amount: budget }], action: null,
+            };
+        }
+
+        const extra = exceeds(income, budget) ? income - budget : 0;
+        return {
+            ...base, status: 'HEALTHY', amount: budget - spent,
+            unassigned: exceeds(budget, planned) ? budget - planned : 0, extra,
+            figures: [{ key: 'INCOME', amount: income }, { key: 'BUDGET', amount: budget }],
+            action: extra > 0 ? 'ADD_EXTRA' : null,
         };
     }
 

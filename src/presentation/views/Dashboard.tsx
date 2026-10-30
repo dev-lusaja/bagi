@@ -11,7 +11,7 @@ import CategoryLimitEditor from '../components/CategoryLimitEditor';
 import { ErrorLogger } from '../../services/SentryLogger';
 import type { GlobalBudget } from '../../domain/entities';
 
-export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }: { onNavigate?: (tab: string) => void; initialAccountId?: string | null }) {
+export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate?: (tab: string) => void; initialAccountId?: string | null }) {
   const { service } = useBudget();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -46,6 +46,9 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
   // New Global Budget form
   const [newGlobalAmt, setNewGlobalAmt] = useState('');
   const [budgetSuggestions, setBudgetSuggestions] = useState<{ amount: number; source: 'PREVIOUS_MONTH' | 'INCOME' }[]>([]);
+
+  // Registered income of the month for the selected account
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
 
   // New category budget form
   const [newBgtCatId, setNewBgtCatId] = useState('');
@@ -162,14 +165,16 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
     const filtered = monthlyTx.filter((t: any) => isCard ? t.card_id === actualId : t.account_id === actualId);
     setTransactions(filtered as any);
 
-    // Suggest amounts for an account month without budget (last month's plan and registered income)
-    if (!isCard && !currentGb) {
+    // Registered income of the account: measures the plan's health and, without budget, feeds the suggestions
+    if (!isCard) {
       const incomeForAccount = monthlyTx
         .filter((t: any) => t.account_id === actualId)
         .filter((t: any) => (categories as any[]).find((c: any) => c.id === t.category_id)?.type === 'INCOME')
         .reduce((sum: number, t: any) => sum + t.amount, 0);
-      setBudgetSuggestions(await service.getBudgetSuggestions(year, month, actualId, incomeForAccount));
+      setMonthlyIncome(incomeForAccount);
+      setBudgetSuggestions(currentGb ? [] : await service.getBudgetSuggestions(year, month, actualId, incomeForAccount));
     } else {
+      setMonthlyIncome(0);
       setBudgetSuggestions([]);
     }
 
@@ -210,6 +215,16 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
       year, month, total_amount: amount, account_id: parseInt(accountId)
     });
     setIsEditingGlobal(false);
+    fetchDashboardData();
+  };
+
+  // Income received beyond the plan: grow the budget up to the registered income
+  const addExtraIncomeToBudget = async () => {
+    if (!globalBudget || !accountId) return;
+
+    await service.updateGlobalBudget(globalBudget.id, {
+      year, month, total_amount: monthlyIncome, account_id: parseInt(accountId)
+    });
     fetchDashboardData();
   };
 
@@ -669,6 +684,24 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
   const canEditLimits = !isCard && !isPastMonth && !!globalBudget;
   const selectedCatHasLimit = !!newBgtCatId && budgets.some(b => b.category_id === parseInt(newBgtCatId));
 
+  // Health of the month's plan for the Summary tab
+  const budgetDiagnosis = globalBudget ? service.getBudgetDiagnosis({
+    budget: globalBudget.total_amount,
+    planned: totalPlannedArchitecture,
+    spent: totalSpentGlobal,
+    income: monthlyIncome,
+    isPastMonth,
+    pillars: [
+      { key: 'CATEGORIES', plan: totalVariableLimitsPlan, spent: totalVariableSpent },
+      { key: 'OBLIGATIONS', plan: totalServicesPlan, spent: obligationsActualPaid },
+      { key: 'CARDS', plan: totalCardsPlan, spent: totalCardsSpent },
+    ],
+    categories,
+    categoryLimits: budgets,
+    recurring: filteredRecurring,
+    actualsByCategory,
+  }) : null;
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 sm:gap-6 mb-6 sm:mb-8">
@@ -798,14 +831,8 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
           {activeTab === 'diagnostic' && (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-6">
               <BudgetDiagnosticWidget
-                globalBudget={globalBudget}
-                totalSpentGlobal={totalSpentGlobal}
-                totalPlannedCommitment={totalPlannedArchitecture}
+                diagnosis={budgetDiagnosis}
                 currency={selectedAcc?.currency || selectedCard?.currency || 'PEN'}
-                categories={categories}
-                budgets={budgets}
-                actualsByCategory={actualsByCategory}
-                filteredRecurring={filteredRecurring}
                 variablePlan={totalVariableLimitsPlan}
                 variableSpent={totalVariableSpent}
                 obligationsPlan={totalServicesPlan}
@@ -815,6 +842,8 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                 cardsPlan={totalCardsPlan}
                 cardsSpent={totalCardsSpent}
                 onAdjustLimits={canEditLimits ? () => setActiveTab('consumption') : undefined}
+                onAddIncome={onNavigate ? () => onNavigate('transactions') : undefined}
+                onAddExtra={!isPastMonth ? addExtraIncomeToBudget : undefined}
               />
             </div>
           )}
