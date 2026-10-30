@@ -51,7 +51,7 @@ export default function BudgetDiagnosticWidget({
         <div>
           <h4 className="text-lg font-bold text-gray-800 leading-tight">Presupuesto mensual sin definir</h4>
           <p className="text-sm text-gray-500 mt-1">
-            Para iniciar tu diagnóstico financiero, define tu presupuesto mensual en el panel de la derecha registrando un ingreso real.
+            Define tu presupuesto mensual para ver tu resumen.
           </p>
         </div>
       </div>

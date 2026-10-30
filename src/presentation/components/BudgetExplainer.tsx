@@ -15,7 +15,7 @@ export const BudgetExplainer: React.FC = () => {
             Todo empieza con un <span className="text-indigo-600">plan maestro</span>
           </h3>
           <p className="text-gray-500 font-medium text-lg leading-relaxed">
-            Bagi te permite establecer un <b>presupuesto mensual</b> basado en tus ingresos registrados. Este presupuesto es el techo o límite para toda la configuración que hagas.
+            Define un <b>presupuesto mensual</b>: lo que planeas gastar en el mes. Es el techo para todo lo demás que configures.
           </p>
           <div className="bg-indigo-600 p-6 rounded-card shadow-2xl shadow-indigo-200/50 space-y-4 text-white relative overflow-hidden group max-w-sm">
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-white/20 transition-all duration-700" />

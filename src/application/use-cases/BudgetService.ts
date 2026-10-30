@@ -365,35 +365,30 @@ export class BudgetService {
     async updateGlobalBudget(id: number, b: any) { return this.performOperation(() => this.repo.updateGlobalBudget(id, b)); }
     async deleteGlobalBudget(id: number) { return this.performOperation(() => this.repo.deleteGlobalBudget(id)); }
 
-    // Compares the month's registered income against a global budget amount.
-    // gap > 0: income received outside the plan; gap < 0: budget not backed by income.
-    getIncomeAllocation(income: number, budgetAmount: number | null) {
-        if (budgetAmount === null) return { gap: 0, hasUnassignedIncome: false, isBudgetAboveIncome: false };
-        const gap = income - budgetAmount;
-        return {
-            gap,
-            hasUnassignedIncome: gap > INCOME_GAP_EPSILON,
-            isBudgetAboveIncome: gap < -INCOME_GAP_EPSILON,
-        };
+    // Business Logic: Amounts to offer when a month has no budget yet. The budget is a plan, independent of
+    // registered income: last month's plan for the same account, then this month's registered income (if different).
+    async getBudgetSuggestions(year: number, month: number, accountId: number, monthlyIncome: number) {
+        const prevMonth = month === 1 ? 12 : month - 1;
+        const prevYear = month === 1 ? year - 1 : year;
+        const prev = (await this.repo.getGlobalBudgets(prevYear, prevMonth)).find(b => b.account_id === accountId);
+
+        const suggestions: { amount: number; source: 'PREVIOUS_MONTH' | 'INCOME' }[] = [];
+        if (prev && prev.total_amount > 0) suggestions.push({ amount: prev.total_amount, source: 'PREVIOUS_MONTH' });
+        if (monthlyIncome > INCOME_GAP_EPSILON && suggestions.every(s => Math.abs(s.amount - monthlyIncome) > INCOME_GAP_EPSILON)) {
+            suggestions.push({ amount: monthlyIncome, source: 'INCOME' });
+        }
+        return suggestions;
     }
 
-    // Splits the budget bar into consecutive segments, as percentages of the largest of income, budget and spent:
-    // spent → available (backed by income) → unbacked (budget beyond income) → unassigned (income beyond budget).
-    getBudgetBarSegments(income: number, budgetAmount: number, spent: number) {
-        const scale = Math.max(income, budgetAmount, spent);
-        if (scale <= 0) return { spentPct: 0, availablePct: 0, unbackedPct: 0, unassignedPct: 0 };
+    // Splits the budget bar into spent → available, as percentages of the largest of budget and spent.
+    getBudgetBarSegments(budgetAmount: number, spent: number) {
+        const scale = Math.max(budgetAmount, spent);
+        if (scale <= 0) return { spentPct: 0, availablePct: 0 };
 
-        const spentEnd = spent;
-        const backedEnd = Math.max(spentEnd, Math.min(budgetAmount, income));
-        const budgetEnd = Math.max(spentEnd, budgetAmount);
-        const incomeEnd = Math.max(budgetEnd, income);
         const pct = (value: number) => (value / scale) * 100;
-
         return {
-            spentPct: pct(spentEnd),
-            availablePct: pct(backedEnd - spentEnd),
-            unbackedPct: pct(budgetEnd - backedEnd),
-            unassignedPct: pct(incomeEnd - budgetEnd),
+            spentPct: pct(spent),
+            availablePct: pct(Math.max(0, budgetAmount - spent)),
         };
     }
 

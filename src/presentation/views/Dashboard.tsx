@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useBudget } from '../context/BudgetContext';
-import { Filter, ArrowRight, Repeat, AlertTriangle, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Filter, Repeat, AlertTriangle, Pencil, Plus, Trash2 } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import { CONCEPT_COLORS } from '../utils/conceptColors';
 import SmartAlertPanel from '../components/SmartAlertPanel';
@@ -9,6 +9,7 @@ import PromptModal from '../components/PromptModal';
 import AlertModal from '../components/AlertModal';
 import CategoryLimitEditor from '../components/CategoryLimitEditor';
 import { ErrorLogger } from '../../services/SentryLogger';
+import type { GlobalBudget } from '../../domain/entities';
 
 export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }: { onNavigate?: (tab: string) => void; initialAccountId?: string | null }) {
   const { service } = useBudget();
@@ -42,11 +43,9 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
   const [selectedCatDetail, setSelectedCatDetail] = useState<any>(null);
   const [selectedObligationDetail, setSelectedObligationDetail] = useState<any>(null);
 
-  // Monthly income for income gate
-  const [monthlyIncome, setMonthlyIncome] = useState(0);
-
   // New Global Budget form
   const [newGlobalAmt, setNewGlobalAmt] = useState('');
+  const [budgetSuggestions, setBudgetSuggestions] = useState<{ amount: number; source: 'PREVIOUS_MONTH' | 'INCOME' }[]>([]);
 
   // New category budget form
   const [newBgtCatId, setNewBgtCatId] = useState('');
@@ -125,6 +124,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
     setIsDashboardDataReady(false); // Marcar datos como no listos mientras recargamos
     const isCard = accountId.startsWith('c-');
     const actualId = parseInt(accountId.replace('c-', ''));
+    let currentGb: GlobalBudget | null = null;
 
     if (isCard) {
       setGlobalBudget(null);
@@ -136,7 +136,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
         service.getCategoryBudgets(year, month),
         service.getCardBudgets(year, month),
       ]);
-      const currentGb = gb.find((b: any) => b.account_id === actualId) || null;
+      currentGb = gb.find(b => b.account_id === actualId) || null;
       setGlobalBudget(currentGb);
 
       if (currentGb) {
@@ -162,15 +162,15 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
     const filtered = monthlyTx.filter((t: any) => isCard ? t.card_id === actualId : t.account_id === actualId);
     setTransactions(filtered as any);
 
-    // Calculate income for current account (income gate)
-    if (!isCard) {
+    // Suggest amounts for an account month without budget (last month's plan and registered income)
+    if (!isCard && !currentGb) {
       const incomeForAccount = monthlyTx
         .filter((t: any) => t.account_id === actualId)
         .filter((t: any) => (categories as any[]).find((c: any) => c.id === t.category_id)?.type === 'INCOME')
         .reduce((sum: number, t: any) => sum + t.amount, 0);
-      setMonthlyIncome(incomeForAccount);
+      setBudgetSuggestions(await service.getBudgetSuggestions(year, month, actualId, incomeForAccount));
     } else {
-      setMonthlyIncome(0);
+      setBudgetSuggestions([]);
     }
 
     // Todos los datos están listos — el motor de alertas puede arrancar
@@ -204,10 +204,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
     if (!globalBudget || !editGlobalAmt || !accountId) return;
 
     const amount = parseFloat(editGlobalAmt);
-    if (service.getIncomeAllocation(monthlyIncome, amount).isBudgetAboveIncome) {
-      showAlert('Presupuesto excede ingresos', `No puedes presupuestar más de tus ingresos. Máximo disponible: ${formatCurrency(monthlyIncome, selectedAcc?.currency)}`, 'error');
-      return;
-    }
+    if (isNaN(amount) || amount <= 0) return;
 
     await service.updateGlobalBudget(globalBudget.id, {
       year, month, total_amount: amount, account_id: parseInt(accountId)
@@ -216,24 +213,12 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
     fetchDashboardData();
   };
 
-  const adjustGlobalBudgetToIncome = async () => {
-    if (!globalBudget || !accountId || monthlyIncome <= 0) return;
-
-    await service.updateGlobalBudget(globalBudget.id, {
-      year, month, total_amount: monthlyIncome, account_id: parseInt(accountId)
-    });
-    fetchDashboardData();
-  };
-
   const addGlobalBudget = async (e: any) => {
     e.preventDefault();
     if (!newGlobalAmt || !accountId) return;
 
     const amount = parseFloat(newGlobalAmt);
-    if (service.getIncomeAllocation(monthlyIncome, amount).isBudgetAboveIncome) {
-      showAlert('Presupuesto excede ingresos', `No puedes presupuestar más de tus ingresos. Máximo disponible: ${formatCurrency(monthlyIncome, selectedAcc?.currency)}`, 'error');
-      return;
-    }
+    if (isNaN(amount) || amount <= 0) return;
 
     await service.addGlobalBudget({
       year, month, total_amount: amount, account_id: parseInt(accountId)
@@ -513,47 +498,6 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
     });
   };
 
-  const handleQuickSalary = () => {
-    setPromptConfig({
-      isOpen: true,
-      title: 'Registrar salario',
-      message: 'Ingresa el monto de tu salario para este mes.',
-      defaultValue: '',
-      inputType: 'number',
-      onConfirm: async (confirmAmt) => {
-        const amount = parseFloat(confirmAmt);
-        if (isNaN(amount) || amount <= 0) return;
-
-        const incomeCats = categories.filter((c: any) => c.type === 'INCOME');
-        if (incomeCats.length === 0) {
-          showAlert('Configuración necesaria', "No tienes categorías de ingreso configuradas. Crea una primero.", 'info');
-          return;
-        }
-
-        let catId = incomeCats[0].id;
-        const salarioCat = incomeCats.find(c => c.name.toLowerCase().includes('salari') || c.name.toLowerCase().includes('sueldo'));
-        if (salarioCat) {
-          catId = salarioCat.id;
-        }
-
-        const dateStr = new Date(year, month - 1, 1, 12, 0, 0).toISOString();
-
-        await service.addTransaction({
-          amount,
-          description: "Salario",
-          date: dateStr,
-          category_id: catId,
-          account_id: parseInt(accountId),
-          card_id: null,
-          user_id: 1
-        });
-
-        setPromptConfig(prev => ({ ...prev, isOpen: false }));
-        fetchDashboardData();
-      }
-    });
-  };
-
   const isCard = accountId.startsWith('c-');
   const actualId = parseInt(accountId.replace('c-', ''));
   const selectedCard = isCard ? (cards as any[]).find((c: any) => c.id === actualId) : null;
@@ -607,9 +551,7 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
   // Remaining budget based on reality (Cash Flow)
   const remainingGlobal = globalBudget ? globalBudget.total_amount - totalSpentGlobal : 0;
 
-  const { gap: incomeGap, hasUnassignedIncome, isBudgetAboveIncome } =
-    service.getIncomeAllocation(monthlyIncome, globalBudget ? globalBudget.total_amount : null);
-  const budgetBar = service.getBudgetBarSegments(monthlyIncome, globalBudget ? globalBudget.total_amount : 0, totalSpentGlobal);
+  const budgetBar = service.getBudgetBarSegments(globalBudget ? globalBudget.total_amount : 0, totalSpentGlobal);
 
   const filteredRecurring = (budgetObligations as any[]).filter(item => {
     if (item.card_id) return isCard && item.card_id === actualId;
@@ -1317,13 +1259,11 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                         <div
                           className="flex h-2.5 rounded-full overflow-hidden bg-white/10"
                           role="img"
-                          aria-label={`Gastado ${formatCurrency(totalSpentGlobal, selectedAcc?.currency)} de ${formatCurrency(globalBudget.total_amount, selectedAcc?.currency)}. Ingresos del mes ${formatCurrency(monthlyIncome, selectedAcc?.currency)}.`}
+                          aria-label={`Gastado ${formatCurrency(totalSpentGlobal, selectedAcc?.currency)} de ${formatCurrency(globalBudget.total_amount, selectedAcc?.currency)}.`}
                         >
                           {[
                             { pct: budgetBar.spentPct, style: { backgroundColor: 'rgb(255,255,255)' } },
                             { pct: budgetBar.availablePct, style: { backgroundColor: 'rgba(255,255,255,0.35)' } },
-                            { pct: budgetBar.unbackedPct, style: { backgroundImage: 'repeating-linear-gradient(135deg, rgba(253,164,175,0.95) 0 3px, transparent 3px 6px)' } },
-                            { pct: budgetBar.unassignedPct, style: { backgroundImage: 'repeating-linear-gradient(135deg, rgba(255,255,255,0.6) 0 3px, transparent 3px 6px)' } },
                           ].map((segment, i) => (
                             <div
                               key={i}
@@ -1345,102 +1285,49 @@ export default function Dashboard({ onNavigate: _onNavigate, initialAccountId }:
                             </p>
                           </div>
                         </div>
-
-                        {(hasUnassignedIncome || isBudgetAboveIncome) && (
-                          <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-white/20">
-                            <p className="flex items-center gap-2 text-sm min-w-0">
-                              <span
-                                className="w-3 h-3 rounded-sm shrink-0"
-                                aria-hidden="true"
-                                style={{ backgroundImage: `repeating-linear-gradient(135deg, ${hasUnassignedIncome ? 'rgba(255,255,255,0.8)' : 'rgba(253,164,175,0.95)'} 0 2px, transparent 2px 4px)` }}
-                              />
-                              <span>
-                                <span className={`font-black tabular-nums ${isBudgetAboveIncome ? 'text-rose-200' : ''}`}>
-                                  {formatCurrency(Math.abs(incomeGap), selectedAcc?.currency)}
-                                </span>{' '}
-                                <span className="opacity-80">{hasUnassignedIncome ? 'fuera del presupuesto' : 'sin ingresos'}</span>
-                              </span>
-                            </p>
-                            {!isPastMonth && monthlyIncome > 0 && (
-                              <button
-                                type="button"
-                                onClick={adjustGlobalBudgetToIncome}
-                                aria-label={hasUnassignedIncome
-                                  ? `Sumar ${formatCurrency(incomeGap, selectedAcc?.currency)} al presupuesto`
-                                  : `Ajustar el presupuesto a tus ingresos de ${formatCurrency(monthlyIncome, selectedAcc?.currency)}`}
-                                title={hasUnassignedIncome
-                                  ? 'Recibiste dinero después de definir tu presupuesto'
-                                  : 'Tus ingresos registrados son menores que tu presupuesto'}
-                                className="shrink-0 bg-white text-indigo-600 text-sm font-bold px-4 py-1.5 rounded-control hover:bg-indigo-50 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                              >
-                                {hasUnassignedIncome ? 'Sumar' : 'Ajustar'}
-                              </button>
-                            )}
-                          </div>
-                        )}
-
                       </>
                     )}
                   </>
                 ) : (
-                  <>
-                    {monthlyIncome > 0 ? (
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold mb-2">Definir Presupuesto mensual</h3>
-                        <div className="p-4 bg-white/10 rounded-control border border-white/20 space-y-2">
-                          <p className="text-[10px] font-black opacity-70">Ingresos detectados este mes</p>
-                          <p className="text-3xl font-black tracking-tight">{formatCurrency(monthlyIncome, selectedAcc?.currency || 'PEN')}</p>
-                        </div>
-                        <button
-                          onClick={async () => {
-                            setNewGlobalAmt(monthlyIncome.toString());
-                            await service.addGlobalBudget({
-                              year, month, total_amount: monthlyIncome, account_id: parseInt(accountId)
-                            });
-                            await handleAutoInstantiate();
-                            fetchDashboardData();
-                          }}
-                          className="w-full bg-white text-indigo-600 font-bold py-3 rounded-control hover:bg-indigo-50 transition-colors shadow-sm"
-                        >
-                          Usar como presupuesto
-                        </button>
-                        <div className="relative">
-                          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/20"></div></div>
-                          <div className="relative flex justify-center"><span className="bg-indigo-500 px-3 text-[10px] font-black opacity-80">o ajustar</span></div>
-                        </div>
-                        {!isPastMonth ? (
-                          <form onSubmit={addGlobalBudget} className="space-y-3">
-                            <input type="number" step="0.01" className="w-full rounded-control bg-white/20 text-white placeholder-white/70 border border-white/30 p-3 outline-none" placeholder="Monto personalizado" value={newGlobalAmt} onChange={e => setNewGlobalAmt(e.target.value)} required />
-                            <button type="submit" className="w-full bg-white/20 text-white font-semibold py-3 rounded-control hover:bg-white/30 transition-colors border border-white/30">
-                              Guardar monto personalizado
-                            </button>
-                          </form>
-                        ) : (
-                          <div className="p-4 bg-white/5 rounded-control border border-white/10 text-center">
-                            <p className="text-xs opacity-60">No se puede definir el presupuesto de meses pasados.</p>
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Presupuesto mensual</h3>
+                    {!isPastMonth ? (
+                      <form onSubmit={addGlobalBudget} className="space-y-3">
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          inputMode="decimal"
+                          aria-label="Monto del presupuesto"
+                          className="w-full rounded-control bg-white text-gray-900 p-3 text-lg font-bold tabular-nums outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                          placeholder="Monto del mes"
+                          value={newGlobalAmt}
+                          onChange={e => setNewGlobalAmt(e.target.value)}
+                          required
+                        />
+                        {budgetSuggestions.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {budgetSuggestions.map(suggestion => (
+                              <button
+                                key={suggestion.source}
+                                type="button"
+                                onClick={() => setNewGlobalAmt(String(suggestion.amount))}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 border border-white/30 text-xs font-semibold hover:bg-white/25 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                              >
+                                {suggestion.source === 'PREVIOUS_MONTH' ? 'Como el mes pasado' : 'Tus ingresos'}
+                                <span className="font-black tabular-nums">{formatCurrency(suggestion.amount, selectedAcc?.currency)}</span>
+                              </button>
+                            ))}
                           </div>
                         )}
-                      </div>
-                    ) : (
-                      <div className="space-y-5">
-                        <h3 className="text-lg font-semibold">Presupuesto mensual</h3>
-                        <div className="p-5 bg-white/10 rounded-control border border-white/20 text-center space-y-3">
-                          <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mx-auto">
-                            <svg className="w-7 h-7 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                          </div>
-                          <p className="text-sm font-bold opacity-95">Registra ingresos primero</p>
-                          <p className="text-xs opacity-75 leading-relaxed">Para definir tu presupuesto necesitas registrar al menos un ingreso (salario) en esta cuenta para el mes seleccionado.</p>
-                        </div>
-                        <button
-                          onClick={handleQuickSalary}
-                          className="w-full flex items-center justify-center gap-2 bg-white text-indigo-600 font-bold py-3 rounded-control hover:bg-indigo-50 transition-colors shadow-sm"
-                        >
-                          Ingresa tu salario
-                          <ArrowRight className="w-4 h-4" />
+                        <button type="submit" className="w-full bg-white text-indigo-600 font-bold py-3 rounded-control hover:bg-indigo-50 transition-colors shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                          Guardar
                         </button>
-                      </div>
+                      </form>
+                    ) : (
+                      <p className="text-sm opacity-80">No se puede definir el presupuesto de meses pasados.</p>
                     )}
-                  </>
+                  </div>
                 )}
               </>
             )}
