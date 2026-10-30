@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useBudget } from '../context/BudgetContext';
-import { Filter, Repeat, AlertTriangle, Pencil, Plus, Trash2, Banknote, BarChart3, Calendar, Check, CheckCircle2, CreditCard, Eye, Info, Layers, Nfc, X } from 'lucide-react';
+import { Filter, Repeat, AlertTriangle, Pencil, Plus, Trash2, BarChart3, Check, CreditCard, Info, Layers, Nfc, X } from 'lucide-react';
 import { formatCurrency } from '../utils/format';
 import { CONCEPT_COLORS } from '../utils/conceptColors';
 import { getCardFaceGradient } from '../utils/cardFaceColors';
@@ -9,8 +9,9 @@ import BudgetDiagnosticWidget from '../components/BudgetDiagnosticWidget';
 import PromptModal from '../components/PromptModal';
 import AlertModal from '../components/AlertModal';
 import CategoryLimitEditor from '../components/CategoryLimitEditor';
+import ObligationReceipt from '../components/ObligationReceipt';
 import { ErrorLogger } from '../../services/SentryLogger';
-import type { GlobalBudget } from '../../domain/entities';
+import type { Category, GlobalBudget } from '../../domain/entities';
 
 export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate?: (tab: string) => void; initialAccountId?: string | null }) {
   const { service } = useBudget();
@@ -42,7 +43,6 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
 
   // UI state for details
   const [selectedCatDetail, setSelectedCatDetail] = useState<any>(null);
-  const [selectedObligationDetail, setSelectedObligationDetail] = useState<any>(null);
 
   // New Global Budget form
   const [newGlobalAmt, setNewGlobalAmt] = useState('');
@@ -604,8 +604,11 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
     const itemSourceAcc = (accounts as any[]).find((a: any) => a.id === item.account_id);
     const itemSourceCard = (cards as any[]).find((c: any) => c.id === item.card_id);
     const itemCurrencyCode = itemSourceAcc?.currency || itemSourceCard?.currency || (selectedAcc?.currency || selectedCard?.currency);
+    const categoryName = (categories as Category[]).find(c => c.id === item.category_id)?.name;
+    const sourceName = itemSourceAcc?.name || itemSourceCard?.name;
+    const paidDate = linkedTx?.date ?? null;
 
-    return { ...item, isPaid, isPastDue, itemCurrencyCode, paidAmount };
+    return { ...item, isPaid, isPastDue, itemCurrencyCode, paidAmount, categoryName, sourceName, paidDate };
   });
 
   // --- Lógica de Arquitectura del Plan (Desglose Visual de Compromisos) ---
@@ -991,108 +994,14 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {obligationsStatus.map((item: any) => (
-                  <div key={item.id} className="bg-white p-6 rounded-card shadow-sm border border-gray-100 flex flex-col gap-6 group hover:shadow-xl transition-all h-full relative overflow-hidden">
-                    {/* Fila Superior: Nombre y Acción */}
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="flex flex-col gap-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${item.isPaid ? 'bg-emerald-500' : (item.isPastDue ? 'bg-rose-500' : 'bg-indigo-400')}`} />
-                          <p className="text-xl text-gray-800 leading-tight">{item.name}</p>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-500 pl-4">
-                          <Calendar className="w-3 h-3" />
-                          <span className="text-[10px] font-black">Día {item.due_day}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedObligationDetail(item)}
-                          className="w-10 h-10 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors active:scale-95"
-                          title="Ver detalle"
-                          aria-label={`Ver detalle de ${item.name}`}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        {!isPastMonth && (
-                          <button
-                            type="button"
-                            onClick={() => deleteObligation(item.id)}
-                            className="w-10 h-10 flex items-center justify-center rounded-control bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors active:scale-95"
-                            title="Eliminar"
-                            aria-label={`Eliminar ${item.name}`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {item.notes && (
-                      <div className="mx-1 p-3 bg-gray-50/50 rounded-control border border-gray-100/50">
-                        <p className="text-[10px] text-gray-500 font-medium italic line-clamp-1">"{item.notes}"</p>
-                      </div>
-                    )}
-
-                    {/* Fila Inferior: Comparativa y Botón Pago */}
-                    <div className="mt-auto flex flex-col gap-4">
-                      <div className="flex justify-between items-end bg-gray-50/30 p-4 rounded-control border border-gray-50">
-                        <div className="flex flex-col">
-                          <p className="text-[10px] font-medium text-gray-500 mb-1">Presupuestado</p>
-                          <p className="text-xl font-medium text-gray-900">
-                            {formatCurrency(item.amount, item.itemCurrencyCode)}
-                          </p>
-                          {!item.isPaid && !isPastMonth && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); updateObligationAmount(item); }}
-                              className="text-[10px] text-indigo-500 hover:text-indigo-700 font-medium underline mt-1 text-left"
-                            >
-                              Editar monto para este mes
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="text-right">
-                          {item.isPaid ? (
-                            <>
-                              <p className="text-[10px] font-black text-emerald-500 mb-1">Pagado</p>
-                              <p className="text-2xl font-medium text-emerald-600">
-                                {formatCurrency(item.paidAmount, item.itemCurrencyCode)}
-                              </p>
-                            </>
-                          ) : (
-                            <>
-                              <p className="text-[10px] font-black text-amber-500 mb-1">Pendiente</p>
-                              <p className="text-2xl font-medium text-gray-500 italic">
-                                --
-                              </p>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {!item.isPaid && !isPastMonth ? (
-                        <div className="flex flex-col gap-2">
-                          <button
-                            onClick={() => payRecurring(item)}
-                            className="w-full flex items-center justify-center gap-3 py-4 bg-gray-900 text-white rounded-card hover:bg-indigo-600 transition-all shadow-xl shadow-gray-200 active:scale-95 font-black text-xs"
-                          >
-                            <span>Pagar</span>
-                            <Banknote className="w-5 h-5" />
-                          </button>
-                        </div>
-                      ) : !item.isPaid && isPastMonth ? (
-                        <div className="flex items-center justify-center gap-2 py-3 bg-gray-50 text-gray-500 rounded-control border border-gray-100 font-black text-[10px]">
-                          <span>No disponible</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center gap-2 py-3 bg-emerald-50 text-emerald-600 rounded-control border border-emerald-100 font-black text-[10px]">
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Pagado</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <ObligationReceipt
+                    key={item.id}
+                    item={item}
+                    isPastMonth={isPastMonth}
+                    onPay={() => payRecurring(item)}
+                    onEditAmount={() => updateObligationAmount(item)}
+                    onDelete={() => deleteObligation(item.id)}
+                  />
                 ))}
               </div>
             </div>
@@ -1445,7 +1354,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
           )}
 
           {!isCard && !isPastMonth && (
-            <div className="bg-white p-6 rounded-card shadow-sm border border-gray-100 flex-1">
+            <div className="bg-white p-6 rounded-card shadow-sm border border-gray-100">
               <h3 className="text-lg font-semibold mb-4">Asignar límites por categoría</h3>
               <form onSubmit={addBudget} className="space-y-4">
                 <select ref={assignLimitSelectRef} className="w-full rounded-control border border-gray-200 p-3 shadow-sm" value={newBgtCatId} onChange={e => setNewBgtCatId(e.target.value)} required>
@@ -1552,84 +1461,6 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
         </div>
       )}
 
-      {/* Obligation Details Modal */}
-      {selectedObligationDetail && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-modal shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col border border-white/20">
-            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <div>
-                <h3 className="text-2xl font-black text-gray-800 tracking-tight">{selectedObligationDetail.name}</h3>
-                <p className="text-[10px] text-gray-500 font-black mt-1">Detalle de obligación mensual</p>
-              </div>
-              <button
-                onClick={() => setSelectedObligationDetail(null)}
-                className="p-2.5 sm:p-3 hover:bg-gray-200 rounded-control transition-all font-bold text-gray-500 bg-gray-100 active:scale-90 shrink-0"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="p-8 space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <p className="text-[10px] font-black text-gray-500 mb-1">Monto estimado</p>
-                  <p className="text-xl font-black text-indigo-600">{formatCurrency(selectedObligationDetail.amount, selectedObligationDetail.itemCurrencyCode)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-gray-500 mb-1">Día de pago</p>
-                  <p className="text-xl font-black text-gray-800">Día {selectedObligationDetail.due_day}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <p className="text-[10px] font-black text-gray-500 mb-1">Categoría</p>
-                  <p className="text-sm font-bold text-gray-700">{selectedObligationDetail.category?.name}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-gray-500 mb-1">Medio de pago</p>
-                  <p className="text-sm font-bold text-gray-700">
-                    {selectedObligationDetail.account?.name || selectedObligationDetail.card?.name || 'No definido'}
-                  </p>
-                </div>
-              </div>
-
-              {selectedObligationDetail.notes && (
-                <div className="p-4 bg-amber-50 rounded-control border border-amber-100/50">
-                  <p className="text-[10px] font-black text-amber-600 mb-1">Observaciones / notas</p>
-                  <p className="text-sm text-amber-900/80 font-medium italic leading-relaxed">
-                    {selectedObligationDetail.notes}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex items-center gap-3 p-4 rounded-control bg-gray-50 border border-gray-100">
-                <div className={`p-2 rounded-control ${selectedObligationDetail.isPaid ? 'bg-emerald-500' : 'bg-rose-500'} text-white`}>
-                  {selectedObligationDetail.isPaid ? (
-                    <Check className="w-5 h-5" />
-                  ) : (
-                    <X className="w-5 h-5" />
-                  )}
-                </div>
-                <p className="text-xs font-black text-gray-500">
-                  Estado: <span className={selectedObligationDetail.isPaid ? 'text-emerald-600' : 'text-rose-600'}>
-                    {selectedObligationDetail.isPaid ? 'Pagado este mes' : 'Pendiente de pago'}
-                  </span>
-                </p>
-              </div>
-            </div>
-
-            <div className="p-8 bg-gray-50 border-t border-gray-100 flex justify-end">
-              <button
-                onClick={() => setSelectedObligationDetail(null)}
-                className="px-8 py-3 bg-gray-900 text-white rounded-control text-xs font-black hover:bg-gray-800 transition-all active:scale-95 shadow-lg shadow-gray-200"
-              >
-                Entendido
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       <PromptModal
         isOpen={promptConfig.isOpen}
         title={promptConfig.title}

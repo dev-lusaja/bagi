@@ -38,3 +38,9 @@ export const formatAmountInput = (raw: string) => {
   const grouped = (intPart.replace(/^0+(?=\d)/, '') || '0').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return decPart !== undefined ? `${grouped}.${decPart}` : grouped;
 };
+
+// "2026-10-12" → "12 de octubre". Parses the date parts directly so the day doesn't shift with the timezone.
+export const formatDayMonth = (isoDate: string) => {
+  const [y, m, d] = isoDate.slice(0, 10).split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+};

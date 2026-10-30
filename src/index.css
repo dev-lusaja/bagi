@@ -116,3 +116,15 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Ticket-style bottom edge for payment receipts (ObligationReceipt): a row of semicircle bites along the bottom */
+.receipt-edge {
+  --receipt-bite: 6px;
+  --receipt-step: 18px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--receipt-bite)) no-repeat,
+    radial-gradient(circle at 50% 100%, transparent var(--receipt-bite), #000 calc(var(--receipt-bite) + 0.5px)) bottom / var(--receipt-step) var(--receipt-bite) round no-repeat;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--receipt-bite)) no-repeat,
+    radial-gradient(circle at 50% 100%, transparent var(--receipt-bite), #000 calc(var(--receipt-bite) + 0.5px)) bottom / var(--receipt-step) var(--receipt-bite) round no-repeat;
+}

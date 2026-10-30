@@ -75,6 +75,7 @@ src/
     │   ├── AlertModal.tsx
     │   ├── OnboardingChecklist.tsx
     │   ├── PromptModal.tsx
+    │   ├── ObligationReceipt.tsx     # Comprobante de un pago fijo (pestaña Pagos fijos de Presupuesto)
     │   └── SyncStatusButton.tsx      # Nube de estado de sincronización (menú lateral y barra superior móvil)
     └── utils/
 ```
