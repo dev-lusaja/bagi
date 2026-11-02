@@ -1139,7 +1139,8 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
           )}
         </div>
 
-        <div className="flex flex-col gap-6">
+        {/* Below xl the sidebar stacks under the tabs, so it only belongs to Resumen there */}
+        <div className={`${activeTab === 'diagnostic' ? 'flex' : 'hidden xl:flex'} flex-col gap-6`}>
           {/* Global Budget Card */}
           <div className={`p-6 rounded-card shadow-md text-white transition-all ${isOverBudgeted ? 'bg-rose-600 ring-4 ring-rose-200' : 'bg-indigo-600'}`}>
             {isOverBudgeted && (
