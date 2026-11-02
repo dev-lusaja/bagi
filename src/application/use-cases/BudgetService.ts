@@ -398,7 +398,7 @@ export class BudgetService {
     async updateGlobalBudget(id: number, b: any) { return this.performOperation(() => this.repo.updateGlobalBudget(id, b)); }
     async deleteGlobalBudget(id: number) { return this.performOperation(() => this.repo.deleteGlobalBudget(id)); }
 
-    // Business Logic: Amounts to offer when a month has no budget yet. The budget is a plan, independent of
+    // Business Logic: Amounts to offer when creating or editing a month's budget. The budget is a plan, independent of
     // registered income: last month's plan for the same account, then this month's registered income (if different).
     async getBudgetSuggestions(year: number, month: number, accountId: number, monthlyIncome: number) {
         const prevMonth = month === 1 ? 12 : month - 1;

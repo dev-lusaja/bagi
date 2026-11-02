@@ -166,14 +166,14 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
     const filtered = monthlyTx.filter((t: any) => isCard ? t.card_id === actualId : t.account_id === actualId);
     setTransactions(filtered as any);
 
-    // Registered income of the account: measures the plan's health and, without budget, feeds the suggestions
+    // Registered income of the account: measures the plan's health and feeds the budget suggestions
     if (!isCard) {
       const incomeForAccount = monthlyTx
         .filter((t: any) => t.account_id === actualId)
         .filter((t: any) => (categories as any[]).find((c: any) => c.id === t.category_id)?.type === 'INCOME')
         .reduce((sum: number, t: any) => sum + t.amount, 0);
       setMonthlyIncome(incomeForAccount);
-      setBudgetSuggestions(currentGb ? [] : await service.getBudgetSuggestions(year, month, actualId, incomeForAccount));
+      setBudgetSuggestions(await service.getBudgetSuggestions(year, month, actualId, incomeForAccount));
     } else {
       setMonthlyIncome(0);
       setBudgetSuggestions([]);
@@ -191,6 +191,32 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
       setIsEditingGlobal(true);
     }
   };
+
+  // Suggestion chips for the budget amount; amounts below what is already spent are shown disabled
+  const renderBudgetSuggestions = (
+    suggestions: { amount: number; source: 'PREVIOUS_MONTH' | 'INCOME' }[],
+    onPick: (amount: string) => void,
+    spent = 0
+  ) => suggestions.length > 0 && (
+    <div className="flex flex-wrap gap-2">
+      {suggestions.map(suggestion => {
+        const belowSpent = suggestion.amount < spent;
+        return (
+          <button
+            key={suggestion.source}
+            type="button"
+            disabled={belowSpent}
+            title={belowSpent ? 'Menor a lo ya gastado' : undefined}
+            onClick={() => onPick(String(suggestion.amount))}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 border border-white/30 text-xs font-semibold hover:bg-white/25 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:bg-white/5 disabled:border-white/15 disabled:text-white/40 disabled:cursor-not-allowed"
+          >
+            {suggestion.source === 'PREVIOUS_MONTH' ? 'Como el mes pasado' : 'Tus ingresos'}
+            <span className="font-black tabular-nums">{formatCurrency(suggestion.amount, selectedAcc?.currency)}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 
   const handleDeleteGlobalBudget = () => {
     if (!globalBudget) return;
@@ -1168,6 +1194,11 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                     {isEditingGlobal ? (
                       <form onSubmit={updateGlobalBudget} className="space-y-3 mt-2">
                         <input type="number" step="0.01" className="w-full rounded-control bg-white text-gray-900 p-2 outline-none" value={editGlobalAmt} onChange={e => setEditGlobalAmt(e.target.value)} required autoFocus />
+                        {renderBudgetSuggestions(
+                          budgetSuggestions.filter(suggestion => Math.abs(suggestion.amount - globalBudget.total_amount) >= 0.01),
+                          setEditGlobalAmt,
+                          totalSpentGlobal
+                        )}
                         <div className="flex gap-2">
                           <button type="submit" className="flex-1 bg-white text-indigo-600 rounded-control py-2 flex justify-center items-center hover:bg-indigo-50 transition-all shadow-sm" title="Guardar">
                             <Check className="w-5 h-5" />
@@ -1235,21 +1266,7 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
                           onChange={e => setNewGlobalAmt(e.target.value)}
                           required
                         />
-                        {budgetSuggestions.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {budgetSuggestions.map(suggestion => (
-                              <button
-                                key={suggestion.source}
-                                type="button"
-                                onClick={() => setNewGlobalAmt(String(suggestion.amount))}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 border border-white/30 text-xs font-semibold hover:bg-white/25 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                              >
-                                {suggestion.source === 'PREVIOUS_MONTH' ? 'Como el mes pasado' : 'Tus ingresos'}
-                                <span className="font-black tabular-nums">{formatCurrency(suggestion.amount, selectedAcc?.currency)}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                        {renderBudgetSuggestions(budgetSuggestions, setNewGlobalAmt)}
                         <button type="submit" className="w-full bg-white text-indigo-600 font-bold py-3 rounded-control hover:bg-indigo-50 transition-colors shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
                           Guardar
                         </button>
