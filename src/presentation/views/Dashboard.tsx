@@ -166,11 +166,13 @@ export default function Dashboard({ onNavigate, initialAccountId }: { onNavigate
     const filtered = monthlyTx.filter((t: any) => isCard ? t.card_id === actualId : t.account_id === actualId);
     setTransactions(filtered as any);
 
-    // Registered income of the account: measures the plan's health and feeds the budget suggestions
+    // Registered income of the account: measures the plan's health and feeds the budget suggestions.
+    // Categories are read here instead of from state: on the first fetch (account preselected from Home) state is still empty.
     if (!isCard) {
+      const incomeCategoryIds = new Set((await service.getCategories()).filter(c => c.type === 'INCOME').map(c => c.id));
       const incomeForAccount = monthlyTx
         .filter((t: any) => t.account_id === actualId)
-        .filter((t: any) => (categories as any[]).find((c: any) => c.id === t.category_id)?.type === 'INCOME')
+        .filter((t: any) => incomeCategoryIds.has(t.category_id))
         .reduce((sum: number, t: any) => sum + t.amount, 0);
       setMonthlyIncome(incomeForAccount);
       setBudgetSuggestions(await service.getBudgetSuggestions(year, month, actualId, incomeForAccount));
